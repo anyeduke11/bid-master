@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>投标看板 v3 · 业务扩展设计 · Duke · 2026-08-14</title>
+<style>
+  :root { --bg:#F0F7FF; --card:#FFF; --line:#DCE7F2; --ink:#0F1E33; --ink-soft:#4A5A75; --ink-mute:#7A8AA0;
+    --brand:#0EA5E9; --brand-deep:#0369A1; --brand-soft:#E0F2FE; --ok:#10B981; --ok-soft:#D1FAE5;
+    --warn:#F59E0B; --warn-soft:#FEF3C7; --warn-ink:#92400E; --danger:#EF4444; --danger-soft:#FEE2E2;
+    --purple:#8B5CF6; --purple-soft:#EDE9FE; --shadow:0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06); --r:10px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "SF Pro SC", "PingFang SC", system-ui, sans-serif; font-size: 14px; line-height: 1.65; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 36px 28px 80px; }
+  .hero { background: linear-gradient(135deg, #FFF 0%, var(--brand-soft) 100%); border: 1px solid var(--line);
+    border-radius: 20px; padding: 30px 36px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .hero .tag { display: inline-block; font-size: 12px; letter-spacing: .12em; color: var(--brand-deep);
+    background: var(--brand-soft); padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+  .hero h1 { font-size: 24px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 22px 26px;
+    box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px; border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .sec-title.p1 .n { background: var(--purple); }
+  .sec-title.warn .n { background: var(--danger); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 10px 0; }
+  th { text-align: left; padding: 10px 12px; background: var(--bg-soft); color: var(--brand-deep); font-weight: 700; font-size: 12px; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code { font-family: "SF Mono", monospace; font-size: 12px; background: var(--bg-soft);
+    padding: 1px 5px; border-radius: 4px; color: var(--brand-deep); }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .p-ok { background: var(--ok-soft); color: #065F46; }
+  .p-warn { background: var(--warn-soft); color: var(--warn-ink); }
+  .p-err { background: var(--danger-soft); color: #991B1B; }
+  .p-pending { background: var(--bg-soft); color: var(--ink-mute); }
+  .p-p1 { background: var(--purple-soft); color: var(--purple); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  .feature { background: white; border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+  .feature h4 { margin: 0 0 6px; font-size: 14px; color: var(--brand-deep); }
+  .feature p { margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.55; }
+  .feature ul { margin: 8px 0 0 0; padding-left: 18px; font-size: 12.5px; }
+  .feature ul li { margin: 2px 0; }
+
+  .crit { background: #FEF3C7; border-left: 3px solid var(--warn); border-radius: var(--r);
+    padding: 12px 16px; margin: 8px 0; font-size: 13px; }
+  .crit h5 { margin: 0 0 4px; color: var(--warn-ink); font-size: 13.5px; }
+
+  .flow { display: flex; align-items: center; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+  .stage { flex: 1; min-width: 160px; background: white; border: 2px solid var(--line);
+    border-radius: var(--r); padding: 12px 14px; }
+  .stage.active { border-color: var(--brand); background: var(--brand-soft); }
+  .stage h5 { margin: 0 0 4px; font-size: 13px; color: var(--brand-deep); }
+  .stage p { margin: 0; font-size: 11.5px; color: var(--ink-mute); }
+  .arrow { color: var(--ink-mute); font-size: 18px; }
+
+  code.block { display: block; background: var(--bg-soft); padding: 10px 14px; border-radius: 6px;
+    margin: 8px 0; font-size: 12px; overflow-x: auto; line-height: 1.5; }
+
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">V3 EXTENSION DESIGN · 2026-08-14</span>
+    <h1>投标看板 v3 · 业务扩展设计</h1>
+    <div class="sub">从"投标中段"扩展到"标讯→识别→投标→交付→归档"完整销售/售前业务流 · 数据生命周期 · 时间维度总结 · skill 收敛</div>
+  </div>
+
+  <!-- 1. 现状诊断 -->
+  <div class="sec">
+    <div class="sec-title warn"><span class="n">!</span>现状诊断 · 6 个真问题</div>
+    <div class="crit">
+      <h5>问题 1 · 流程只有 1/5,不是"招投标",是"投标中段"</h5>
+      <p>13 节点模板(sales-bid → buy-rfp → ... → retro)全是"投标"环节。<b>缺:标讯抓取 / 客户识别(可参与?) / 中标交付 / 项目归档</b>。网络安全销售/售前的真实链路比这长 4 倍。</p>
+    </div>
+    <div class="crit">
+      <h5>问题 2 · 数据是"测试",不是"业务"</h5>
+      <p>6 客户是手工塞的(东莞/农发/银联/平安/国信),reset 一键全清。<b>缺:真实抓取入口 / 数据归档 / 历史查询</b>。现在只能在演示态。</p>
+    </div>
+    <div class="crit">
+      <h5>问题 3 · 没有"手动",只有"自动"</h5>
+      <p>每个流程节点只能点 playbook 跑,不能手动改状态。<b>缺:手动状态切换按钮 + 自动剧本两条路</b>。真实工作 70% 是手动判断,30% 才是自动化。</p>
+    </div>
+    <div class="crit">
+      <h5>问题 4 · 无时间维度总结</h5>
+      <p>没有周报/月报/季报/年报,每周/每月复盘要自己从日志里捞。<b>缺:聚合视图(本周新增/本周推进/本周中标/本周流失 + 客户/行业/区域/产品多维分析)</b>。</p>
+    </div>
+    <div class="crit">
+      <h5>问题 5 · skill 过度依赖 AI,无脚本化</h5>
+      <p>5 个 playbook 全是内联 lambda,没法独立测试,没法复用到其他项目。<b>缺:脚本优先(python/bash) + AI 仅做语义层(标书摘要/客户画像)</b>。</p>
+    </div>
+    <div class="crit">
+      <h5>问题 6 · 日志未收敛,前后端不一致</h5>
+      <p>前端 event-bar 展示 200 条但运行过程全展示太噪;后端只有 stderr print,没文件没结构。<b>缺:分级(debug/info/warn/error) + 文件落盘 + 后端查询 API</b>。</p>
+    </div>
+  </div>
+
+  <!-- 2. 5 阶段完整业务流 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">1</span>扩展 1:5 阶段完整业务流</div>
+    <p>把现有"投标中段"扩成完整销售/售前链路,每阶段独立可操作:</p>
+
+    <div class="flow">
+      <div class="stage">
+        <h5>L1 标讯抓取</h5>
+        <p>lead-capture<br>40+ 渠道爬虫<br>JSON 落盘 + 去重</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage active">
+        <h5>L2 客户识别</h5>
+        <p>qualify<br>AI 评估可参与性<br>手动确认 P0/P1/P2</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage active">
+        <h5>L3 投标</h5>
+        <p>bid(现有)<br>13 节点流程<br>现有看板核心</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage">
+        <h5>L4 中标交付</h5>
+        <p>delivery<br>合同/实施/验收<br>独立项目卡</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage">
+        <h5>L5 归档复盘</h5>
+        <p>archive<br>项目总结<br>数据入历史库</p>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th style="width:10%">阶段</th><th style="width:25%">名称</th><th style="width:35%">核心数据</th><th style="width:30%">手动 + 自动</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>L1</td>
+          <td>标讯抓取 (lead)</td>
+          <td>title / source / published_at / deadline / buyer / industry / amount / link / raw</td>
+          <td><b>自动</b>:cron 每日 09:00 跑抓取脚本<br><b>手动</b>:导入 JSON/CSV</td>
+        </tr>
+        <tr>
+          <td>L2</td>
+          <td>识别可参与 (qualify)</td>
+          <td>lead + score (0-100) / reason / recommendation (P0/P1/P2/跳过)</td>
+          <td><b>自动</b>:AI 评分脚本<br><b>手动</b>:人审 score → 转 bid</td>
+        </tr>
+        <tr>
+          <td>L3</td>
+          <td>投标 (bid) ← 现有</td>
+          <td>9 字段 bids + 13 节点 flow</td>
+          <td><b>自动</b>:5 个 playbook<br><b>手动</b>:节点状态切换</td>
+        </tr>
+        <tr>
+          <td>L4</td>
+          <td>中标交付 (delivery)</td>
+          <td>contract_no / kickoff_at / milestones / acceptance_at / revenue</td>
+          <td><b>自动</b>:合同要素抽取<br><b>手动</b>:里程碑更新</td>
+        </tr>
+        <tr>
+          <td>L5</td>
+          <td>归档复盘 (archive)</td>
+          <td>summary / lessons / reusable_assets / final_outcome (win/loss/no-bid)</td>
+          <td><b>自动</b>:复盘模板生成<br><b>手动</b>:结案填写</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. 手动+自动双通道 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">2</span>扩展 2:手动 + 自动双通道</div>
+    <p>每个节点都有 2 个入口:<b>⚡ 手动改状态</b>(立即生效) / <b>▶ 跑剧本</b>(按步骤自动)。</p>
+
+    <code class="block">
+// 节点 click 后弹出:节点详情弹窗(已有,扩展)
+/*
+  ┌─────────────────────────────────┐
+  │  quote · 报价 · plan 12-21      │
+  ├─────────────────────────────────┤
+  │  状态: [progress ▼]             │  ← 手动改
+  │  阻塞: [          ]             │
+  │  截止: [          ]             │
+  ├─────────────────────────────────┤
+  │  [⚡ 手动应用] [▶ 跑自动剧本]   │  ← 双按钮
+  │  [取消]                         │
+  └─────────────────────────────────┘
+*/</code>
+
+    <p><b>手动</b>:用户改 state,直接 PATCH /api/flow/node,立即生效,写 1 条日志</p>
+    <p><b>自动</b>:跑 playbook(5+1+1=7 个),按 step 走,每 step 写 1 条日志</p>
+    <p><b>选择</b>:默认走"手动"(业务主导),只在用户明确点"跑剧本"时才自动</p>
+  </div>
+
+  <!-- 4. 数据生命周期 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">3</span>扩展 3:数据生命周期 + 归档</div>
+
+    <table>
+      <thead><tr><th style="width:15%">状态</th><th style="width:25%">含义</th><th style="width:30%">进入条件</th><th style="width:30%">看板可见性</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="pill p-ok">active</span></td>
+          <td>活跃(默认)</td>
+          <td>新建时</td>
+          <td>看板主视图</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-warn">paused</span></td>
+          <td>暂停(等客户回信/等预算)</td>
+          <td>手动标记 + 暂停原因</td>
+          <td>看板折叠区(不占主屏)</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-pending">closed</span></td>
+          <td>关闭(已结案)</td>
+          <td>中标交付完成 / 丢标确认</td>
+          <td>看板"近期关闭"区(7 天可见)</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-pending">archived</span></td>
+          <td>归档(冷数据)</td>
+          <td>closed + 30 天 / 手动归档</td>
+          <td>默认隐藏,搜索可见</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><b>自动归档规则</b>(避免数据堆积):</p>
+    <ul>
+      <li>closed 状态超过 30 天 → 自动 archived</li>
+      <li>active 状态超过 90 天无 last_sync → 自动 paused + 提醒</li>
+      <li>手动归档按钮(批量)</li>
+    </ul>
+    <p><b>归档数据不丢</b>:JSON 落盘 <code>~/.bidboard/archive/YYYY-Q.jsonl</code>,看板隐藏但搜索/统计/复盘全可用。</p>
+  </div>
+
+  <!-- 5. 时间维度总结 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">4</span>扩展 4:时间维度总结 · 周/月/季/年</div>
+
+    <div class="grid2">
+      <div class="feature">
+        <h4>📅 周报</h4>
+        <p>本周(周一-周日)聚合:</p>
+        <ul>
+          <li>新增商机 / 推进中 / 中标 / 丢标 / 暂停</li>
+          <li>预计成交金额(加权)</li>
+          <li>P0 客户数(本周变化)</li>
+          <li>阻塞解决平均时长</li>
+          <li>Top 3 风险客户</li>
+        </ul>
+      </div>
+      <div class="feature">
+        <h4>📅 月报</h4>
+        <p>本月 + 客户/行业维度:</p>
+        <ul>
+          <li>月新增 / 月中标 / 月丢标</li>
+          <li>客户分布(新增 vs 跟进 vs 沉默)</li>
+          <li>行业分布(银行/政府/企业/其他)</li>
+          <li>区域分布(华南/华北/华东)</li>
+          <li>赢率 = 中标 / (中标+丢标)</li>
+          <li>Top 5 客户(按金额)</li>
+        </ul>
+      </div>
+      <div class="feature">
+        <h4>📅 季报</h4>
+        <p>本季 + 趋势分析:</p>
+        <ul>
+          <li>季度汇总 + 同比/环比</li>
+          <li>客户分级(大客户/中小/小微)占比</li>
+          <li>产品/服务线分析</li>
+          <li>竞争对手分析(从丢标原因聚合)</li>
+          <li>预测(下季度)</li>
+        </ul>
+      </div>
+      <div class="feature">
+        <h4>📅 年报</h4>
+        <p>本年 + 战略层:</p>
+        <ul>
+          <li>年度汇总 + 多年趋势</li>
+          <li>ROI(投入 vs 产出)</li>
+          <li>战略客户清单 + 健康度</li>
+          <li>产品组合分析</li>
+          <li>团队产能(人均中标数/金额)</li>
+          <li>下一年度规划建议</li>
+        </ul>
+      </div>
+    </div>
+
+    <p><b>实现方式</b>:每个 bid 加 <code>created_at / updated_at / closed_at / archived_at</code> 时间戳,服务侧按时间段聚合,前端 1 个"📅 总结"tab。</p>
+  </div>
+
+  <!-- 6. skill 收敛 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span>扩展 5:skill 脚本化 + 日志收敛</div>
+
+    <h4 style="margin: 12px 0 8px;">5.1 playbook 改为调用外部脚本</h4>
+    <p>现有 playbook 都是内联 lambda,改成 <code>subprocess.run()</code> 调用 <code>scripts/</code> 目录下的独立脚本:</p>
+
+    <code class="block">
+# bid-board/scripts/
+├── lead_capture.sh        # L1 标讯抓取(curl + jq)
+├── qualify_score.py       # L2 AI 评分
+├── bid_dongguan.sh        # L3 东莞剧本(纯 bash)
+├── bid_nfh.sh             # L3 农发剧本
+├── delivery_extract.py    # L4 合同要素抽取
+└── archive_close.py       # L5 归档
+
+# server.py 改为:
+PLAYBOOKS = [
+    {"id": "pb-collect", "script": "scripts/lead_capture.sh",
+     "args": {"date": "today"}, "desc": "..."},
+    ...
+]
+
+# 执行:
+subprocess.run(["./scripts/bid_dongguan.sh", code], capture_output=True, timeout=30)</code>
+
+    <p><b>好处</b>:</p>
+    <ul>
+      <li>脚本可独立测试(<code>./scripts/lead_capture.sh --date 2026-08-14</code>)</li>
+      <li>复用给其他系统(可直接 cron 跑)</li>
+      <li>不依赖 LLM 启动,执行快</li>
+      <li>AI 只在需要时调(<code>qualify_score.py</code> 的语义部分)</li>
+    </ul>
+
+    <h4 style="margin: 14px 0 8px;">5.2 日志分级 + 文件落盘 + 后端查询</h4>
+    <code class="block">
+# 日志结构
+log_entry = {
+    "ts": "2026-08-14 09:43:05.36",
+    "level": "info",     # debug / info / warn / error
+    "module": "playbook",  # playbook / api / system / script
+    "code": "dgyhst2026",  # 关联 bid
+    "msg": "pb-dongguan step 2 完成",
+    "payload": {...}
+}
+
+# 落盘
+~/.bidboard/
+├── log.jsonl              # 全部日志(append-only)
+├── bids.json              # 当前活跃
+├── archive/2026-Q3.jsonl  # 归档
+└── stats.json             # 缓存的统计
+
+# 后端 API
+GET /api/logs?level=error&code=dgyhst2026&from=2026-08-01&to=2026-08-14
+GET /api/logs?module=playbook&keyword=签字</code>
+
+    <p><b>前端</b>:管理 tab 日志区只展示 <b>warn + error</b> 摘要,点"展开"才看全部 + 过滤。</p>
+    <p><b>后端</b>:curl /api/logs 直接查询,可管道到 grep/jq。</p>
+  </div>
+
+  <!-- 7. 批判性扩展 -->
+  <div class="sec">
+    <div class="sec-title p1"><span class="n">+</span>扩展 6:批判性扩展 · 业务维度</div>
+    <p>从"网络安全销售/售前"真实工作出发,加这些维度:</p>
+
+    <table>
+      <thead><tr><th style="width:15%">维度</th><th style="width:25%">字段</th><th style="width:30%">作用</th><th style="width:30%">来源</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>客户分级</td>
+          <td>tier (大B/中B/小B/微)</td>
+          <td>区分战略客户 vs 机会型</td>
+          <td>手动标注 + AI 从规模推断</td>
+        </tr>
+        <tr>
+          <td>行业</td>
+          <td>industry (银行/政府/能源/医疗/教育/其他)</td>
+          <td>行业趋势 + 政策敏感</td>
+          <td>手动 + L2 抓取时识别</td>
+        </tr>
+        <tr>
+          <td>区域</td>
+          <td>region (华南/华北/华东/西部/海外)</td>
+          <td>本地化策略</td>
+          <td>手动 + L2 抓取时识别</td>
+        </tr>
+        <tr>
+          <td>竞争对手</td>
+          <td>competitors (绿盟/启明/深信服/...)</td>
+          <td>竞争分析</td>
+          <td>手动 + 丢标时填</td>
+        </tr>
+        <tr>
+          <td>输单原因</td>
+          <td>loss_reason (价格/技术/关系/资质/客户选别家/放弃)</td>
+          <td>输单分析 + 改进</td>
+          <td>丢标时必填</td>
+        </tr>
+        <tr>
+          <td>预计金额</td>
+          <td>est_amount + 置信度</td>
+          <td>加权预测</td>
+          <td>L2 评分时填</td>
+        </tr>
+        <tr>
+          <td>关键决策人</td>
+          <td>decision_maker (角色/姓名/接触度)</td>
+          <td>关系推进</td>
+          <td>手动</td>
+        </tr>
+        <tr>
+          <td>合作伙伴</td>
+          <td>partners (厂商/集成商/代理)</td>
+          <td>生态协作</td>
+          <td>手动</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 8. 实施路线 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>实施路线(分 4 个冲刺)</div>
+
+    <table>
+      <thead><tr><th style="width:8%">Sprint</th><th style="width:15%">主题</th><th style="width:25%">内容</th><th style="width:20%">产出</th><th style="width:12%">估时</th><th style="width:20%">验收</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="pill p-err">P0</span></td>
+          <td>数据生命周期</td>
+          <td>4 状态字段 + 自动归档 + 归档区隐藏 + 真实抓取入口(API 模式)</td>
+          <td>看板可活跃+关闭+归档,数据可"销账"</td>
+          <td>4-6h</td>
+          <td>1 客户走完整生命周期</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-err">P0</span></td>
+          <td>手动+自动双通道</td>
+          <td>节点弹窗双按钮 + 手动状态切换 + 选择模式记忆</td>
+          <td>用户能纯手动操作,不依赖自动</td>
+          <td>3-4h</td>
+          <td>5 节点全手动改完一遍</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-warn">P1</span></td>
+          <td>5 阶段业务流</td>
+          <td>L1 抓取 mock + L2 评分 mock + L4 交付卡 + L5 归档卡 + 5 阶段看板切换</td>
+          <td>完整业务流端到端可走</td>
+          <td>8-10h</td>
+          <td>1 条数据走完 L1→L5</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-warn">P1</span></td>
+          <td>skill 脚本化</td>
+          <td>scripts/ 目录 + 5 个外部脚本 + subprocess 包装 + 测试用例</td>
+          <td>playbook 不再内联,可独立运行</td>
+          <td>4-5h</td>
+          <td>5 脚本独立跑通</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-warn">P1</span></td>
+          <td>日志收敛</td>
+          <td>分级(level) + 模块(module) + 文件落盘 + 后端 /api/logs 增强</td>
+          <td>前后端一致 + 可查询 + 可导出</td>
+          <td>3-4h</td>
+          <td>curl 查 1 周日志</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-p1">P2</span></td>
+          <td>时间维度总结</td>
+          <td>周/月/季/年 tab + 多维分析 + 导出 PDF/JSON</td>
+          <td>复盘不再手捞</td>
+          <td>6-8h</td>
+          <td>1 周完整数据生成周报</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-p1">P2</span></td>
+          <td>业务维度扩展</td>
+          <td>客户分级/行业/区域/竞争/输单 5 维度 + 筛选 + 报表</td>
+          <td>业务可视化</td>
+          <td>6-8h</td>
+          <td>按行业筛 + 输单分析</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-pending">P3</span></td>
+          <td>LLM 语义层</td>
+          <td>标书摘要 / 客户画像 / 输单归因 等 AI 能力接入</td>
+          <td>AI 只在需要时用</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 30px;">
+    方案文档 · 待 Duke 确认方向后分阶段实施
+  </p>
+
+</div>
+</body>
+</html>

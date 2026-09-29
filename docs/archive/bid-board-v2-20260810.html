@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>投标看板 v2 · Duke · Mavis</title>
+<style>
+  :root {
+    --bg: #F4F7FB;
+    --bg-soft: #E8EFF8;
+    --card: #FFFFFF;
+    --line: #DDE5F0;
+    --line-soft: #ECF1F7;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --p0: #EF4444;
+    --p1: #F59E0B;
+    --p2: #38BDF8;
+    --dash-bg: #0F1E33;
+    --dash-line: rgba(255,255,255,.08);
+    --dash-ink: #E6F1FB;
+    --dash-mute: #94A3B8;
+    --dash-soft: rgba(255,255,255,.05);
+    --shadow-sm: 0 1px 2px rgba(15,30,51,.04);
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --shadow-lg: 0 12px 40px rgba(15,30,51,.10);
+    --r-sm: 6px;
+    --r: 10px;
+    --r-lg: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.55; font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+  .wrap { max-width: 1480px; margin: 0 auto; padding: 18px 24px 0; width: 100%; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  /* ====== HEADER ====== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand), var(--accent));
+    color: white; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; box-shadow: var(--shadow);
+  }
+  .brand h1 { font-size: 17px; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+  .brand h1 .sub { color: var(--ink-mute); font-size: 12px; font-weight: 500; margin-left: 8px; letter-spacing: .02em; }
+  .topbar .nav { display: flex; gap: 4px; align-items: center; }
+  .nav a {
+    padding: 6px 12px; border-radius: 6px; color: var(--ink-soft);
+    text-decoration: none; font-size: 13px; font-weight: 500;
+  }
+  .nav a:hover { background: var(--bg-soft); color: var(--ink); }
+  .nav a.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; }
+  .nav .sep { width: 1px; height: 16px; background: var(--line); margin: 0 6px; }
+  .live-indicator {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1px solid var(--line);
+    padding: 5px 10px; border-radius: 999px; font-size: 12px;
+    font-family: "SF Mono", monospace; color: var(--ink-soft);
+  }
+  .live-indicator .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok);
+    box-shadow: 0 0 0 0 var(--ok); animation: pulse 1.6s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16,185,129,.4); }
+    70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+  }
+
+  /* ====== STATS BAR ====== */
+  .stats {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stat {
+    background: white; border: 1px solid var(--line);
+    border-radius: var(--r); padding: 10px 14px;
+    transition: all .2s;
+  }
+  .stat:hover { box-shadow: var(--shadow-sm); }
+  .stat .k { font-size: 11px; color: var(--ink-mute); letter-spacing: .04em; text-transform: uppercase; font-weight: 600; }
+  .stat .v { font-size: 22px; font-weight: 700; margin-top: 2px; letter-spacing: -.02em; }
+  .stat .v small { font-size: 11px; color: var(--ink-mute); font-weight: 500; margin-left: 3px; }
+  .stat .v .delta { font-size: 11px; color: var(--ok); font-weight: 600; margin-left: 6px; }
+  .stat .v .delta.warn { color: var(--warn); }
+  .stat .v .delta.err { color: var(--danger); }
+  .stat.alert .v { color: var(--danger); }
+  .stat.warn .v { color: var(--warn); }
+  .stat.ok .v { color: var(--ok); }
+  .stat .v.flash { animation: numflash .6s; }
+  @keyframes numflash { 0% { transform: scale(1); } 50% { transform: scale(1.1); color: var(--brand); } 100% { transform: scale(1); } }
+
+  /* ====== MAIN: cards + playbook ====== */
+  .main {
+    display: grid; grid-template-columns: 1fr 380px; gap: 14px;
+    flex: 1; min-height: 0;
+  }
+  .col { display: flex; flex-direction: column; min-height: 0; }
+  .col-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; padding: 0 4px;
+  }
+  .col-head h2 { font-size: 13px; margin: 0; font-weight: 700; color: var(--ink-soft);
+    letter-spacing: .04em; text-transform: uppercase; }
+  .col-head .filter { display: flex; gap: 4px; }
+  .filter-btn {
+    padding: 3px 10px; font-size: 12px; border-radius: 5px;
+    border: 1px solid var(--line); background: white; color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .filter-btn:hover { border-color: var(--brand); color: var(--brand-deep); }
+  .filter-btn.active { background: var(--brand); color: white; border-color: var(--brand); font-weight: 600; }
+
+  .card-list { display: flex; flex-direction: column; gap: 8px; }
+  .bid-card {
+    background: white; border: 1px solid var(--line);
+    border-radius: var(--r); padding: 0; overflow: hidden;
+    transition: all .25s; position: relative;
+  }
+  .bid-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+  .bid-card.flash { animation: cardflash .8s; }
+  @keyframes cardflash { 0% { background: var(--accent-soft); } 100% { background: white; } }
+  .bid-card .strip { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .bid-card.p0 .strip { background: var(--p0); }
+  .bid-card.p1 .strip { background: var(--p1); }
+  .bid-card.p2 .strip { background: var(--p2); }
+  .bid-card .body { padding: 12px 16px 12px 18px; }
+  .bid-card .row1 { display: flex; align-items: center; gap: 10px; }
+  .bid-card .client { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .badge-code {
+    font-family: "SF Mono", monospace; font-size: 11px; padding: 1px 6px;
+    background: var(--bg-soft); color: var(--ink-soft); border-radius: 4px;
+  }
+  .badge-code.linked {
+    background: var(--brand-soft); color: var(--brand-deep);
+    cursor: pointer; transition: all .15s;
+  }
+  .badge-code.linked:hover { background: var(--brand); color: white; }
+  .badge-stage {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    font-weight: 600;
+  }
+  .st-跟踪 { background: #F1F5F9; color: #475569; }
+  .st-审查 { background: #DBEAFE; color: #1E40AF; }
+  .st-报价 { background: #FED7AA; color: #9A3412; }
+  .st-修订 { background: #FBCFE8; color: #9D174D; }
+  .st-封标 { background: #FECACA; color: #991B1B; }
+  .st-述标 { background: #A7F3D0; color: #065F46; }
+  .badge-pri {
+    font-size: 10.5px; padding: 2px 7px; border-radius: 4px; font-weight: 700;
+  }
+  .pri-p0 { background: var(--danger); color: white; }
+  .pri-p1 { background: var(--warn); color: white; }
+  .pri-p2 { background: var(--brand-soft); color: var(--brand-deep); }
+  .row1 .spacer { flex: 1; }
+  .row1 .due { font-size: 12px; color: var(--ink-mute); font-family: "SF Mono", monospace; }
+  .row1 .due b { color: var(--danger); }
+  .row1 .expand-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--line);
+    background: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--ink-mute); transition: all .15s;
+  }
+  .row1 .expand-btn:hover { border-color: var(--brand); color: var(--brand); }
+
+  .bid-card .row2 {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+  }
+  .field { min-width: 0; }
+  .field .lbl { font-size: 10.5px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .field .val { font-size: 12.5px; margin-top: 3px; line-height: 1.5; }
+  .field .val.ai { color: var(--brand-deep); }
+  .field .val.human { color: var(--warn); font-weight: 600; }
+  .field .val.block { color: var(--danger); font-weight: 600; }
+  .field .val.empty { color: var(--ink-mute); font-style: italic; font-weight: 400; }
+  .ai-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+  .ai-chip {
+    font-size: 11px; padding: 1px 7px; background: var(--brand-soft); color: var(--brand-deep);
+    border-radius: 4px; font-weight: 500;
+  }
+  .ai-chip.new { animation: chipin .6s; background: var(--accent); color: white; }
+  @keyframes chipin { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* 展开详情 */
+  .bid-card .detail { display: none; padding: 0 16px 14px 18px; border-top: 1px solid var(--line-soft); }
+  .bid-card.expanded .detail { display: block; }
+  .bid-card.expanded { box-shadow: var(--shadow); }
+  .detail .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-top: 10px; }
+  .detail .timeline { font-family: "SF Mono", monospace; font-size: 11.5px; }
+  .detail .timeline .ev { padding: 3px 0; color: var(--ink-soft); }
+  .detail .timeline .ev .ts { color: var(--ink-mute); margin-right: 6px; }
+  .detail .timeline .ev .tag { font-weight: 600; }
+  .detail .api-block {
+    background: var(--dash-bg); color: #94A3B8; padding: 8px 10px;
+    border-radius: 6px; font-family: "SF Mono", monospace; font-size: 11.5px;
+    line-height: 1.7; margin-top: 6px;
+  }
+  .detail .api-block .k { color: #C7D2FE; }
+  .detail .api-block .s { color: #FDE68A; }
+  .detail .api-block .v { color: #7DD3FC; }
+
+  /* 卡片事件提示(贴在卡片底部) */
+  .card-event {
+    background: var(--accent-soft); border-top: 1px solid var(--accent);
+    color: var(--accent); font-size: 11.5px; padding: 6px 16px 6px 18px;
+    display: flex; align-items: center; gap: 8px; font-weight: 500;
+    animation: eventin .3s;
+  }
+  .card-event.hide { display: none; }
+  @keyframes eventin { from { transform: translateY(-4px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .card-event .ts { font-family: "SF Mono", monospace; color: var(--ink-mute); font-weight: 400; }
+
+  /* ====== PLAYBOOK ====== */
+  .playbook-panel {
+    background: white; border: 1px solid var(--line);
+    border-radius: var(--r); box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column; min-height: 0; flex: 1;
+  }
+  .playbook-head {
+    padding: 12px 16px; border-bottom: 1px solid var(--line-soft);
+  }
+  .playbook-head h3 { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink-soft);
+    letter-spacing: .04em; text-transform: uppercase; }
+  .playbook-head .help { font-size: 11.5px; color: var(--ink-mute); margin-top: 4px; line-height: 1.5; }
+
+  .playbook-list { padding: 8px; overflow-y: auto; flex: 1; }
+  .playbook {
+    border: 1px solid var(--line-soft); border-radius: var(--r); padding: 10px 12px;
+    margin-bottom: 8px; transition: all .2s; position: relative;
+  }
+  .playbook:hover { border-color: var(--brand); background: var(--bg-soft); }
+  .playbook.running { border-color: var(--accent); background: var(--accent-soft); }
+  .playbook .pb-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .playbook .pb-num {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--ink); color: white; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .playbook .pb-name { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .playbook .pb-desc { font-size: 11.5px; color: var(--ink-soft); margin: 4px 0 8px; line-height: 1.5; }
+  .playbook .pb-target {
+    font-size: 10.5px; color: var(--ink-mute); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  }
+  .playbook .pb-target .target-tag {
+    font-family: "SF Mono", monospace; padding: 1px 6px;
+    background: white; border: 1px solid var(--line);
+    border-radius: 4px; font-weight: 500;
+  }
+  .playbook .pb-target .target-tag.linked {
+    background: var(--brand-soft); border-color: var(--brand); color: var(--brand-deep);
+    cursor: pointer; transition: all .15s;
+  }
+  .playbook .pb-target .target-tag.linked:hover { background: var(--brand); color: white; }
+  .playbook .steps { display: flex; flex-direction: column; gap: 4px; }
+  .pb-step {
+    display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center;
+    padding: 5px 8px; background: var(--bg-soft); border-radius: 5px; font-size: 11.5px;
+    color: var(--ink-soft); transition: all .15s;
+  }
+  .pb-step:hover { background: white; }
+  .pb-step .step-n { font-family: "SF Mono", monospace; font-weight: 700; color: var(--ink-mute); font-size: 10.5px; }
+  .pb-step .step-t { font-weight: 500; }
+  .pb-step .step-t code { font-family: "SF Mono", monospace; font-size: 10.5px; color: var(--brand-deep); background: white; padding: 0 4px; border-radius: 3px; }
+  .pb-step .step-go {
+    font-size: 10.5px; padding: 2px 7px; border-radius: 4px;
+    background: white; border: 1px solid var(--line); cursor: pointer;
+    color: var(--ink-soft); font-weight: 500; transition: all .15s;
+  }
+  .pb-step .step-go:hover { background: var(--brand); color: white; border-color: var(--brand); }
+  .pb-step .step-go.done { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); pointer-events: none; }
+  .pb-step .step-go.running { background: var(--accent); color: white; border-color: var(--accent); }
+  .pb-run-all {
+    margin-top: 8px; width: 100%; padding: 6px; font-size: 12px; font-weight: 600;
+    background: var(--ink); color: white; border: none; border-radius: 6px;
+    cursor: pointer; transition: all .15s;
+  }
+  .pb-run-all:hover { background: var(--brand); }
+  .pb-run-all:disabled { background: var(--line); color: var(--ink-mute); cursor: not-allowed; }
+
+  /* ====== EVENT STREAM(底部固定) ====== */
+  .event-bar {
+    background: var(--dash-bg); color: var(--dash-ink);
+    border-radius: var(--r) var(--r) 0 0;
+    margin: 14px -24px 0; padding: 10px 24px;
+    max-height: 200px; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .event-bar .ev-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--dash-line);
+  }
+  .event-bar .ev-head h4 {
+    margin: 0; font-size: 11px; color: var(--dash-mute);
+    letter-spacing: .08em; text-transform: uppercase; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .event-bar .ev-head h4 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok);
+    animation: pulse 1.6s infinite; }
+  .event-bar .ev-head .ev-actions { display: flex; gap: 4px; }
+  .ev-btn {
+    background: transparent; border: 1px solid var(--dash-line);
+    color: var(--dash-mute); padding: 3px 10px; font-size: 11px;
+    border-radius: 4px; cursor: pointer; font-family: "SF Mono", monospace;
+  }
+  .ev-btn:hover { color: var(--dash-ink); border-color: var(--dash-ink); }
+  .event-list { overflow-y: auto; font-family: "SF Mono", monospace; font-size: 11.5px; line-height: 1.7; }
+  .ev-row { display: grid; grid-template-columns: 70px 200px 1fr; gap: 12px; padding: 2px 0; }
+  .ev-row .ts { color: #475569; }
+  .ev-row .api { color: #7DD3FC; }
+  .ev-row .api .verb { color: #C7D2FE; font-weight: 600; }
+  .ev-row .ctx { color: #94A3B8; }
+  .ev-row .ctx .k { color: #94A3B8; }
+  .ev-row .ctx .s { color: #FDE68A; }
+  .ev-row .ctx .v { color: #6EE7B7; }
+  .ev-row .err { color: #FCA5A5; }
+  .ev-row .ok { color: #6EE7B7; }
+  .ev-row.new { animation: evrowin .4s; }
+  @keyframes evrowin { from { background: rgba(99,102,241,.2); transform: translateX(8px); } to { background: transparent; transform: translateX(0); } }
+
+  /* 状态颜色标识(用于剧本运行结果) */
+  .pulse-blue { animation: pulseblue .6s; }
+  @keyframes pulseblue { 0% { box-shadow: 0 0 0 0 rgba(14,165,233,.5); } 100% { box-shadow: 0 0 0 12px rgba(14,165,233,0); } }
+
+  /* Empty state */
+  .empty {
+    padding: 40px 20px; text-align: center; color: var(--ink-mute);
+    font-size: 13px; background: white; border: 1px dashed var(--line);
+    border-radius: var(--r);
+  }
+  .empty .ic { font-size: 28px; margin-bottom: 8px; opacity: .4; }
+
+  @media (max-width: 1100px) {
+    .main { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    .bid-card .row2 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .bid-card .row2 { grid-template-columns: 1fr; }
+    .wrap { padding: 12px 12px 0; }
+  }
+
+  /* ====== FLOW SWIMLANE ====== */
+  .flow-section {
+    margin-top: 16px;
+    background: white; border: 1px solid var(--line); border-radius: var(--r);
+    padding: 14px 16px; box-shadow: var(--shadow-sm);
+  }
+  .flow-section .head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .flow-section .head h2 {
+    font-size: 14px; margin: 0; font-weight: 700; color: var(--ink);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .flow-section .head h2 .ic {
+    width: 22px; height: 22px; border-radius: 6px; background: var(--brand-soft);
+    color: var(--brand-deep); display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .flow-section .head .sub { font-size: 11.5px; color: var(--ink-mute); font-weight: 400; }
+  .flow-section .head .right { display: flex; gap: 6px; align-items: center; }
+  .flow-legend { display: flex; gap: 10px; font-size: 11px; color: var(--ink-soft); }
+  .flow-legend .item { display: flex; align-items: center; gap: 4px; }
+  .flow-legend .swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .sw-done { background: var(--ok); }
+  .sw-prog { background: var(--brand); }
+  .sw-block { background: var(--danger); }
+  .sw-plan { background: #FCD34D; }
+  .sw-pend { background: var(--line); }
+  .flow-overview {
+    display: flex; gap: 16px; padding: 8px 12px; margin-bottom: 10px;
+    background: var(--bg-soft); border-radius: 6px; font-size: 12px;
+    color: var(--ink-soft); align-items: center; flex-wrap: wrap;
+  }
+  .flow-overview b { color: var(--ink); font-weight: 700; }
+  .flow-overview .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .pill.danger { background: var(--danger-soft); color: var(--danger); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+
+  .swimlane-wrap { overflow-x: auto; padding-bottom: 4px; }
+  .swimlane {
+    display: grid; grid-template-columns: 200px repeat(12, minmax(78px, 1fr));
+    gap: 4px; min-width: 1200px;
+  }
+  .swimlane .corner {
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 4px;
+    padding: 6px 8px; font-size: 11px; font-weight: 700; color: var(--ink-soft);
+    text-align: center; display: flex; align-items: center; justify-content: center;
+    height: 36px;
+  }
+  .swimlane .corner.client { text-align: left; justify-content: flex-start; }
+  .swimlane .client-cell {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; font-size: 12px; display: flex; flex-direction: column;
+    justify-content: center; gap: 3px; min-height: 64px;
+    box-shadow: 0 1px 2px rgba(15,30,51,.03);
+    transition: all .2s; position: relative; overflow: hidden;
+  }
+  .swimlane .client-cell::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--line);
+  }
+  .swimlane .client-cell.p0::before { background: var(--p0); }
+  .swimlane .client-cell.p1::before { background: var(--p1); }
+  .swimlane .client-cell.p2::before { background: var(--p2); }
+  .swimlane .client-cell:hover { box-shadow: var(--shadow); border-color: var(--brand); }
+  .swimlane .client-cell .c-name { font-weight: 700; color: var(--ink); font-size: 13.5px; }
+  .swimlane .client-cell .c-meta {
+    font-family: "SF Mono", monospace; font-size: 10.5px; color: var(--ink-mute);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .swimlane .client-cell .c-meta .badge-pri {
+    font-size: 9.5px; padding: 1px 5px; border-radius: 3px; font-weight: 700;
+  }
+  .swimlane .client-cell .c-progress {
+    height: 4px; background: var(--line); border-radius: 2px; overflow: hidden;
+    margin-top: 5px;
+  }
+  .swimlane .client-cell .c-progress .fill { height: 100%; background: var(--ok); transition: width .4s; }
+  .swimlane .client-cell .c-progress .fill.has-block { background: var(--danger); }
+
+  .node {
+    background: white; border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; min-height: 64px; cursor: pointer; position: relative;
+    transition: all .2s; display: flex; flex-direction: column; gap: 3px; justify-content: center;
+  }
+  .node:hover { transform: translateY(-2px); box-shadow: var(--shadow); z-index: 2; border-color: var(--brand); }
+  .node .n-name { font-size: 12.5px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+  .node .n-date { font-size: 10.5px; color: var(--ink-mute); font-family: "SF Mono", monospace; }
+  .node .n-icon { position: absolute; top: 6px; right: 6px; font-size: 11px; }
+  .node.done { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); border-color: var(--ok); }
+  .node.done .n-name { color: #065F46; }
+  .node.done .n-date { color: #047857; }
+  .node.progress { background: linear-gradient(135deg, #F0F9FF, #E0F2FE); border-color: var(--brand); animation: nodepulse 2.4s infinite; }
+  .node.progress .n-name { color: var(--brand-deep); }
+  .node.blocked { background: linear-gradient(135deg, #FEF2F2, #FEE2E2); border-color: var(--danger); border-width: 1.5px; }
+  @keyframes nodepulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(14,165,233,.3); }
+    50% { box-shadow: 0 0 0 4px rgba(14,165,233,0); }
+  }
+  .node.blocked .n-name { color: #991B1B; }
+  .node.blocked::after {
+    content: ""; position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--danger);
+    animation: pulse 1.4s infinite;
+  }
+  .node.planned { background: #FFFBEB; border-color: #FCD34D; border-style: dashed; }
+  .node.pending { background: white; border-color: var(--line); opacity: .55; }
+  .node.critical { border: 2px solid var(--danger); }
+  .node.urgent::before {
+    content: "⚡"; position: absolute; top: -2px; left: -2px;
+    background: var(--danger); color: white; font-size: 8px;
+    width: 14px; height: 14px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .node-detail-popup {
+    position: absolute; z-index: 100; background: var(--dash-bg); color: var(--dash-ink);
+    border-radius: 8px; padding: 12px 14px; width: 280px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.3);
+    font-size: 12px; line-height: 1.6; display: none;
+  }
+  .node-detail-popup.show { display: block; }
+  .node-detail-popup h5 { margin: 0 0 8px; font-size: 13px; color: white; display: flex; align-items: center; gap: 6px; }
+  .node-detail-popup .row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed rgba(255,255,255,.1); }
+  .node-detail-popup .row:last-child { border-bottom: none; }
+  .node-detail-popup .row .k { color: var(--dash-mute); }
+  .node-detail-popup .row .v { color: var(--dash-ink); font-weight: 500; }
+  .node-detail-popup .actions { display: flex; gap: 4px; margin-top: 8px; }
+  .node-detail-popup .actions button {
+    flex: 1; padding: 4px 8px; font-size: 11px; border: 1px solid var(--dash-line);
+    background: transparent; color: var(--dash-ink); border-radius: 4px; cursor: pointer;
+  }
+  .node-detail-popup .actions button:hover { background: var(--brand); border-color: var(--brand); }
+  .node-detail-popup .actions button.primary { background: var(--brand); border-color: var(--brand); }
+  .node-detail-popup .actions button.danger { background: var(--danger); border-color: var(--danger); }
+
+  /* view-panel: 看板/流程两个视图切换 */
+  .view-panel { animation: fadein .25s; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .flow-view { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .flow-view .flow-section { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .flow-view .swimlane-wrap { flex: 1; overflow: auto; min-height: 0; }
+  .flow-view .head { padding: 0 4px; }
+  .flow-view .head h2 .ic {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--brand), var(--accent));
+    color: white; font-size: 14px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">B</div>
+      <h1>投标看板 <span class="sub">/ BID BOARD v2 · 支持任意 agent & skill 调用</span></h1>
+    </div>
+    <div class="nav">
+      <a class="nav-link active" data-view="board">📊 看板</a>
+      <a class="nav-link" data-view="flow">⇉ 流程</a>
+      <a href="bid-board-management-v2-20260810.html" class="nav-link">⚙️ 管理</a>
+      <div class="sep"></div>
+      <div class="live-indicator">
+        <span class="dot"></span>
+        <span id="live-ts">--:--:--</span> · live
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats" id="stats"></div>
+
+  <!-- VIEW: BOARD (cards + playbook) -->
+  <div class="main view-panel" data-view="board">
+    <div class="col">
+      <div class="col-head">
+        <h2>客户状态 · 按优先级</h2>
+        <div class="filter">
+          <button class="filter-btn active" data-f="all">全部 <span id="cnt-all">0</span></button>
+          <button class="filter-btn" data-f="P0">P0 <span id="cnt-p0">0</span></button>
+          <button class="filter-btn" data-f="P1">P1 <span id="cnt-p1">0</span></button>
+          <button class="filter-btn" data-f="P2">P2 <span id="cnt-p2">0</span></button>
+        </div>
+      </div>
+      <div class="card-list" id="card-list"></div>
+    </div>
+
+    <div class="col">
+      <div class="col-head">
+        <h2>剧本 · Playbook</h2>
+        <button class="filter-btn" id="open-second" style="cursor:pointer">📑 开同步 tab</button>
+      </div>
+      <div class="playbook-panel">
+        <div class="playbook-head">
+          <h3>按故事触发</h3>
+          <div class="help">点单步只跑那一步,点"跑这个剧本"按顺序跑完全部。看板卡片实时更新。</div>
+        </div>
+        <div class="playbook-list" id="playbook-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: FLOW (swimlane) -->
+  <div class="flow-view view-panel" data-view="flow" style="display: none;">
+    <div class="flow-section">
+      <div class="head">
+        <h2><span class="ic">⇉</span>投标流程 · Swimlane <span class="sub">/ 一眼看清每个客户卡在哪一步,阻塞在哪一节点</span></h2>
+        <div class="right">
+          <div class="flow-legend">
+            <div class="item"><div class="swatch sw-done"></div>完成</div>
+            <div class="item"><div class="swatch sw-prog"></div>进行中</div>
+            <div class="item"><div class="swatch sw-block"></div>阻塞</div>
+            <div class="item"><div class="swatch sw-plan"></div>计划</div>
+            <div class="item"><div class="swatch sw-pend"></div>未开始</div>
+          </div>
+        </div>
+      </div>
+      <div class="flow-overview" id="flow-overview"></div>
+      <div class="swimlane-wrap">
+        <div class="swimlane" id="swimlane"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENT STREAM -->
+  <div class="event-bar">
+    <div class="ev-head">
+      <h4><span class="dot"></span>实时事件流 · 所有 agent / skill 的写入都在这里</h4>
+      <div class="ev-actions">
+        <button class="ev-btn" id="ev-clear">清空</button>
+        <button class="ev-btn" id="ev-pause">⏸ 暂停</button>
+        <button class="ev-btn" id="ev-export">↓ 导出</button>
+      </div>
+    </div>
+    <div class="event-list" id="event-list"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 共享数据层(跨 tab 同步)
+// ============================================================
+const STORAGE_KEY = 'bid_board_v2';
+const CHANNEL = 'bidboard_v2';
+const EVENTS_KEY = 'bid_board_events_v2';
+const EVENTS_LIMIT = 200;
+
+// ============================================================
+// 流程模板(12 步标准投标流程)
+// ============================================================
+const FLOW_TEMPLATE = [
+  { id: 'sales-bid',      name: '销售应标',      days_before_due: 30, owner: '售前',  ai: ['bid-news-collection'] },
+  { id: 'buy-rfp',        name: '购买标书',      days_before_due: 14, owner: '商务',  ai: [] },
+  { id: 'quote',          name: '报价',          days_before_due: 10, owner: '商务',  ai: ['quote-generation-v3'] },
+  { id: 'case',           name: '准备案例',      days_before_due: 10, owner: '售前',  ai: [] },
+  { id: 'qualification',  name: '人员资质',      days_before_due: 7,  owner: 'HR',    ai: ['resume-builder'] },
+  { id: 'tech-solution',  name: '技术方案',      days_before_due: 14, owner: '技术',  ai: ['content-longform'] },
+  { id: 'biz-solution',   name: '商务方案',      days_before_due: 10, owner: '商务',  ai: ['content-longform'] },
+  { id: 'draft',          name: '初稿',          days_before_due: 7,  owner: '技术',  ai: ['content-longform'] },
+  { id: 'final',          name: '定稿',          days_before_due: 3,  owner: 'PM',    ai: ['bid-file-review'] },
+  { id: 'seal',           name: '封标',          days_before_due: 0,  owner: 'PM',    ai: ['gate-checker'] },
+  { id: 'present',        name: '讲标',          days_before_due: -1, owner: 'PM',    ai: [] },
+  { id: 'notice',         name: '公示',          days_before_due: -30, owner: '商务', ai: [] },
+  { id: 'retro',          name: '复盘',          days_before_due: -60, owner: 'PM',   ai: [] }
+];
+
+// 根据 due_at 自动计算每个节点的截止日期
+function calcFlowDates(due_at) {
+  if (!due_at || due_at === '持续') return null;
+  const due = new Date(due_at.replace(' ', 'T'));
+  if (isNaN(due.getTime())) return null;
+  return FLOW_TEMPLATE.map(t => {
+    const d = new Date(due);
+    d.setDate(d.getDate() - t.days_before_due);
+    return {
+      ...t,
+      plan_end: d.toISOString().slice(0, 10)
+    };
+  });
+}
+
+// 根据 stage 反推进度
+function inferFlowProgress(bid) {
+  if (!bid.flow) return null;
+  const stageMap = {
+    '跟踪': 0, '审查': 1, '报价': 2, '修订': 7, '封标': 9, '述标': 10
+  };
+  const startIdx = stageMap[bid.stage] ?? 0;
+  bid.flow.nodes.forEach((n, i) => {
+    if (n.status === 'pending' && i < startIdx) n.status = 'done';
+    else if (n.status === 'pending' && i === startIdx) n.status = 'progress';
+  });
+  return bid.flow;
+}
+
+const initialData = {
+  bids: [
+    { code: 'dgyhst2026', client: '东莞银行', stage: '修订', priority: 'P0',
+      due_at: '2026-08-13 17:00', ai_ready: ['JSON 校验', '格式检查'],
+      human_todo: ['报价签字', '述标要点过'], block: '', last_sync: '09:30',
+      timeline: [
+        { ts: '08-30 09:30', tag: 'bid-news-collection', txt: '新商机入 bids,优先级 P0' },
+        { ts: '08-30 14:20', tag: 'bid-file-review', txt: '100+ 项检查完成' }
+      ],
+      flow: {
+        blocked_node: 'quote',
+        nodes: [
+          { id: 'sales-bid', status: 'done', actual_end: '2026-07-15' },
+          { id: 'buy-rfp', status: 'done', actual_end: '2026-07-30' },
+          { id: 'quote', status: 'blocked', block_reason: '报价签字待终签' },
+          { id: 'case', status: 'done', actual_end: '2026-08-05' },
+          { id: 'qualification', status: 'done', actual_end: '2026-08-06' },
+          { id: 'tech-solution', status: 'done', actual_end: '2026-08-08' },
+          { id: 'biz-solution', status: 'done', actual_end: '2026-08-09' },
+          { id: 'draft', status: 'done', actual_end: '2026-08-10' },
+          { id: 'final', status: 'progress' },
+          { id: 'seal', status: 'pending' },
+          { id: 'present', status: 'pending' },
+          { id: 'notice', status: 'pending' },
+          { id: 'retro', status: 'pending' }
+        ]
+      } },
+    { code: 'nfh2026', client: '农发行', stage: '修订', priority: 'P1',
+      due_at: '2026-08-16 18:00', ai_ready: ['差异点比对'],
+      human_todo: ['技术方案重写'], block: '', last_sync: '09:30',
+      timeline: [
+        { ts: '07-15 09:30', tag: 'bid-news-collection', txt: '老项目延续跟踪' },
+        { ts: '08-09 16:00', tag: 'content-creator', txt: 'V1.3 差异点比对' }
+      ],
+      flow: {
+        blocked_node: null,
+        nodes: [
+          { id: 'sales-bid', status: 'done', actual_end: '2026-06-10' },
+          { id: 'buy-rfp', status: 'done', actual_end: '2026-07-20' },
+          { id: 'quote', status: 'done', actual_end: '2026-07-25' },
+          { id: 'case', status: 'done', actual_end: '2026-08-01' },
+          { id: 'qualification', status: 'done', actual_end: '2026-08-02' },
+          { id: 'tech-solution', status: 'progress' },
+          { id: 'biz-solution', status: 'progress' },
+          { id: 'draft', status: 'pending' },
+          { id: 'final', status: 'pending' },
+          { id: 'seal', status: 'pending' },
+          { id: 'present', status: 'pending' },
+          { id: 'notice', status: 'pending' },
+          { id: 'retro', status: 'pending' }
+        ]
+      } },
+    { code: 'unionpay-intl26-1', client: '银联国际 #1', stage: '审查', priority: 'P2',
+      due_at: '2026-08-20 17:00', ai_ready: ['检查表就绪'],
+      human_todo: [], block: '', last_sync: '09:30',
+      timeline: [
+        { ts: '08-01 09:30', tag: 'bid-news-collection', txt: '新标讯捕获' }
+      ],
+      flow: {
+        blocked_node: null,
+        nodes: [
+          { id: 'sales-bid', status: 'done', actual_end: '2026-08-01' },
+          { id: 'buy-rfp', status: 'done', actual_end: '2026-08-06' },
+          { id: 'quote', status: 'planned' },
+          { id: 'case', status: 'pending' },
+          { id: 'qualification', status: 'pending' },
+          { id: 'tech-solution', status: 'pending' },
+          { id: 'biz-solution', status: 'pending' },
+          { id: 'draft', status: 'pending' },
+          { id: 'final', status: 'pending' },
+          { id: 'seal', status: 'pending' },
+          { id: 'present', status: 'pending' },
+          { id: 'notice', status: 'pending' },
+          { id: 'retro', status: 'pending' }
+        ]
+      } },
+    { code: 'unionpay-intl26-2', client: '银联国际 #2', stage: '审查', priority: 'P2',
+      due_at: '2026-08-20 17:00', ai_ready: ['检查表就绪'],
+      human_todo: [], block: '分包边界未明', last_sync: '09:30',
+      timeline: [],
+      flow: {
+        blocked_node: 'quote',
+        nodes: [
+          { id: 'sales-bid', status: 'done', actual_end: '2026-08-01' },
+          { id: 'buy-rfp', status: 'done', actual_end: '2026-08-06' },
+          { id: 'quote', status: 'blocked', block_reason: '分包边界未明' },
+          { id: 'case', status: 'pending' },
+          { id: 'qualification', status: 'pending' },
+          { id: 'tech-solution', status: 'pending' },
+          { id: 'biz-solution', status: 'pending' },
+          { id: 'draft', status: 'pending' },
+          { id: 'final', status: 'pending' },
+          { id: 'seal', status: 'pending' },
+          { id: 'present', status: 'pending' },
+          { id: 'notice', status: 'pending' },
+          { id: 'retro', status: 'pending' }
+        ]
+      } },
+    { code: 'unionpay-intl26-3', client: '银联国际 #3', stage: '审查', priority: 'P2',
+      due_at: '2026-08-20 17:00', ai_ready: [],
+      human_todo: [], block: '', last_sync: '09:30',
+      timeline: [],
+      flow: {
+        blocked_node: null,
+        nodes: [
+          { id: 'sales-bid', status: 'done', actual_end: '2026-08-01' },
+          { id: 'buy-rfp', status: 'progress' },
+          { id: 'quote', status: 'pending' },
+          { id: 'case', status: 'pending' },
+          { id: 'qualification', status: 'pending' },
+          { id: 'tech-solution', status: 'pending' },
+          { id: 'biz-solution', status: 'pending' },
+          { id: 'draft', status: 'pending' },
+          { id: 'final', status: 'pending' },
+          { id: 'seal', status: 'pending' },
+          { id: 'present', status: 'pending' },
+          { id: 'notice', status: 'pending' },
+          { id: 'retro', status: 'pending' }
+        ]
+      } },
+    { code: 'payh26', client: '平安银行', stage: '跟踪', priority: 'P2',
+      due_at: '持续', ai_ready: ['标讯监控中'],
+      human_todo: [], block: '', last_sync: '09:30',
+      timeline: [],
+      flow: { blocked_node: null, nodes: FLOW_TEMPLATE.map(t => ({ id: t.id, status: 'pending' })) } }
+  ]
+};
+
+let data = loadData();
+let events = loadEvents();
+let currentFilter = 'all';
+let paused = false;
+let subs = new Set();
+let bc = null;
+try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
+
+// 持久化
+function loadData() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(e) {}
+  return JSON.parse(JSON.stringify(initialData));
+}
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  if (bc) bc.postMessage({ type: 'sync', data, events });
+}
+function loadEvents() {
+  try { const raw = localStorage.getItem(EVENTS_KEY); if (raw) return JSON.parse(raw); } catch(e) {}
+  return [];
+}
+function saveEvents() { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); }
+
+// 跨 tab 同步
+if (bc) {
+  bc.onmessage = (e) => {
+    if (e.data.type === 'sync') {
+      data = e.data.data;
+      events = e.data.events || events;
+      renderAll();
+      addSysEvent('跨 tab 同步接收');
+    }
+  };
+}
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_KEY && e.newValue) {
+    try { data = JSON.parse(e.newValue); renderAll(); addSysEvent('storage 事件同步'); } catch(e) {}
+  }
+  if (e.key === EVENTS_KEY && e.newValue) {
+    try { events = JSON.parse(e.newValue); renderEvents(); } catch(e) {}
+  }
+});
+
+function nowHM() { return new Date().toTimeString().slice(0, 8); }
+function nowFull() { return new Date().toTimeString().slice(0, 8) + '.' + String(new Date().getMilliseconds()).padStart(3, '0').slice(0,2); }
+
+// ============================================================
+// 公共 API(暴露给任意 agent/skill)
+// ============================================================
+window.BidBoard = {
+  setStage(code, stage) { update(code, { stage }, 'setStage'); },
+  setPriority(code, priority) { update(code, { priority }, 'setPriority'); },
+  setBlock(code, block) { update(code, { block }, 'setBlock'); },
+  setHumanTodo(code, human_todo) { update(code, { human_todo: Array.isArray(human_todo) ? human_todo : [human_todo] }, 'setHumanTodo'); },
+  setDueAt(code, due_at) { update(code, { due_at }, 'setDueAt'); },
+
+  addAiReady(code, item, sourceTag) {
+    const b = find(code); if (!b) return;
+    if (!b.ai_ready.includes(item)) {
+      b.ai_ready = [...b.ai_ready, item];
+      if (sourceTag) b.timeline = [...(b.timeline || []), { ts: nowHM(), tag: sourceTag, txt: item }];
+      saveData(); renderAll();
+      logEvent('addAiReady', code, { item, source: sourceTag });
+      flashCard(code, item);
+      notify({ type: 'addAiReady', code, item });
+    }
+  },
+  removeAiReady(code, item) {
+    const b = find(code); if (!b) return;
+    b.ai_ready = b.ai_ready.filter(x => x !== item);
+    saveData(); renderAll();
+    logEvent('removeAiReady', code, { item });
+    notify({ type: 'removeAiReady', code, item });
+  },
+  write(code, patch, sourceTag) { update(code, patch, 'write', sourceTag); },
+
+  create(bid) {
+    if (find(bid.code)) { addSysEvent(`客户已存在: ${bid.code}`, 'warn'); return; }
+    const nb = Object.assign({
+      priority: 'P2', stage: '跟踪', ai_ready: [], human_todo: [],
+      block: '', due_at: '持续', last_sync: nowHM(), timeline: []
+    }, bid);
+    data.bids.push(nb);
+    saveData(); renderAll();
+    logEvent('create', bid.code, bid);
+    notify({ type: 'create', code: bid.code });
+  },
+  read(code) { return find(code); },
+  list() { return [...data.bids]; },
+  stats() {
+    const s = { total: data.bids.length, p0: 0, p1: 0, p2: 0, ready: 0, totalAi: 0, blocked: 0, urgent: 0 };
+    data.bids.forEach(b => {
+      s[b.priority.toLowerCase()]++;
+      s.totalAi += b.ai_ready.length;
+      if (b.ai_ready.length > 0) s.ready++;
+      if (b.block) s.blocked++;
+      if (b.priority === 'P0') s.urgent++;
+    });
+    s.readyRate = s.total > 0 ? Math.round(s.ready / s.total * 100) : 0;
+    return s;
+  },
+  subscribe(cb) { subs.add(cb); return () => subs.delete(cb); },
+  emit(evt) { notify(evt); }
+};
+
+function find(code) { return data.bids.find(b => b.code === code); }
+function update(code, patch, api, sourceTag) {
+  const b = find(code);
+  if (!b) { addSysEvent(`客户不存在: ${code}`, 'err'); return; }
+  Object.assign(b, patch, { last_sync: nowHM() });
+  if (sourceTag) b.timeline = [...(b.timeline || []), { ts: nowHM(), tag: sourceTag, txt: Object.keys(patch).join(',') }];
+  saveData(); renderAll();
+  Object.keys(patch).forEach(k => {
+    logEvent('update.' + k, code, { value: patch[k] });
+    notify({ type: 'update', code, field: k, value: patch[k] });
+  });
+  flashCard(code, Object.values(patch).join(' / '));
+}
+
+function notify(evt) {
+  subs.forEach(cb => { try { cb(evt); } catch(e) {} });
+  window.dispatchEvent(new CustomEvent('bidboard:change', { detail: evt }));
+}
+
+// ============================================================
+// 事件流
+// ============================================================
+function logEvent(api, code, payload) {
+  if (paused) return;
+  const ev = { ts: nowFull(), api, code, payload, type: 'api' };
+  events.unshift(ev);
+  if (events.length > EVENTS_LIMIT) events = events.slice(0, EVENTS_LIMIT);
+  saveEvents();
+  if (bc) bc.postMessage({ type: 'event', ev });
+  renderEvents(ev);
+}
+function addSysEvent(msg, level) {
+  if (paused) return;
+  const ev = { ts: nowFull(), msg, level: level || 'info', type: 'sys' };
+  events.unshift(ev);
+  if (events.length > EVENTS_LIMIT) events = events.slice(0, EVENTS_LIMIT);
+  saveEvents();
+  renderEvents(ev);
+}
+
+function renderEvents(newEv) {
+  const list = document.getElementById('event-list');
+  if (!newEv) {
+    list.innerHTML = events.slice(0, 60).map(evHTML).join('');
+    return;
+  }
+  const html = evHTML(newEv);
+  list.insertAdjacentHTML('afterbegin', `<div class="ev-row new">${html}</div>`);
+  if (list.children.length > 60) list.lastElementChild.remove();
+}
+function evHTML(ev) {
+  if (ev.type === 'sys') {
+    const cls = ev.level === 'err' ? 'err' : ev.level === 'warn' ? '' : '';
+    return `<span class="ts">${ev.ts}</span><span class="api ${cls}">[system]</span><span class="ctx">${ev.msg}</span>`;
+  }
+  const payload = ev.payload ? ` <span class="k">${
+    Object.entries(ev.payload).map(([k,v]) => `${k}=<span class="s">${JSON.stringify(v)}</span>`).join(' ')
+  }</span>` : '';
+  return `<span class="ts">${ev.ts}</span><span class="api"><span class="verb">BidBoard.${ev.api}</span>(<span class="s">"${ev.code}"</span>)</span><span class="ctx">${payload}</span>`;
+}
+
+// ============================================================
+// 渲染
+// ============================================================
+function renderAll() {
+  renderStats(); renderCards(); renderPlaybook(); updateCounters();
+  renderFlowOverview(); renderSwimlane();
+  document.getElementById('live-ts').textContent = nowHM();
+}
+function renderStats() {
+  const s = window.BidBoard.stats();
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="k">在跑客户</div><div class="v">${s.total}<small>家</small></div></div>
+    <div class="stat alert" id="st-p0"><div class="k">P0 紧急</div><div class="v">${s.p0}<small>个</small></div></div>
+    <div class="stat warn" id="st-p1"><div class="k">P1 本周</div><div class="v">${s.p1}<small>个</small></div></div>
+    <div class="stat" id="st-p2"><div class="k">P2 跟踪</div><div class="v">${s.p2}<small>个</small></div></div>
+    <div class="stat"><div class="k">阻塞</div><div class="v">${s.blocked}<small>个</small>${s.blocked>0?'<span class="delta err">⚠ 需处理</span>':''}</div></div>
+    <div class="stat ok"><div class="k">AI 就绪率</div><div class="v">${s.readyRate}<small>%</small></div></div>
+  `;
+  ['p0','p1','p2'].forEach(k => {
+    const el = document.getElementById('st-' + k);
+    if (el) { const v = el.querySelector('.v'); v.classList.add('flash'); setTimeout(() => v.classList.remove('flash'), 600); }
+  });
+}
+function updateCounters() {
+  const s = window.BidBoard.stats();
+  document.getElementById('cnt-all').textContent = s.total;
+  document.getElementById('cnt-p0').textContent = s.p0;
+  document.getElementById('cnt-p1').textContent = s.p1;
+  document.getElementById('cnt-p2').textContent = s.p2;
+}
+function renderCards() {
+  const list = document.getElementById('card-list');
+  const filtered = currentFilter === 'all' ? data.bids : data.bids.filter(b => b.priority === currentFilter);
+  // 按优先级 + 截止日排序
+  filtered.sort((a, b) => {
+    const order = { 'P0': 0, 'P1': 1, 'P2': 2 };
+    if (order[a.priority] !== order[b.priority]) return order[a.priority] - order[b.priority];
+    return (a.due_at || '').localeCompare(b.due_at || '');
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="ic">📭</div>当前筛选下无客户</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(cardHTML).join('');
+}
+function cardHTML(b) {
+  const aiHtml = b.ai_ready.length > 0
+    ? `<div class="ai-chips">${b.ai_ready.map(x => `<span class="ai-chip">${x}</span>`).join('')}</div>`
+    : '<span class="empty">—</span>';
+  const humanVal = b.human_todo.length > 0 ? b.human_todo.join(' · ') : '<span class="empty">—</span>';
+  const blockVal = b.block ? b.block : '<span class="empty">无</span>';
+  const dueHtml = b.due_at === '持续' ? '持续跟踪'
+    : `<b>${b.due_at}</b>`;
+  return `
+    <div class="bid-card ${b.priority.toLowerCase()}" data-code="${b.code}">
+      <div class="strip"></div>
+      <div class="body">
+        <div class="row1">
+          <span class="badge-pri pri-${b.priority.toLowerCase()}">${b.priority}</span>
+          <span class="client">${b.client}</span>
+          <span class="badge-code linked" onclick="scrollToCard('${b.code}')" title="点击定位">${b.code}</span>
+          <span class="badge-stage st-${b.stage}">${b.stage}</span>
+          <span class="spacer"></span>
+          <span class="due">截止 ${dueHtml}</span>
+          <button class="expand-btn" onclick="toggleCard('${b.code}')" title="展开详情">⌄</button>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <div class="lbl">AI 就绪 · ${b.ai_ready.length}</div>
+            <div class="val ai">${aiHtml}</div>
+          </div>
+          <div class="field">
+            <div class="lbl">你要做的</div>
+            <div class="val ${b.human_todo.length > 0 ? 'human' : 'empty'}">${humanVal}</div>
+          </div>
+          <div class="field">
+            <div class="lbl">阻塞</div>
+            <div class="val ${b.block ? 'block' : 'empty'}">${blockVal}</div>
+          </div>
+          <div class="field">
+            <div class="lbl">同步</div>
+            <div class="val" style="font-family: 'SF Mono', monospace; font-size: 11.5px; color: var(--ink-mute);">${b.last_sync || '—'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="detail-grid">
+          <div>
+            <div style="font-size: 11px; color: var(--ink-mute); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px;">API 调用意图</div>
+            <div class="api-block">
+<span class="k">BidBoard</span>.<span class="v">addAiReady</span>(<span class="s">"${b.code}"</span>, <span class="s">"..."</span>)
+<span class="k">BidBoard</span>.<span class="v">write</span>(<span class="s">"${b.code}"</span>, { <span class="k">stage</span>: <span class="s">"${b.stage}"</span> })
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--ink-mute); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px;">最近事件</div>
+            <div class="timeline">
+              ${(b.timeline || []).slice().reverse().slice(0, 5).map(e => `<div class="ev"><span class="ts">${e.ts}</span><span class="tag">${e.tag}</span> ${e.txt}</div>`).join('') || '<div class="ev" style="color: var(--ink-mute);">暂无</div>'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function flashCard(code, msg) {
+  const el = document.querySelector(`.bid-card[data-code="${code}"]`);
+  if (el) {
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+    // 显示事件提示
+    let ev = el.querySelector('.card-event');
+    if (!ev) {
+      ev = document.createElement('div');
+      ev.className = 'card-event';
+      el.appendChild(ev);
+    }
+    ev.innerHTML = `<span class="ts">${nowHM()}</span> · ${msg}`;
+    clearTimeout(ev._t);
+    ev._t = setTimeout(() => ev.classList.add('hide'), 4000);
+  }
+}
+window.toggleCard = (code) => {
+  const el = document.querySelector(`.bid-card[data-code="${code}"]`);
+  if (el) {
+    el.classList.toggle('expanded');
+    const btn = el.querySelector('.expand-btn');
+    if (btn) btn.textContent = el.classList.contains('expanded') ? '⌃' : '⌄';
+  }
+};
+window.scrollToCard = (code) => {
+  document.querySelectorAll('.bid-card').forEach(c => c.style.boxShadow = '');
+  const el = document.querySelector(`.bid-card[data-code="${code}"]`);
+  if (el) {
+    el.style.boxShadow = '0 0 0 2px var(--brand)';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => el.style.boxShadow = '', 2000);
+  }
+};
+
+// ============================================================
+// 剧本
+// ============================================================
+const PLAYBOOKS = [
+  {
+    id: 'pb-collect',
+    name: '09:30 标讯采集跑完',
+    desc: '拉 40+ 渠道,新商机入 bids,自动评估优先级',
+    target: ['影响全部 P2 客户'],
+    steps: [
+      { name: '采集完成', api: () => {
+          // 模拟:把银联 #1 升 P1
+          window.BidBoard.setPriority('unionpay-intl26-1', 'P1');
+          window.BidBoard.addAiReady('unionpay-intl26-1', '标讯命中', 'bid-news-collection');
+      } }
+    ]
+  },
+  {
+    id: 'pb-dongguan',
+    name: '东莞银行封标流水线',
+    desc: '单客户从审查到封标的全流程,4 步走完',
+    target: ['dgyhst2026'],
+    steps: [
+      { name: '审查 100+ 项', api: () => {
+          window.BidBoard.addAiReady('dgyhst2026', '100+ 项检查完成', 'bid-file-review');
+      } },
+      { name: '门禁全过', api: () => {
+          window.BidBoard.addAiReady('dgyhst2026', '门禁:JSON/格式/公式 全过', 'gate');
+          window.BidBoard.setStage('dgyhst2026', '封标');
+      } },
+      { name: '阻塞:签字', api: () => {
+          window.BidBoard.setBlock('dgyhst2026', '报价签字');
+      } },
+      { name: '封标完成', api: () => {
+          window.BidBoard.setStage('dgyhst2026', '述标');
+          window.BidBoard.setBlock('dgyhst2026', '');
+          window.BidBoard.setPriority('dgyhst2026', 'P2');
+          window.BidBoard.addAiReady('dgyhst2026', '封标完成', 'gate');
+          window.BidBoard.setHumanTodo('dgyhst2026', ['5 分钟述标要点过']);
+      } }
+    ]
+  },
+  {
+    id: 'pb-nfh',
+    name: '农发行 V1.4 修订',
+    desc: '技术方案修订,3 步:差异点比对 → 客户化 → BOM',
+    target: ['nfh2026'],
+    steps: [
+      { name: '差异点比对', api: () => {
+          window.BidBoard.addAiReady('nfh2026', '差异点比对 3 处', 'content-creator');
+          window.BidBoard.addAiReady('nfh2026', '客户化段落', 'content-creator');
+      } },
+      { name: 'BOM v1', api: () => {
+          window.BidBoard.addAiReady('nfh2026', 'BOM v1', 'quote-generation-v3');
+          window.BidBoard.setBlock('nfh2026', '报价签字');
+      } },
+      { name: '解除阻塞', api: () => {
+          window.BidBoard.setBlock('nfh2026', '');
+      } }
+    ]
+  },
+  {
+    id: 'pb-unionpay',
+    name: '银联 #1 审查评分',
+    desc: '重保三标包首个评分,影响优先级',
+    target: ['unionpay-intl26-1'],
+    steps: [
+      { name: '审查评分', api: () => {
+          window.BidBoard.addAiReady('unionpay-intl26-1', '审查评分 92', 'bid-file-review');
+          window.BidBoard.setPriority('unionpay-intl26-1', 'P1');
+          window.BidBoard.setStage('unionpay-intl26-1', '报价');
+          window.BidBoard.setHumanTodo('unionpay-intl26-1', ['看评分 → 决定是否进入报价']);
+      } }
+    ]
+  },
+  {
+    id: 'pb-new',
+    name: '新商机入 bids',
+    desc: '新增客户卡片(国信证券)',
+    target: ['影响看板卡片数'],
+    steps: [
+      { name: '新增客户', api: () => {
+          window.BidBoard.create({
+            code: 'gxzq260512', client: '国信证券', stage: '审查',
+            due_at: '2026-08-25 17:00', priority: 'P2',
+            ai_ready: ['新商机入 bids'],
+            human_todo: ['看评分决定是否进报价'],
+            timeline: [{ ts: nowHM(), tag: 'bid-news-collection', txt: '新商机入 bids' }]
+          });
+      } }
+    ]
+  }
+];
+
+// ============================================================
+// Flow Swimlane 渲染
+// ============================================================
+function renderFlowOverview() {
+  let totalNodes = 0, doneNodes = 0, progNodes = 0, blockedNodes = 0, plannedNodes = 0;
+  let urgentBlocked = 0;
+  const today = new Date('2026-08-10');
+
+  data.bids.forEach(b => {
+    if (!b.flow) return;
+    b.flow.nodes.forEach(n => {
+      totalNodes++;
+      if (n.status === 'done') doneNodes++;
+      else if (n.status === 'progress') progNodes++;
+      else if (n.status === 'blocked') { blockedNodes++; urgentBlocked++; }
+      else if (n.status === 'planned') plannedNodes++;
+    });
+  });
+
+  // 紧急阻塞 = 阻塞且距截止 ≤ 5 天
+  data.bids.forEach(b => {
+    if (!b.flow || !b.due_at || b.due_at === '持续') return;
+    const due = new Date(b.due_at.replace(' ', 'T'));
+    const daysToDue = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+    if (daysToDue <= 5 && b.flow.nodes.some(n => n.status === 'blocked')) urgentBlocked++;
+  });
+
+  document.getElementById('flow-overview').innerHTML = `
+    <span><b>${data.bids.length}</b> 客户在跑</span>
+    <span>·</span>
+    <span>流程节点 <b>${totalNodes}</b> 个</span>
+    <span>·</span>
+    <span><span class="pill ok">完成 ${doneNodes}</span></span>
+    <span><span class="pill" style="background: var(--brand-soft); color: var(--brand-deep);">进行 ${progNodes}</span></span>
+    <span><span class="pill" style="background: #FEF3C7; color: #92400E;">计划 ${plannedNodes}</span></span>
+    <span><span class="pill ${blockedNodes > 0 ? 'danger' : ''}">阻塞 ${blockedNodes}</span></span>
+    ${urgentBlocked > 0 ? `<span style="margin-left: auto;">⚠ <b style="color: var(--danger);">${urgentBlocked}</b> 个客户紧急阻塞(≤ 5 天截止)</span>` : ''}
+  `;
+}
+
+function renderSwimlane() {
+  const wrap = document.getElementById('swimlane');
+  let html = '';
+
+  // 表头
+  html += `<div class="corner client">客户 / 节点</div>`;
+  FLOW_TEMPLATE.forEach(t => {
+    html += `<div class="corner" title="${t.name} (${t.days_before_due >= 0 ? 'D-' + t.days_before_due : 'D+' + Math.abs(t.days_before_due)}) · 负责人: ${t.owner}">
+      <div style="text-align: center;">
+        <div>${t.name}</div>
+        <div style="font-size: 9.5px; color: var(--ink-mute); font-family: 'SF Mono', monospace; margin-top: 1px;">
+          ${t.days_before_due >= 0 ? 'D-' + t.days_before_due : 'D+' + Math.abs(t.days_before_due)}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // 每个客户一行
+  const sortedBids = [...data.bids].sort((a, b) => {
+    const order = { 'P0': 0, 'P1': 1, 'P2': 2 };
+    if (order[a.priority] !== order[b.priority]) return order[a.priority] - order[b.priority];
+    return (a.due_at || '').localeCompare(b.due_at || '');
+  });
+
+  sortedBids.forEach(b => {
+    if (!b.flow) return;
+    const flowDates = calcFlowDates(b.due_at) || [];
+    const doneCount = b.flow.nodes.filter(n => n.status === 'done').length;
+    const progCount = b.flow.nodes.filter(n => n.status === 'progress').length;
+    const blockedCount = b.flow.nodes.filter(n => n.status === 'blocked').length;
+    const total = b.flow.nodes.length;
+    const progress = Math.round((doneCount / total) * 100);
+    const hasBlock = blockedCount > 0;
+    const priClass = b.priority.toLowerCase();
+
+    html += `<div class="client-cell" onclick="scrollToCard('${b.code}')" style="cursor: pointer;" title="点击定位看板卡片">
+      <div class="c-name">${b.client}</div>
+      <div class="c-meta">
+        <span class="badge-pri pri-${priClass}">${b.priority}</span>
+        <span>${b.code}</span>
+      </div>
+      <div class="c-progress" title="${doneCount}/${total} 完成 · ${progCount} 进行 · ${blockedCount} 阻塞">
+        <div class="fill ${hasBlock ? 'has-block' : ''}" style="width: ${progress}%"></div>
+      </div>
+    </div>`;
+
+    b.flow.nodes.forEach((n, idx) => {
+      const t = flowDates[idx];
+      const planDate = t ? t.plan_end : '—';
+      const actualDate = n.actual_end || '';
+      const isCritical = n.status === 'blocked' && blockedCount === 1;
+      const isUrgent = t && n.status !== 'done' && (() => {
+        const daysToPlan = Math.ceil((new Date(planDate) - new Date('2026-08-10')) / (1000*60*60*24));
+        return daysToPlan >= 0 && daysToPlan <= 3;
+      })();
+
+      let dateLabel = planDate;
+      if (n.status === 'done' && actualDate) dateLabel = `✓ ${actualDate.slice(5)}`;
+      else if (n.status === 'blocked') dateLabel = `⚠ ${planDate}`;
+
+      let extra = '';
+      if (n.status === 'blocked' && n.block_reason) {
+        extra = `<div class="n-date" style="color: var(--danger); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${n.block_reason}">${n.block_reason}</div>`;
+      }
+
+      html += `<div class="node ${n.status} ${isUrgent ? 'urgent' : ''}" data-code="${b.code}" data-node="${n.id}" onclick="showNodeDetail(event, '${b.code}', '${n.id}')" title="${n.status === 'blocked' && n.block_reason ? n.block_reason : ''}">
+        <div class="n-name">${FLOW_TEMPLATE[idx].name}</div>
+        <div class="n-date">${dateLabel}</div>
+        ${extra}
+      </div>`;
+    });
+  });
+
+  wrap.innerHTML = html;
+}
+
+let popupCode = null, popupNode = null;
+function showNodeDetail(event, code, nodeId) {
+  event.stopPropagation();
+  const b = data.bids.find(x => x.code === code);
+  if (!b || !b.flow) return;
+  const n = b.flow.nodes.find(x => x.id === nodeId);
+  const t = FLOW_TEMPLATE.find(x => x.id === nodeId);
+  const idx = b.flow.nodes.findIndex(x => x.id === nodeId);
+  const flowDates = calcFlowDates(b.due_at) || [];
+  const planDate = flowDates[idx] ? flowDates[idx].plan_end : '—';
+
+  // 移除旧 popup
+  closeNodeDetail();
+  popupCode = code; popupNode = nodeId;
+
+  const popup = document.createElement('div');
+  popup.className = 'node-detail-popup show';
+  popup.id = 'node-popup';
+  const statusLabel = { done: '✓ 已完成', progress: '▶ 进行中', blocked: '⚠ 阻塞', planned: '📅 计划', pending: '○ 未开始' }[n.status];
+  const statusColor = { done: '#10B981', progress: '#0EA5E9', blocked: '#EF4444', planned: '#F59E0B', pending: '#94A3B8' }[n.status];
+
+  popup.innerHTML = `
+    <h5><span style="color: ${statusColor};">●</span>${t.name} · ${b.client}</h5>
+    <div class="row"><span class="k">状态</span><span class="v" style="color: ${statusColor};">${statusLabel}</span></div>
+    <div class="row"><span class="k">负责人</span><span class="v">${t.owner}</span></div>
+    <div class="row"><span class="k">计划截止</span><span class="v" style="font-family: 'SF Mono', monospace;">${planDate}</span></div>
+    ${n.actual_end ? `<div class="row"><span class="k">实际完成</span><span class="v" style="font-family: 'SF Mono', monospace;">${n.actual_end}</span></div>` : ''}
+    ${n.block_reason ? `<div class="row"><span class="k">阻塞</span><span class="v" style="color: #FCA5A5;">${n.block_reason}</span></div>` : ''}
+    ${t.ai.length > 0 ? `<div class="row"><span class="k">AI 介入</span><span class="v" style="font-family: 'SF Mono', monospace; font-size: 10.5px;">${t.ai.join(', ')}</span></div>` : ''}
+    <div class="actions">
+      ${n.status === 'pending' ? `<button class="primary" onclick="setNodeStatus('${code}','${nodeId}','progress')">开始</button>` : ''}
+      ${n.status === 'progress' || n.status === 'planned' ? `<button class="primary" onclick="setNodeStatus('${code}','${nodeId}','done')">完成</button>` : ''}
+      ${n.status !== 'blocked' && n.status !== 'done' ? `<button class="danger" onclick="setNodeStatus('${code}','${nodeId}','blocked')">阻塞</button>` : ''}
+      ${n.status === 'blocked' ? `<button class="primary" onclick="setNodeStatus('${code}','${nodeId}','progress')">解除阻塞</button>` : ''}
+      <button onclick="closeNodeDetail()">关闭</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+  // 定位
+  const rect = event.currentTarget.getBoundingClientRect();
+  popup.style.left = (rect.left + rect.width / 2 - 140) + 'px';
+  popup.style.top = (rect.bottom + 6) + 'px';
+  // 防止超出右边界
+  setTimeout(() => {
+    const pRect = popup.getBoundingClientRect();
+    if (pRect.right > window.innerWidth - 8) popup.style.left = (window.innerWidth - pRect.width - 8) + 'px';
+    if (pRect.bottom > window.innerHeight - 8) popup.style.top = (rect.top - pRect.height - 6) + 'px';
+  }, 0);
+}
+function closeNodeDetail() {
+  const p = document.getElementById('node-popup');
+  if (p) p.remove();
+  popupCode = null; popupNode = null;
+}
+window.setNodeStatus = (code, nodeId, status) => {
+  const b = data.bids.find(x => x.code === code);
+  if (!b || !b.flow) return;
+  const n = b.flow.nodes.find(x => x.id === nodeId);
+  if (!n) return;
+  n.status = status;
+  if (status === 'done') {
+    n.actual_end = new Date().toISOString().slice(0, 10);
+    delete n.block_reason;
+  }
+  if (status === 'blocked' && !n.block_reason) {
+    n.block_reason = prompt('阻塞原因?') || '未说明';
+    if (!n.block_reason) { n.status = 'progress'; return; }
+  }
+  if (status === 'progress') delete n.block_reason;
+  // 更新看板 stage 字段(同步)
+  const stageMap = { 'sales-bid': '跟踪', 'buy-rfp': '审查', 'quote': '报价',
+    'tech-solution': '修订', 'draft': '修订', 'final': '修订', 'seal': '封标', 'present': '述标' };
+  if (stageMap[nodeId]) b.stage = stageMap[nodeId];
+  saveData(); renderAll();
+  addSysEvent(`${b.client} · ${FLOW_TEMPLATE.find(x => x.id === nodeId).name} → ${status}`, status === 'blocked' ? 'err' : 'info');
+  closeNodeDetail();
+};
+
+// 点击外部关闭 popup
+document.addEventListener('click', (e) => {
+  if (popupCode && !e.target.closest('.node-detail-popup') && !e.target.closest('.node')) {
+    closeNodeDetail();
+  }
+});
+
+function renderPlaybook() {
+  const list = document.getElementById('playbook-list');
+  list.innerHTML = PLAYBOOKS.map((pb, i) => {
+    const targets = pb.target.map(t => {
+      const isCode = data.bids.find(b => b.code === t);
+      return isCode
+        ? `<span class="target-tag linked" onclick="scrollToCard('${t}')">${t}</span>`
+        : `<span class="target-tag">${t}</span>`;
+    }).join('');
+    return `
+      <div class="playbook" data-pb="${pb.id}">
+        <div class="pb-head">
+          <div class="pb-num">${i + 1}</div>
+          <div class="pb-name">${pb.name}</div>
+        </div>
+        <div class="pb-desc">${pb.desc}</div>
+        <div class="pb-target">🎯 ${targets}</div>
+        <div class="steps">
+          ${pb.steps.map((s, idx) => `
+            <div class="pb-step" data-step="${idx}">
+              <span class="step-n">${idx + 1}.</span>
+              <span class="step-t">${s.name}</span>
+              <button class="step-go" onclick="runStep('${pb.id}', ${idx})">跑这步</button>
+            </div>
+          `).join('')}
+        </div>
+        <button class="pb-run-all" onclick="runAll('${pb.id}')">▶ 跑这个剧本(全部 ${pb.steps.length} 步)</button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.runStep = (pbId, stepIdx) => {
+  const pb = PLAYBOOKS.find(p => p.id === pbId);
+  if (!pb) return;
+  const step = pb.steps[stepIdx];
+  step.api();
+  // 标记完成
+  const stepEl = document.querySelector(`.playbook[data-pb="${pbId}"] [data-step="${stepIdx}"] .step-go`);
+  if (stepEl) {
+    stepEl.classList.add('done');
+    stepEl.textContent = '✓';
+    setTimeout(() => { stepEl.classList.remove('done'); stepEl.textContent = '跑这步'; }, 2500);
+  }
+  addSysEvent(`剧本 ${pb.name} - 第 ${stepIdx + 1} 步: ${step.name}`, 'info');
+};
+
+window.runAll = async (pbId) => {
+  const pb = PLAYBOOKS.find(p => p.id === pbId);
+  if (!pb) return;
+  const pbEl = document.querySelector(`.playbook[data-pb="${pbId}"]`);
+  if (pbEl) pbEl.classList.add('running');
+  const btn = pbEl.querySelector('.pb-run-all');
+  if (btn) { btn.disabled = true; btn.textContent = '运行中...'; }
+  addSysEvent(`▶ 剧本开始: ${pb.name}`, 'info');
+  for (let i = 0; i < pb.steps.length; i++) {
+    await new Promise(r => setTimeout(r, 800));
+    window.runStep(pbId, i);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = `▶ 跑这个剧本(全部 ${pb.steps.length} 步)`; }
+  if (pbEl) pbEl.classList.remove('running');
+  addSysEvent(`✓ 剧本完成: ${pb.name}`, 'info');
+};
+
+// ============================================================
+// 控制
+// ============================================================
+document.querySelectorAll('.filter-btn[data-f]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-f]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.f;
+    renderCards();
+  });
+});
+
+document.getElementById('open-second').addEventListener('click', () => {
+  window.open(window.location.href, '_blank');
+  addSysEvent('新 tab 已打开,试试点任一按钮,另一端会同步', 'info');
+});
+
+document.getElementById('ev-clear').addEventListener('click', () => {
+  events = []; saveEvents(); renderEvents();
+});
+document.getElementById('ev-pause').addEventListener('click', (e) => {
+  paused = !paused;
+  e.target.textContent = paused ? '▶ 继续' : '⏸ 暂停';
+  e.target.style.color = paused ? 'var(--warn)' : '';
+});
+document.getElementById('ev-export').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({ data, events }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bid-board-events-${Date.now()}.json`;
+  a.click();
+  addSysEvent('事件流已导出', 'info');
+});
+
+// 视图切换(看板 / 流程)
+document.querySelectorAll('.nav-link[data-view]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const view = link.dataset.view;
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('.view-panel').forEach(p => {
+      p.style.display = p.dataset.view === view ? '' : 'none';
+    });
+    if (view === 'flow') renderSwimlane();
+  });
+});
+
+// 启动
+renderAll();
+renderEvents();
+addSysEvent('看板 v2 已就绪,window.BidBoard API 可用');
+</script>
+</body>
+</html>

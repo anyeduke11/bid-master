@@ -1,0 +1,33 @@
+{
+ "name": "archive-close-proposal",
+ "file": ".zcode/workflows/archive-close-proposal.dwf.ts",
+ "title": "归档提案流水线（S8→S9 段 · 飞轮入口）",
+ "version": "1.1",
+ "created": "2026-09-11",
+ "dev_ref": "DEV-0031",
+ "args": {
+  "bidId": "string·必填（已开标待归档的 bid）",
+  "result": "string·必填（win / loss / no-bid）",
+  "reason": "string·选填（开标结果原因一句话）"
+ },
+ "actors": [
+  {
+   "actor_pattern": "bid-archivist",
+   "agent_contract": "contracts/agents/bid-archivist.json",
+   "agent_md": ".zcode/agents/bid-archivist.md",
+   "skill": "skills/bid-archive/SKILL.md",
+   "model_tier": "main",
+   "tools": "default（读 bids/<id>/ 全目录）",
+   "produces": "proposal",
+   "gate": "落盘脚本逐条校验 supersession/evidence 完整性 + rules/desensitize.py 脱敏机检（拦截率要求 100%），命中退回 archivist，最多 2 轮"
+  }
+ ],
+ "data_flow": "bids/<id>/ 证据清单 + 开标结果 → 复盘提案 → archive/proposal.json + lessons-draft.md（脚本落盘并登记 status=proposed）→ desensitize 机检 → 待人工确认清单",
+ "boundary": [
+  "只提案不落库：绝不写 kb/ 与 ~/.bidmaster/memory/",
+  "apply_archive（真正入库）由人工确认后执行（幂等，双跑 no-op）",
+  "S8→S9 门禁的 proposal_confirmed 人工采纳位不代办",
+  "L3 红线不落盘；客户一律别名+行业；无证据归因不允许"
+ ],
+ "dev_note": "dev_note 追加 v1.1 bidId 格式白名单与 RESULT/REASON 输入净化与 workflow 实现一致"
+}

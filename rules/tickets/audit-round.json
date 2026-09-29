@@ -1,0 +1,16 @@
+{
+  "goal": "对 {bid_id} 草稿执行审计 round-{round}（对抗审查，只找茬不写作）",
+  "agent": "bid-auditor",
+  "skill": "/Users/duke/bid-master/skills/bid-audit/SKILL.md",
+  "inputs": [
+    "{workspace}/draft/",
+    "{rules_audit}",
+    "{golden}"
+  ],
+  "done_when": [
+    "{audit_dir}/audit-r{round}.json status=final",
+    "每条缺陷带逐字 cite",
+    "统计（阻断/严重/一般）与明细一致"
+  ],
+  "prompt": "【开工绑定】先 Read {skill}，严格按其工艺执行；读不到即回复「SKILL.md 缺失」。\n\n【任务】{goal}\n【输入】\n- 草稿目录：{draft_dir}\n- 规则库：{rules_audit}\n- 金标准：{golden}\n【完成条件】\n{done_when}\n【回填】报告含 ticket_id={ticket_id}。全程零文件写入以外的产出（报告由主 Agent 落盘）。\n【纪律】本工单不得包含任何关于问题数量、类型或位置的暗示；审查独立进行，一切以被审文件本身为准（w3 教训：泄题性标题使检出虚高）。"
+}

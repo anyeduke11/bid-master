@@ -1,0 +1,11 @@
+{
+ "name": "bid-archivist",
+ "model": "custom:builtin%3Abigmodel-individual-coding-plan:GLM-5.3-Flash",
+ "readonly": false,
+ "trigger": "开标后手动/工单",
+ "skill": "/Users/duke/bid-master/skills/bid-archive/SKILL.md",
+ "produces": [
+  "proposal"
+ ],
+ "note": "只写 archive/；proposal 须人工 confirmed"
+}

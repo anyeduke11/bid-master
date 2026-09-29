@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Skill 集成方案 · BidBoard v2 · Duke · 2026-08-13</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --warn-ink: #92400E;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --danger-ink: #991B1B;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --r: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 14px;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 32px 40px; box-shadow: var(--shadow);
+    margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--brand-soft);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 28px; margin: 12px 0 6px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14.5px; }
+
+  /* Section */
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 24px 28px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 20px; font-weight: 700; margin: 0 0 6px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; }
+  .sec-lede { color: var(--ink-soft); font-size: 13.5px; margin: 8px 0 16px; }
+
+  /* Sub title */
+  .st { font-size: 15.5px; font-weight: 700; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .st::before { content: ""; width: 3px; height: 16px; background: var(--brand); border-radius: 2px; }
+
+  /* Status pill */
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .pill-p0 { background: var(--danger-soft); color: var(--danger-ink); }
+  .pill-p1 { background: var(--warn-soft); color: var(--warn-ink); }
+  .pill-ok { background: var(--ok-soft); color: #065F46; }
+  .pill-new { background: var(--accent-soft); color: var(--accent); }
+
+  /* Cards */
+  .skill-card {
+    background: white; border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 14px;
+  }
+  .skill-card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .skill-card .head h3 { margin: 0; font-size: 16px; font-weight: 700; }
+  .skill-card .head .meta { display: flex; gap: 6px; align-items: center; }
+  .skill-card .head .meta code { font-family: "SF Mono", monospace; font-size: 11.5px;
+    background: var(--bg-soft); padding: 2px 7px; border-radius: 4px; color: var(--brand-deep); }
+  .skill-card .head .path { font-family: "SF Mono", monospace; font-size: 11.5px;
+    color: var(--ink-mute); margin-top: 2px; }
+
+  /* Grid for integration points */
+  .ip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+  .ip {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    padding: 10px 14px; border-radius: 6px;
+  }
+  .ip .label { font-size: 11px; color: var(--brand-deep); font-weight: 700; letter-spacing: .04em; }
+  .ip .where { font-size: 13px; font-weight: 600; margin: 2px 0; }
+  .ip .what { font-size: 12.5px; color: var(--ink-soft); }
+  .ip .what code { font-family: "SF Mono", monospace; font-size: 11.5px;
+    background: white; padding: 1px 5px; border-radius: 3px; color: var(--brand-deep); }
+
+  /* Code block */
+  pre.code {
+    background: #0F1E33; color: #E6F1FB; padding: 14px 16px;
+    border-radius: 8px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 10px 0;
+  }
+  pre.code .c { color: #94A3B8; }
+  pre.code .k { color: #C7D2FE; }
+  pre.code .s { color: #FDE68A; }
+  pre.code .v { color: #7DD3FC; }
+  pre.code .f { color: #6EE7B7; }
+  pre.code .n { color: #FCA5A5; }
+  pre.code .w { color: #FDE68A; background: rgba(245,158,11,.1); padding: 0 4px; border-radius: 3px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { text-align: left; padding: 9px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12px;
+    border-bottom: 1px solid var(--line); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code, .code {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; color: var(--brand-deep);
+  }
+
+  /* Decision */
+  .decision {
+    background: var(--accent-soft); border: 1px solid #C7D2FE;
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+  }
+  .decision h4 { margin: 0 0 6px; color: var(--accent); font-size: 14px; }
+
+  /* Risk */
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+  .risk {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .risk.crit { border-left: 3px solid var(--danger); }
+  .risk.warn { border-left: 3px solid var(--warn); }
+  .risk.mid { border-left: 3px solid var(--accent); }
+  .risk h5 { margin: 0 0 4px; font-size: 13px; }
+  .risk p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+  .risk p b { color: var(--ink); }
+
+  @media (max-width: 900px) {
+    .ip-grid, .risk-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+    .sec { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="tag">SKILL INTEGRATION PLAN · v2.0 · 2026-08-13</span>
+    <h1>BidBoard 集成方案 · 8 个 Skill 全景改造</h1>
+    <div class="sub">4 个改造 + 4 个新建 · 每个 Skill 给"集成点 + 代码片段 + 测试场景" · 配套通用 wrapper</div>
+  </div>
+
+  <!-- 总览 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">0</span>改造总览</div>
+    <div class="sec-lede">4 个已存在 Skill(改造)+ 4 个需新建 Skill。优先级 P0 → P1 → P2 分批落地,30 天 P0 完成。</div>
+
+    <h3 class="st">0.1 Skill 分类与状态</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Skill</th><th>状态</th><th>路径</th><th>优先级</th><th>估时</th></tr></thead>
+      <tbody>
+        <tr><td>S-01</td><td><b>bid-file-review</b></td><td>改造 v2.7</td><td><code>~/.workbuddy/skills/bid-file-review</code></td><td><span class="pill pill-p0">P0</span></td><td>3 天</td></tr>
+        <tr><td>S-02</td><td><b>bid-news-collection</b></td><td>改造 v1.6.7</td><td><code>~/.workbuddy/skills/bid-news-collection</code></td><td><span class="pill pill-p0">P0</span></td><td>3 天</td></tr>
+        <tr><td>S-03</td><td><b>quote-generation-v3</b></td><td>改造 v3.0</td><td><code>~/.workbuddy/skills/quote-generation-v3</code></td><td><span class="pill pill-p0">P0</span></td><td>2 天</td></tr>
+        <tr><td>S-04</td><td><b>content-longform</b></td><td>改造 v1.1</td><td><code>~/.workbuddy/skills/content-longform</code></td><td><span class="pill pill-p1">P1</span></td><td>2 天</td></tr>
+        <tr><td>S-05</td><td><b>bid-card-refresh</b></td><td><span class="pill pill-new">新建</span></td><td><code>~/.workbuddy/skills/bid-card-refresh</code></td><td><span class="pill pill-p0">P0</span></td><td>2 天</td></tr>
+        <tr><td>S-06</td><td><b>gate-checker</b></td><td><span class="pill pill-new">新建</span></td><td><code>~/.workbuddy/skills/gate-checker</code></td><td><span class="pill pill-p0">P0</span></td><td>1.5 天</td></tr>
+        <tr><td>S-07</td><td><b>p0-watcher</b></td><td><span class="pill pill-new">新建</span></td><td><code>~/.workbuddy/skills/p0-watcher</code></td><td><span class="pill pill-p1">P1</span></td><td>1 天</td></tr>
+        <tr><td>S-08</td><td><b>resume-builder</b></td><td><span class="pill pill-new">新建</span></td><td><code>~/.workbuddy/skills/resume-builder</code></td><td><span class="pill pill-p1">P1</span></td><td>1.5 天</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="st">0.2 通用集成 wrapper(所有 Skill 复用)</h3>
+    <p>在每个 Skill 的 <code>scripts/</code> 下放 <code>bidboard_client.py</code>,统一封装 API 调用。后端 / 前端 / 失败兜底全自动。</p>
+
+<pre class="code"><span class="c"># scripts/bidboard_client.py - 通用客户端,所有 Skill 复用</span>
+<span class="k">import</span> os, json, urllib.request, urllib.error
+<span class="k">from</span> datetime <span class="k">import</span> datetime
+
+<span class="v">BOARD_URL</span> = os.environ.get(<span class="s">"BIDBOARD_URL"</span>, <span class="s">"http://127.0.0.1:8765"</span>)
+<span class="v">TOKEN</span>     = os.environ.get(<span class="s">"BIDBOARD_TOKEN"</span>, <span class="s">""</span>)
+
+<span class="k">def</span> <span class="f">_post</span>(path, payload):
+    <span class="k">try</span>:
+        req = urllib.request.Request(
+            <span class="v">BOARD_URL</span> + path,
+            data = json.dumps(payload).encode(<span class="s">"utf-8"</span>),
+            headers = {<span class="s">"Content-Type"</span>: <span class="s">"application/json"</span>, <span class="s">"Authorization"</span>: <span class="s">f"Bearer </span>{<span class="v">TOKEN</span>}<span class="s">"</span>},
+            method = <span class="s">"POST"</span>
+        )
+        <span class="k">with</span> urllib.request.urlopen(req, timeout=<span class="n">3</span>) <span class="k">as</span> r:
+            <span class="k">return</span> {<span class="s">"ok"</span>: <span class="k">True</span>, <span class="s">"data"</span>: json.loads(r.read())}
+    <span class="k">except</span> (urllib.error.URLError, TimeoutError, json.JSONDecodeError) <span class="k">as</span> e:
+        <span class="c"># 兜底:写入本地队列,下次启动时重试</span>
+        <span class="f">_enqueue_retry</span>(path, payload)
+        <span class="k">return</span> {<span class="s">"ok"</span>: <span class="k">False</span>, <span class="s">"queued"</span>: <span class="k">True</span>, <span class="s">"err"</span>: <span class="k">str</span>(e)}
+
+<span class="k">def</span> <span class="f">_enqueue_retry</span>(path, payload):
+    qfile = os.path.expanduser(<span class="s">"~/.bidboard_queue.jsonl"</span>)
+    <span class="k">with</span> <span class="f">open</span>(qfile, <span class="s">"a"</span>) <span class="k">as</span> f:
+        f.write(json.dumps({<span class="s">"path"</span>: path, <span class="s">"payload"</span>: payload, <span class="s">"ts"</span>: <span class="f">datetime</span>.now().isoformat()}) + <span class="s">"\n"</span>)
+
+<span class="c"># ===== 公开 API =====</span>
+<span class="k">def</span> <span class="f">create</span>(code, client, **kw):
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">"/api/bids"</span>, {<span class="s">"code"</span>: code, <span class="s">"client"</span>: client, **kw})
+
+<span class="k">def</span> <span class="f">add_ai_ready</span>(code, item, source_tag=<span class="s">""</span>):
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/</span>{code}<span class="s">/ai_ready"</span>, {<span class="s">"value"</span>: item, <span class="s">"source"</span>: source_tag})
+
+<span class="k">def</span> <span class="f">set_stage</span>(code, stage):
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/</span>{code}<span class="s">/stage"</span>, {<span class="s">"value"</span>: stage})
+
+<span class="k">def</span> <span class="f">set_block</span>(code, block_reason):
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/</span>{code}<span class="s">/block"</span>, {<span class="s">"value"</span>: block_reason})
+
+<span class="k">def</span> <span class="f">set_human_todo</span>(code, todo_list):
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/</span>{code}<span class="s">/human_todo"</span>, {<span class="s">"value"</span>: todo_list})
+
+<span class="k">def</span> <span class="f">update_flow_node</span>(code, node_id, status, block_reason=<span class="s">""</span>):
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/</span>{code}<span class="s">/flow/</span>{node_id}<span class="s">"</span>, {<span class="s">"status"</span>: status, <span class="s">"block_reason"</span>: block_reason})
+</pre>
+
+    <h3 class="st">0.3 集成前后对比</h3>
+    <table>
+      <thead><tr><th>维度</th><th>改造前</th><th>改造后</th></tr></thead>
+      <tbody>
+        <tr><td>Skill 跑完的产出</td><td>本地文件 / 控制台输出</td><td>本地文件 <b>+ 自动写看板 + 推事件流</b></td></tr>
+        <tr><td>Duke 视角</td><td>看 5 个文件 / 5 个终端</td><td>看 1 个看板,所有动作自动汇总</td></tr>
+        <tr><td>阻塞感知</td><td>Skill 报错才知</td><td>任何状态变化立即入看板,P0 看门狗推微信</td></tr>
+        <tr><td>失败兜底</td><td>Skill 异常即丢失</td><td>API 失败入本地重试队列(<code>~/.bidboard_queue.jsonl</code>),下次启动重放</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============== S-01: bid-file-review ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">1</span>S-01 · bid-file-review 改造<span class="pill pill-p0">P0</span></div>
+    <div class="sec-lede">现状:v2.7 · 16KB SKILL.md · 跑 P1~P7 阶段评审 · 改造点:每次阶段完成 + 最终结论 → 写看板。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>bid-file-review v2.7</h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/bid-file-review/</code> · 当前 SKILL.md 16KB</div>
+        </div>
+        <div class="meta"><span class="pill pill-p0">P0</span><code>3 天</code></div>
+      </div>
+
+      <h3 class="st">集成点(4 个)</h3>
+      <div class="ip-grid">
+        <div class="ip">
+          <div class="label">集成点 A</div>
+          <div class="where">招标文件审计通过(步骤一)</div>
+          <div class="what">→ <code>addAiReady(code, "招标审计通过")</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 B</div>
+          <div class="where">OCR 强制提取完成(步骤二)</div>
+          <div class="what">→ <code>addAiReady(code, "OCR 提取 N 张图片")</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 C</div>
+          <div class="where">P1~P7 阶段评审完(步骤三)</div>
+          <div class="what">→ <code>addAiReady(code, "100+ 项检查完成")</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 D</div>
+          <div class="where">最终评审结论输出(步骤四)</div>
+          <div class="what">→ <code>setStage(code, "修订")</code> + <code>setBlock(code, ...)</code></div>
+        </div>
+      </div>
+
+      <h3 class="st">改造代码(SKILL.md 新增章节 + 脚本)</h3>
+<pre class="code"><span class="c"># 在 SKILL.md §四 执行步骤 末尾追加:</span>
+
+## 四、X · BidBoard 集成(必须)
+
+<span class="w">每个阶段完成时,必须调用 bidboard_client 写看板。</span>
+
+<span class="k">from</span> scripts.bidboard_client <span class="k">import</span> add_ai_ready, set_stage, set_block
+<span class="v">CODE</span> = <span class="s">"${bid_code}"</span>   <span class="c"># 从环境变量或参数传入</span>
+
+<span class="c"># 阶段一完成</span>
+add_ai_ready(<span class="v">CODE</span>, <span class="s">"招标审计通过"</span>, <span class="s">"bid-file-review"</span>)
+
+<span class="c"># OCR 完成</span>
+add_ai_ready(<span class="v">CODE</span>, <span class="s">f"OCR 提取 {n_images} 张图片"</span>, <span class="s">"bid-file-review"</span>)
+
+<span class="c"># P1~P7 评审完</span>
+add_ai_ready(<span class="v">CODE</span>, <span class="s">"100+ 项检查完成"</span>, <span class="s">"bid-file-review"</span>)
+
+<span class="c"># 最终结论</span>
+<span class="k">if</span> critical_issues:
+    set_block(<span class="v">CODE</span>, <span class="s">f"废标风险: {critical_issues[0]}"</span>)
+set_stage(<span class="v">CODE</span>, <span class="s">"修订"</span>)
+
+<span class="c"># scripts/bidboard_client.py 复制通用 wrapper(见 §0.2)</span>
+</pre>
+
+      <h3 class="st">测试场景</h3>
+      <table>
+        <thead><tr><th>#</th><th>场景</th><th>预期</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>正常跑完一份标书</td><td>看板 4 个 ai_ready 项就位;stage='修订'</td></tr>
+          <tr><td>2</td><td>检测出废标条款(1+ critical issue)</td><td>block 字段写入,看板红色闪烁</td></tr>
+          <tr><td>3</td><td>网络断开(模拟 127.0.0.1:8765 不通)</td><td>API 调用入 <code>~/.bidboard_queue.jsonl</code>,Skill 不崩溃</td></tr>
+          <tr><td>4</td><td>网络恢复后下次启动</td><td>队列自动重放,看板补全</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============== S-02: bid-news-collection ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">2</span>S-02 · bid-news-collection 改造<span class="pill pill-p0">P0</span></div>
+    <div class="sec-lede">现状:v1.6.7 · 17KB SKILL.md · config.json · 每日采集 40+ 渠道。改造点:新商机入 bids + 优先级自动算。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>bid-news-collection v1.6.7</h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/bid-news-collection/</code> · scripts/run.py + gen_md.py + gen_excel.py + ima_sync.py</div>
+        </div>
+        <div class="meta"><span class="pill pill-p0">P0</span><code>3 天</code></div>
+      </div>
+
+      <h3 class="st">集成点(3 个)</h3>
+      <div class="ip-grid">
+        <div class="ip">
+          <div class="label">集成点 A</div>
+          <div class="where">采集完成(全部 40+ 渠道跑完)</div>
+          <div class="what">→ <code>addAiReady(client, "今日标讯 N 条", "bid-news-collection")</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 B</div>
+          <div class="where">新商机识别(命中客户画像)</div>
+          <div class="what">→ <code>create(code, client, due_at, priority, ...)</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 C</div>
+          <div class="where">命中现有客户(老项目新公告)</div>
+          <div class="what">→ <code>setStage(code, "审查")</code> + <code>setDueAt(code, due)</code></div>
+        </div>
+      </div>
+
+      <h3 class="st">改造代码(在 scripts/run.py 末尾)</h3>
+<pre class="code"><span class="c"># scripts/run.py 末尾追加(采集完成后):</span>
+
+<span class="k">from</span> bidboard_client <span class="k">import</span> create, set_stage, set_due_at, add_ai_ready
+<span class="k">from</span> datetime <span class="k">import</span> datetime, timedelta
+
+<span class="c"># === 1. 全部采集完,先发一条全局事件 ===</span>
+add_ai_ready(<span class="s">"ALL"</span>, <span class="s">f"今日标讯 {len(results)} 条"</span>, <span class="s">"bid-news-collection"</span>)
+
+<span class="c"># === 2. 新商机入 bids(没有 code 的视为新商机) ===</span>
+<span class="k">for</span> item <span class="k">in</span> results:
+    <span class="k">if</span> <span class="k">not</span> <span class="f">is_known_client</span>(item[<span class="s">"client"</span>]):
+        code = <span class="f">_gen_code</span>(item[<span class="s">"client"</span>])        <span class="c"># 例如 "gxzq260512"</span>
+        due = <span class="f">_parse_due</span>(item.get(<span class="s">"deadline"</span>))      <span class="c"># 解析招标文件截止日</span>
+        priority = <span class="f">_calc_priority</span>(due)               <span class="c"># T≤3→P0, T≤7→P1, 其他→P2</span>
+        <span class="f">create</span>(code, item[<span class="s">"client"</span>],
+            due_at = due,
+            priority = priority,
+            stage = <span class="s">"审查"</span>,
+            ai_ready = [<span class="s">"标讯命中"</span>],
+            human_todo = [<span class="s">"下载招标文件"</span>, <span class="s">"判断是否参与"</span>]
+        )
+
+<span class="c"># === 3. 老项目新公告 → 更新 stage / due_at ===</span>
+<span class="k">for</span> item <span class="k">in</span> results:
+    code = <span class="f">_find_code</span>(item[<span class="s">"client"</span>])
+    <span class="k">if</span> code:
+        <span class="f">set_stage</span>(code, <span class="s">"审查"</span>)
+        <span class="k">if</span> <span class="s">"deadline"</span> <span class="k">in</span> item:
+            <span class="f">set_due_at</span>(code, item[<span class="s">"deadline"</span>])
+</pre>
+
+      <h3 class="st">测试场景</h3>
+      <table>
+        <thead><tr><th>#</th><th>场景</th><th>预期</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>命中一家新客户(国信证券)</td><td>看板多一张卡,priority 自动算</td></tr>
+          <tr><td>2</td><td>命中老客户(农发行)新公告</td><td>农发行 stage 改'审查',截止日更新</td></tr>
+          <tr><td>3</td><td>命中客户但缺 deadline</td><td>code 已存在则不重复入;留待手工补</td></tr>
+          <tr><td>4</td><td>连续 7 天跑</td><td>看板 P0/P1/P2 数字动态变化,触发 P0 看门狗</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============== S-03: quote-generation-v3 ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">3</span>S-03 · quote-generation-v3 改造<span class="pill pill-p0">P0</span></div>
+    <div class="sec-lede">现状:v3.0 · 12KB SKILL.md · 4 层 BOM 搜索 + 报价单生成。改造点:BOM 出稿 + 报价签字阻塞 → 写看板。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>quote-generation-v3 v3.0</h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/quote-generation-v3/</code> · scripts/generate_quote_v3.py</div>
+        </div>
+        <div class="meta"><span class="pill pill-p0">P0</span><code>2 天</code></div>
+      </div>
+
+      <h3 class="st">集成点(3 个)</h3>
+      <div class="ip-grid">
+        <div class="ip">
+          <div class="label">集成点 A</div>
+          <div class="where">BOM 索引加载完</div>
+          <div class="what">→ <code>addAiReady(code, "BOM 索引就绪")</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 B</div>
+          <div class="where">报价单 v1 生成完</div>
+          <div class="what">→ <code>addAiReady(code, "BOM v1")</code> + <code>setStage("报价")</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 C</div>
+          <div class="where">报价单生成完成,等待签字</div>
+          <div class="what">→ <code>setBlock(code, "报价签字")</code> + <code>setHumanTodo(["报价签字"])</code></div>
+        </div>
+      </div>
+
+      <h3 class="st">改造代码</h3>
+<pre class="code"><span class="c"># scripts/generate_quote_v3.py 末尾追加:</span>
+
+<span class="k">from</span> bidboard_client <span class="k">import</span> add_ai_ready, set_stage, set_block, set_human_todo
+<span class="v">CODE</span> = <span class="s">"${bid_code}"</span>
+
+<span class="c"># 1. BOM 加载完</span>
+<span class="k">if</span> bom_index_loaded:
+    add_ai_ready(<span class="v">CODE</span>, <span class="s">f"BOM 索引就绪(</span>{len(products)}<span class="s"> 项)"</span>, <span class="s">"quote-generation-v3"</span>)
+
+<span class="c"># 2. 报价单生成</span>
+<span class="k">if</span> quote_xlsx_generated:
+    add_ai_ready(<span class="v">CODE</span>, <span class="s">f"报价单 v</span>{version}<span class="s"> (折扣 </span>{discount}<span class="s">)"</span>, <span class="s">"quote-generation-v3"</span>)
+    set_stage(<span class="v">CODE</span>, <span class="s">"报价"</span>)
+
+<span class="c"># 3. 报价单完成,等签字</span>
+<span class="k">if</span> quote_signed == <span class="k">False</span>:
+    set_block(<span class="v">CODE</span>, <span class="s">"报价签字"</span>)
+    set_human_todo(<span class="v">CODE</span>, [<span class="s">"报价签字"</span>, <span class="s">"确认折扣率"</span>])
+</pre>
+
+      <h3 class="st">测试场景</h3>
+      <table>
+        <thead><tr><th>#</th><th>场景</th><th>预期</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>给东莞银行生成报价 v1</td><td>东莞卡 stage='报价',ai_ready 追加</td></tr>
+          <tr><td>2</td><td>报价单已生成,等 Duke 签字</td><td>东莞卡 block='报价签字',红色闪烁</td></tr>
+          <tr><td>3</td><td>Duke 签字后(手动)→ setBlock('') + setStage('修订')</td><td>block 清空,stage 推进</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============== S-04: content-longform ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">4</span>S-04 · content-longform 改造<span class="pill pill-p1">P1</span></div>
+    <div class="sec-lede">现状:v1.1 · 8KB SKILL.md · 长文写作流水线。改造点:草稿完成 / 品牌自检通过 → 写看板(给农发行 V1.4 标书修订用)。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>content-longform v1.1</h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/content-longform/</code></div>
+        </div>
+        <div class="meta"><span class="pill pill-p1">P1</span><code>2 天</code></div>
+      </div>
+
+      <h3 class="st">集成点(2 个)</h3>
+      <div class="ip-grid">
+        <div class="ip">
+          <div class="label">集成点 A</div>
+          <div class="where">草稿完成(步骤 4)</div>
+          <div class="what">→ <code>addAiReady(code, "技术方案草稿 v1")</code></div>
+        </div>
+        <div class="ip">
+          <div class="label">集成点 B</div>
+          <div class="where">品牌声音自检通过(步骤 5)</div>
+          <div class="what">→ <code>addAiReady(code, "品牌自检通过")</code> + <code>setHumanTodo(["终审"])</code></div>
+        </div>
+      </div>
+
+      <h3 class="st">改造代码(新增 scripts/bidboard_client.py + longform_draft.py 末尾)</h3>
+<pre class="code"><span class="c"># longform_draft.py 末尾:</span>
+
+<span class="k">from</span> bidboard_client <span class="k">import</span> add_ai_ready, set_human_todo
+<span class="v">CODE</span> = <span class="s">"${bid_code}"</span>      <span class="c"># 从命令行 --bid=xxx 传入</span>
+
+<span class="c"># 草稿完成</span>
+<span class="k">if</span> draft_completed:
+    add_ai_ready(<span class="v">CODE</span>, <span class="s">f"长文草稿 </span>{word_count}<span class="s"> 字"</span>, <span class="s">"content-longform"</span>)
+
+<span class="c"># 自检通过</span>
+<span class="k">if</span> brand_voice_check_passed:
+    add_ai_ready(<span class="v">CODE</span>, <span class="s">"品牌自检通过"</span>, <span class="s">"content-longform"</span>)
+    set_human_todo(<span class="v">CODE</span>, [<span class="s">"终审"</span>, <span class="s">"发布或定稿"</span>])
+</pre>
+    </div>
+  </div>
+
+  <!-- ============== S-05: bid-card-refresh (NEW) ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span>S-05 · bid-card-refresh 新建<span class="pill pill-p0">P0</span></div>
+    <div class="sec-lede">每日 09:45 cron · 重算所有 bids 的 priority(基于 due_at)+ 拉最新 ai_ready 写 last_sync。是看板"活起来"的关键。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>bid-card-refresh <span class="pill pill-new">NEW</span></h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/bid-card-refresh/</code></div>
+        </div>
+        <div class="meta"><span class="pill pill-p0">P0</span><code>2 天</code></div>
+      </div>
+
+      <h3 class="st">SKILL.md 草稿</h3>
+<pre class="code"><span class="c">---</span>
+<span class="k">name</span>: bid-card-refresh
+<span class="k">version</span>: <span class="s">"1.0.0"</span>
+<span class="k">description</span>: 每日 09:45 跑一次,重算所有 bids 的 priority / 拉 last_sync / 写看板。
+  触发词:刷新看板、重算优先级、09:45 仪式。
+<span class="k">agent_created</span>: <span class="k">true</span>
+<span class="c">---</span>
+
+<span class="c"># 投标看板刷新 Skill</span>
+
+<span class="c">## 一、职责</span>
+每日 09:45 跑一次,执行三件事:
+<span class="n">1.</span> 重算 priority(按 §6.5 算法:T≤3→P0, T≤7→P1, 其他→P2;+ 阻塞升级)
+<span class="n">2.</span> 写 last_sync 字段(证明看板是"活的")
+<span class="n">3.</span> 检查 P0 客户,如 stage/block 变化 → 触发 p0-watcher(微信告警)
+
+<span class="c">## 二、执行步骤</span>
+
+<span class="c">### 步骤 1:拉取所有 bids</span>
+GET /api/bids → 列表
+
+<span class="c">### 步骤 2:逐个重算 priority</span>
+<span class="k">for</span> bid <span class="k">in</span> bids:
+    old_priority = bid.priority
+    new_priority = calc_priority(bid, today=<span class="s">"2026-08-10"</span>)
+    <span class="k">if</span> new_priority != old_priority:
+        PATCH /api/bids/&lt;code&gt;/priority {value: new_priority}
+        log_event(<span class="s">"priority 变化"</span>, bid.code, old → new)
+
+<span class="c">### 步骤 3:写 last_sync</span>
+<span class="k">for</span> bid <span class="k">in</span> bids:
+    PATCH /api/bids/&lt;code&gt;/last_sync {value: now()}
+
+<span class="c">### 步骤 4:触发 P0 看门狗</span>
+P0_bids = [b <span class="k">for</span> b <span class="k">in</span> bids <span class="k">if</span> b.priority == <span class="s">"P0"</span>]
+<span class="k">if</span> P0_bids:
+    spawn(<span class="s">"p0-watcher"</span>, clients=P0_bids)
+
+<span class="c">### 步骤 5:幂等性</span>
+同一天多次跑,结果应一致(不重复触发告警)。用 <span class="s">"今日已刷新"</span> 标记。
+</pre>
+
+      <h3 class="st">scripts/main.py 核心逻辑</h3>
+<pre class="code"><span class="c">#!/usr/bin/env python3</span>
+<span class="k">import</span> os, json, urllib.request
+<span class="k">from</span> datetime <span class="k">import</span> datetime, timedelta
+
+<span class="v">BOARD_URL</span> = os.environ.get(<span class="s">"BIDBOARD_URL"</span>, <span class="s">"http://127.0.0.1:8765"</span>)
+<span class="v">TOKEN</span>     = os.environ.get(<span class="s">"BIDBOARD_TOKEN"</span>, <span class="s">""</span>)
+<span class="v">TODAY</span>     = datetime.now()
+
+<span class="k">def</span> <span class="f">fetch_bids</span>():
+    req = urllib.request.Request(<span class="v">BOARD_URL</span> + <span class="s">"/api/bids"</span>,
+        headers={<span class="s">"Authorization"</span>: <span class="s">f"Bearer </span>{<span class="v">TOKEN</span>}<span class="s">"</span>})
+    <span class="k">with</span> urllib.request.urlopen(req) <span class="k">as</span> r:
+        <span class="k">return</span> json.loads(r.read())
+
+<span class="k">def</span> <span class="f">calc_priority</span>(bid):
+    <span class="k">if</span> <span class="k">not</span> bid.get(<span class="s">"due_at"</span>) <span class="k">or</span> bid[<span class="s">"due_at"</span>] == <span class="s">"持续"</span>:
+        <span class="k">return</span> <span class="s">"P2"</span>
+    <span class="k">if</span> bid.get(<span class="s">"flow"</span>, {}).get(<span class="s">"nodes"</span>, []):
+        <span class="k">if</span> <span class="f">all</span>(n[<span class="s">"status"</span>] == <span class="s">"done"</span> <span class="k">for</span> n <span class="k">in</span> bid[<span class="s">"flow"</span>][<span class="s">"nodes"</span>]):
+            <span class="k">return</span> <span class="s">"P2"</span>
+    due = datetime.fromisoformat(bid[<span class="s">"due_at"</span>].replace(<span class="s">" "</span>, <span class="s">"T"</span>))
+    days = (due - <span class="v">TODAY</span>).days
+    <span class="k">if</span> days &lt;= <span class="n">3</span>: priority = <span class="s">"P0"</span>
+    <span class="k">elif</span> days &lt;= <span class="n">7</span>: priority = <span class="s">"P1"</span>
+    <span class="k">else</span>: priority = <span class="s">"P2"</span>
+    <span class="c"># 阻塞升级</span>
+    has_block = <span class="f">any</span>(n[<span class="s">"status"</span>] == <span class="s">"blocked"</span> <span class="k">for</span> n <span class="k">in</span> bid.get(<span class="s">"flow"</span>, {}).get(<span class="s">"nodes"</span>, []))
+    <span class="k">if</span> has_block:
+        <span class="k">if</span> priority == <span class="s">"P1"</span>: priority = <span class="s">"P0"</span>
+        <span class="k">elif</span> priority == <span class="s">"P2"</span>: priority = <span class="s">"P1"</span>
+    <span class="k">return</span> priority
+
+<span class="k">def</span> <span class="f">patch</span>(code, field, value):
+    req = urllib.request.Request(
+        <span class="v">BOARD_URL</span> + <span class="s">f"/api/bids/</span>{code}<span class="s">/</span>{field}<span class="s">"</span>,
+        data = json.dumps({<span class="s">"value"</span>: value}).encode(),
+        headers = {<span class="s">"Content-Type"</span>: <span class="s">"application/json"</span>, <span class="s">"Authorization"</span>: <span class="s">f"Bearer </span>{<span class="v">TOKEN</span>}<span class="s">"</span>},
+        method = <span class="s">"PATCH"</span>)
+    urllib.request.urlopen(req).read()
+
+<span class="k">def</span> <span class="f">main</span>():
+    bids = <span class="f">fetch_bids</span>()
+    p0_list = []
+    <span class="k">for</span> bid <span class="k">in</span> bids:
+        new_p = <span class="f">calc_priority</span>(bid)
+        <span class="k">if</span> new_p != bid.get(<span class="s">"priority"</span>):
+            <span class="f">patch</span>(bid[<span class="s">"code"</span>], <span class="s">"priority"</span>, new_p)
+            <span class="f">print</span>(<span class="s">f"</span>{bid['code']}<span class="s"> priority: </span>{bid.get('priority')}<span class="s"> → </span>{new_p}<span class="s">"</span>)
+        <span class="f">patch</span>(bid[<span class="s">"code"</span>], <span class="s">"last_sync"</span>, <span class="v">TODAY</span>.isoformat())
+        <span class="k">if</span> new_p == <span class="s">"P0"</span>:
+            p0_list.append(bid[<span class="s">"code"</span>])
+    <span class="k">if</span> p0_list:
+        <span class="f">print</span>(<span class="s">f"P0 客户: </span>{p0_list}<span class="s"> → 触发 p0-watcher"</span>)
+        <span class="c"># os.system(f"workbuddy run p0-watcher --clients={','.join(p0_list)}")</span>
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="f">main</span>()
+</pre>
+
+      <h3 class="st">测试场景</h3>
+      <table>
+        <thead><tr><th>#</th><th>场景</th><th>预期</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>东莞 T-2 客户自动升 P0</td><td>priority: P0 自动写入</td></tr>
+          <tr><td>2</td><td>平安银行(无 due_at)保持 P2</td><td>不被错误升级</td></tr>
+          <tr><td>3</td><td>全完成客户(所有 flow done)降 P2</td><td>从 P0/P1 降回 P2</td></tr>
+          <tr><td>4</td><td>P0 客户有 2 个</td><td>p0-watcher 收到 2 个 client,推 2 条微信</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============== S-06: gate-checker (NEW) ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>S-06 · gate-checker 新建<span class="pill pill-p0">P0</span></div>
+    <div class="sec-lede">封标前门禁:JSON 校验 / 格式 / 公式 / 页眉页脚 / 签章 / 编号一致性。任一失败 → 阻塞。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>gate-checker <span class="pill pill-new">NEW</span></h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/gate-checker/</code></div>
+        </div>
+        <div class="meta"><span class="pill pill-p0">P0</span><code>1.5 天</code></div>
+      </div>
+
+      <h3 class="st">检查项(7 类)</h3>
+      <table>
+        <thead><tr><th>#</th><th>检查项</th><th>实现</th><th>阻塞条件</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>JSON 可解析(所有内嵌 JSON)</td><td><code>json.loads()</code></td><td>任何 parse error</td></tr>
+          <tr><td>2</td><td>Word 格式合规(字体/段落)</td><td>python-docx 检查 styles</td><td>发现非标准格式</td></tr>
+          <tr><td>3</td><td>报价表公式合计正确</td><td>openpyxl + 公式重算</td><td>合计 ≠ 分项之和</td></tr>
+          <tr><td>4</td><td>页眉页脚一致</td><td>python-docx 检查 sections</td><td>不一致</td></tr>
+          <tr><td>5</td><td>签章位置正确</td><td>OCR 检查印章位置</td><td>缺章/位置错</td></tr>
+          <tr><td>6</td><td>页码连续</td><td>pdfplumber 解析</td><td>缺页/跳号</td></tr>
+          <tr><td>7</td><td>文件命名符合 <code>[类型]-[客户]-[描述]-[版本]-[日期]</code></td><td>正则匹配</td><td>命名不规范</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="st">SKILL.md 草稿</h3>
+<pre class="code"><span class="c">---</span>
+<span class="k">name</span>: gate-checker
+<span class="k">version</span>: <span class="s">"1.0.0"</span>
+<span class="k">description</span>: 封标前门禁检查 · 7 类硬性检查 · 任一失败阻塞。
+  触发词:封标检查、门禁、gate check、封标前、投标文件验收。
+<span class="c">---</span>
+
+<span class="c"># 封标门禁检查 Skill</span>
+
+<span class="c">## 检查清单(7 类,详见上表)</span>
+
+<span class="c">## 输出</span>
+- <span class="s">{project}_门禁报告.md</span> - 人类可读
+- <span class="s">{project}_gate.json</span> - 机器可读,含每项 pass/fail + 原因
+
+<span class="c">## BidBoard 集成</span>
+检查完 → 调 addAiReady / setStage / setBlock
+</pre>
+
+      <h3 class="st">测试场景</h3>
+      <table>
+        <thead><tr><th>#</th><th>场景</th><th>预期</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>7 项全过</td><td>看板 ai_ready 追加"门禁全过",stage 推'封标'</td></tr>
+          <tr><td>2</td><td>报价表合计差 0.01</td><td>block='门禁:报价表合计差 0.01',红闪</td></tr>
+          <tr><td>3</td><td>缺页</td><td>block='门禁:页码缺第 17 页',红闪</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============== S-07: p0-watcher (NEW) ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>S-07 · p0-watcher 新建<span class="pill pill-p1">P1</span></div>
+    <div class="sec-lede">P0 客户 stage / block 变化 → 微信告警。集成 workbench SSE 订阅 + lark-im。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>p0-watcher <span class="pill pill-new">NEW</span></h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/p0-watcher/</code></div>
+        </div>
+        <div class="meta"><span class="pill pill-p1">P1</span><code>1 天</code></div>
+      </div>
+
+      <h3 class="st">SKILL.md 草稿</h3>
+<pre class="code"><span class="c">---</span>
+<span class="k">name</span>: p0-watcher
+<span class="k">version</span>: <span class="s">"1.0.0"</span>
+<span class="k">description</span>: P0 客户告警 · 订阅看板 SSE · 任意 P0 stage/block 变化 → 微信推送。
+  触发词:p0 告警、p0 watcher、紧急告警、P0 客户提醒。
+<span class="c">---</span>
+
+<span class="c"># P0 看门狗</span>
+
+<span class="c">## 职责</span>
+1. 启动后 订阅 /api/bids/stream SSE
+2. 监听 priority=P0 的 bid 的 stage/block 变化
+3. 通过 lark-im 推送到 Duke 个人微信
+4. 静默时段:23:00-07:00 不告警(避免打扰)
+
+<span class="c">## 告警格式</span>
+🚨 P0 告警
+客户: 东莞银行 (dgyhst2026)
+变化: stage 从"修订"→"封标"
+原因: ...
+时间: 2026-08-10 09:45:22
+看板: http://127.0.0.1:8765/#dgyhst2026
+</pre>
+
+      <h3 class="st">scripts/main.py 关键代码</h3>
+<pre class="code"><span class="k">import</span> json, requests, os
+<span class="k">from</span> datetime <span class="k">import</span> datetime, time
+
+<span class="v">SSE_URL</span>    = <span class="s">"http://127.0.0.1:8765/api/bids/stream"</span>
+<span class="v">LARK_URL</span>    = <span class="s">"https://open.feishu.cn/open-apis/im/v1/messages"</span>
+
+<span class="k">def</span> <span class="f">is_silent</span>():
+    h = datetime.now().hour
+    <span class="k">return</span> h &gt;= <span class="n">23</span> <span class="k">or</span> h &lt; <span class="n">7</span>
+
+<span class="k">def</span> <span class="f">send_lark</span>(text):
+    requests.post(<span class="v">LARK_URL</span>, json={
+        <span class="s">"receive_id"</span>: <span class="s">"duke_user_id"</span>,
+        <span class="s">"msg_type"</span>: <span class="s">"text"</span>,
+        <span class="s">"content"</span>: json.dumps({<span class="s">"text"</span>: text})
+    }, headers={<span class="s">"Authorization"</span>: <span class="s">"Bearer "</span> + os.environ[<span class="s">"LARK_TOKEN"</span>]})
+
+<span class="k">def</span> <span class="f">on_event</span>(event):
+    bid = event.get(<span class="data">data</span>, {})
+    <span class="k">if</span> bid.get(<span class="s">"priority"</span>) != <span class="s">"P0"</span>: <span class="k">return</span>
+    <span class="k">if</span> event[<span class="s">"type"</span>] <span class="k">not in</span> [<span class="s">"update.stage"</span>, <span class="s">"update.block"</span>]: <span class="k">return</span>
+    <span class="k">if</span> <span class="f">is_silent</span>(): <span class="k">return</span>
+    <span class="f">send_lark</span>(<span class="s">f"🚨 P0 告警\n客户: </span>{bid['client']}<span class="s"> (</span>{bid['code']}<span class="s">)\n字段: </span>{event['field']}<span class="s">\n新值: </span>{event['value']}<span class="s">\n时间: </span>{datetime.now()}<span class="s">"</span>)
+
+<span class="c"># 启动 SSE 长连接</span>
+<span class="k">import</span> sseclient
+events = sseclient.<span class="f">SSEClient</span>(<span class="v">SSE_URL</span>)
+<span class="k">for</span> event <span class="k">in</span> events:
+    <span class="k">try</span>:
+        <span class="f">on_event</span>(json.loads(event.data))
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="f">print</span>(<span class="s">f"err: </span>{e}<span class="s">"</span>)
+</pre>
+    </div>
+  </div>
+
+  <!-- ============== S-08: resume-builder (NEW) ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">8</span>S-08 · resume-builder 新建<span class="pill pill-p1">P1</span></div>
+    <div class="sec-lede">人员资质节点:从团队简历库生成投标专用简历(脱敏 + 业绩对齐 + 格式统一)。</div>
+
+    <div class="skill-card">
+      <div class="head">
+        <div>
+          <h3>resume-builder <span class="pill pill-new">NEW</span></h3>
+          <div class="path">路径:<code>~/.workbuddy/skills/resume-builder/</code></div>
+        </div>
+        <div class="meta"><span class="pill pill-p1">P1</span><code>1.5 天</code></div>
+      </div>
+
+      <h3 class="st">SKILL.md 草稿</h3>
+<pre class="code"><span class="c">---</span>
+<span class="k">name</span>: resume-builder
+<span class="k">version</span>: <span class="s">"1.0.0"</span>
+<span class="k">description</span>: 投标简历生成器 · 从候选人库筛选 + 脱敏 + 业绩对齐 + 格式统一。
+  触发词:投标简历、人员资质、简历生成、做简历。
+<span class="c">---</span>
+
+<span class="c"># 投标简历生成器</span>
+
+<span class="c">## 职责</span>
+1. 输入:客户名 + 岗位要求(从招标书 §人员要求 提取)
+2. 从 <span class="s">~/.resume_pool/</span> 候选人库筛选匹配
+3. 脱敏:身份证/手机/住址
+4. 业绩对齐:突出与本次项目类似的行业经验
+5. 输出 Word 简历(统一格式)
+
+<span class="c">## BidBoard 集成</span>
+- 简历生成完 → addAiReady(code, "人员简历 N 份")
+- 资质不全 → setBlock(code, "人员资质不全:缺 X 证书")
+</pre>
+    </div>
+  </div>
+
+  <!-- ============== 通用 wrapper ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">9</span>通用 wrapper(全 Skill 复用)</div>
+    <div class="sec-lede">每个 Skill 都要复制 <code>scripts/bidboard_client.py</code>(§0.2 已给)。下表是 API 速查。</div>
+
+    <table>
+      <thead><tr><th>API</th><th>用途</th><th>调用次数预估/天</th></tr></thead>
+      <tbody>
+        <tr><td><code>create(code, client, due_at, ...)</code></td><td>新商机入 bids</td><td>5-10 次</td></tr>
+        <tr><td><code>add_ai_ready(code, item, source)</code></td><td>Skill 跑完写 ai_ready</td><td>30-50 次</td></tr>
+        <tr><td><code>set_stage(code, stage)</code></td><td>推进客户阶段</td><td>10-15 次</td></tr>
+        <tr><td><code>set_block(code, reason)</code></td><td>写入阻塞原因</td><td>5-10 次</td></tr>
+        <tr><td><code>set_human_todo(code, list)</code></td><td>写"人要做的事"</td><td>10-20 次</td></tr>
+        <tr><td><code>update_flow_node(code, node_id, status, reason)</code></td><td>更新流程节点</td><td>15-25 次</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="st">失败兜底机制</h3>
+<pre class="code"><span class="c"># 任何 API 调用失败 → 写入本地队列 ~/.bidboard_queue.jsonl</span>
+<span class="c"># 启动时:workbuddy run bidboard-replay 一次性重放</span>
+$ workbuddy run bidboard-replay --queue=~/.bidboard_queue.jsonl
+  → 读取 200 条未发请求,逐条 POST
+  → 成功后从队列删除
+  → 失败 3 次入死信队列 ~/.bidboard_dead.jsonl
+</pre>
+  </div>
+
+  <!-- ============== 风险与回滚 ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">10</span>风险与回滚</div>
+    <div class="sec-lede">8 个 Skill 同时改造,任何一步错都可能让看板写脏数据。回滚预案必须先想清楚。</div>
+
+    <div class="risk-grid">
+      <div class="risk crit">
+        <h5>🔴 Skill 改造不向后兼容</h5>
+        <p>改造后 Skill 调用 <code>bidboard_client</code> 但 workbench 没起 → Skill 阻塞。<br><b>缓解</b>:wrapper 有本地队列兜底,workbench 不起也不会崩 Skill。</p>
+      </div>
+      <div class="risk crit">
+        <h5>🔴 看板写脏数据</h5>
+        <p>多个 Skill 同时写同一 bid,字段互相覆盖。<br><b>缓解</b>:每个字段写之前先 <code>GET</code> 读最新,做字段级合并而非整条覆盖。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 性能开销</h5>
+        <p>8 个 Skill 每个都调 HTTP,工作台可能扛不住。<br><b>缓解</b>:<b>批量接口</b>(P2 加):<code>POST /api/bids/batch</code> 一次写多条。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 重放队列堆积</h5>
+        <p>workbench 长期没起,队列堆积 1000+ 条。<br><b>缓解</b>:队列文件大小限制 1MB,超出转警告 + Slack。</p>
+      </div>
+      <div class="risk crit">
+        <h5>🔴 敏感字段泄露</h5>
+        <p>报价 / 合同金额写入 webhook。<br><b>缓解</b>:wrapper 增加 <code>__redact__</code> 黑名单字段,写 webhook 前脱敏。</p>
+      </div>
+      <div class="risk mid">
+        <h5>🔵 跨平台时间差</h5>
+        <p>Skill 跑完到看板显示延迟 500ms+。<br><b>缓解</b>:<b>本地优先</b>:Skill 先写 localStorage(同浏览器内秒同步),再异步同步到后端。</p>
+      </div>
+    </div>
+
+    <h3 class="st">回滚预案</h3>
+    <ol style="font-size: 13.5px; color: var(--ink-soft); padding-left: 20px; line-height: 1.8;">
+      <li>每个 Skill 改造时:<b>原 SKILL.md 备份到 <code>~/.workbuddy/skills/_archive/&lt;skill&gt;_&lt;date&gt;.md</code></b></li>
+      <li>每个 Skill 跑通 3 天,确认数据 OK,再继续下一个</li>
+      <li>任何 P0 看板数据问题 → <code>workbuddy run bidboard-restore --from=~/.bidboard_backup_&lt;date&gt;.json</code></li>
+      <li>改造期间,看板的"客户卡"全部标 <code>priority_manual=true</code>,避免自动算覆盖</li>
+    </ol>
+  </div>
+
+  <!-- ============== 30/60/90 路线 ============== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">11</span>30/60/90 路线</div>
+    <table>
+      <thead><tr><th>阶段</th><th>Skill 任务</th><th>产出</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill pill-p0">P0 · 第 1-2 周</span></td>
+        <td>S-01 bid-file-review / S-02 bid-news-collection 改造 + S-05 bid-card-refresh 新建 + S-06 gate-checker 新建</td>
+        <td>4 个 P0 Skill 跑通,看板有真实数据流入</td></tr>
+        <tr><td><span class="pill pill-p0">P0 · 第 3 周</span></td>
+        <td>S-03 quote-generation-v3 改造 + 端到端联调(从采集→报价→封标→讲标)</td>
+        <td>完整剧本(剧本②)端到端跑通</td></tr>
+        <tr><td><span class="pill pill-p1">P1 · 第 4-5 周</span></td>
+        <td>S-04 content-longform 改造 + S-07 p0-watcher 新建 + S-08 resume-builder 新建</td>
+        <td>4 个 P1 Skill 全部就绪</td></tr>
+        <tr><td><span class="pill pill-p2">P2 · 第 6+ 周</span></td>
+        <td>批量接口 / 死信队列 / 跨 Skill 协同(例:bid-file-review 触发 p0-watcher)</td>
+        <td>性能 + 韧性优化</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px;">
+    <code>skill-integration-plan-20260813.html</code> · 4 改造 + 4 新建 · 通用 wrapper + 风险与回滚 · 2026-08-13
+  </div>
+</div>
+</body>
+</html>

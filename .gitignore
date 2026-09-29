@@ -1,0 +1,50 @@
+# ---- 系统/编辑器 ----
+.DS_Store
+__pycache__/
+*.pyc
+*.log
+
+# ---- 备份文件：无版本控制期的 .bak 已在首次提交 02c7fa0 留档，此后一律不纳管 ----
+*.bak
+*.bak-*
+*.bak.*
+
+# ---- 插件与会话运行态（不进仓库）----
+.mimosa/
+.zcode/plans/
+
+# ---- 数据面：唯一事实源在 ~/.bidmaster/（看板投影 ~/.bidboard/ 亦同），永不进代码仓库 ----
+.bidmaster/
+.bidboard/
+
+# ---- kb：索引是契约（进仓库）；原件与切片是证据/耗材，含 L2/L3 材料，只保留目录说明 ----
+kb/raw/*
+!kb/raw/README.md
+kb/slices/*
+!kb/slices/README.md
+
+# ---- 运行产物：runs/ 只纳管回归基线（baseline-*.json），单次 run manifest 留在数据面 ----
+runs/*
+!runs/README.md
+!runs/baseline-*.json
+
+# ---- 审查临时取证（原始终端 dump，报告本体保留）----
+out/report_evidence/
+
+# ---- 投标方案产物（L2 标书，D4 拍板 2026-09-26：永不进 git，落数据面 ~/.bidmaster/out/proposals/）----
+out/proposals/
+
+# ---- 运行日志：客户端诊断信标（运行时数据）----
+log/client-beacon.jsonl
+
+# ---- 公开库不纳管（2026-09-29 owner 指示公开上传，本地保留）----
+pic/
+out/showcase/
+out/report/
+reports/
+tests/golden/goldstd/
+out/*
+!out/README.md
+
+# ---- 外部工具运行态（纪律 2：只读收割，不入库）----
+.workbuddy/

@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>投标看板 v2 · PRD + 完整审查 | Duke · Mavis</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --line-soft: #ECF1F7;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --warn-ink: #92400E;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --danger-ink: #991B1B;
+    --p0: #EF4444; --p0-ink: #991B1B;
+    --p1: #F59E0B; --p1-ink: #92400E;
+    --p2: #38BDF8; --p2-ink: #1E40AF;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --shadow-sm: 0 1px 2px rgba(15,30,51,.04);
+    --r: 10px;
+    --r-lg: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 14.5px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 36px 40px; box-shadow: var(--shadow);
+    margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--brand-soft);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 30px; margin: 12px 0 6px; font-weight: 700; letter-spacing: -.01em; }
+  .hero .sub { color: var(--ink-soft); font-size: 15px; }
+  .hero .thesis {
+    margin-top: 18px; background: white; border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    padding: 12px 16px; border-radius: 8px; font-size: 14px;
+  }
+  .hero .meta { display: flex; gap: 18px; margin-top: 18px; font-size: 12.5px; color: var(--ink-mute); }
+  .hero .meta b { color: var(--ink); font-weight: 600; }
+
+  /* TOC */
+  .toc {
+    background: white; border: 1px solid var(--line); border-radius: var(--r-lg);
+    padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;
+  }
+  .toc h3 { margin: 0 0 12px; font-size: 13px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+  .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 13.5px; }
+  .toc-grid a { color: var(--ink-soft); text-decoration: none; padding: 4px 0; display: flex; align-items: center; gap: 8px;
+    border-radius: 4px; transition: all .15s; }
+  .toc-grid a:hover { color: var(--brand-deep); background: var(--bg-soft); padding-left: 6px; }
+  .toc-grid .num { color: var(--ink-mute); font-family: "SF Mono", monospace; font-size: 11px; min-width: 24px; }
+  .toc-grid .pt { color: var(--ink-mute); font-size: 10px; padding: 1px 5px; border-radius: 3px; background: var(--bg-soft); margin-left: auto; }
+
+  /* Section */
+  .sec {
+    background: white; border: 1px solid var(--line); border-radius: var(--r-lg);
+    padding: 28px 32px; box-shadow: var(--shadow-sm); margin-bottom: 18px;
+  }
+  .sec-title {
+    font-size: 22px; font-weight: 700; margin: 0 0 6px;
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 12px; border-bottom: 2px solid var(--bg-soft);
+  }
+  .sec-title .n {
+    background: var(--brand); color: white; width: 28px; height: 28px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .sec-title .pt-tag {
+    margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    font-weight: 600; letter-spacing: .04em;
+  }
+  .sec-title .pt-tag.prd { background: var(--brand-soft); color: var(--brand-deep); }
+  .sec-title .pt-tag.audit { background: var(--accent-soft); color: var(--accent); }
+  .sec-lede { color: var(--ink-soft); font-size: 14px; margin: 8px 0 18px; }
+
+  /* Sub */
+  .sub-title {
+    font-size: 16px; font-weight: 700; margin: 22px 0 10px;
+    color: var(--ink); display: flex; align-items: center; gap: 8px;
+  }
+  .sub-title::before { content: ""; width: 3px; height: 16px; background: var(--brand); border-radius: 2px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 8px 0; }
+  th {
+    text-align: left; padding: 10px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12.5px;
+    border-bottom: 1px solid var(--line);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code, .code {
+    font-family: "SF Mono", monospace; font-size: 12.5px;
+    background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; color: var(--brand-deep);
+  }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .pill-p0 { background: var(--p0); color: var(--p0-ink); }
+  .pill-p1 { background: var(--p1); color: var(--p1-ink); }
+  .pill-p2 { background: var(--p2); color: var(--p2-ink); }
+  .pill-ok { background: var(--ok-soft); color: #065F46; }
+  .pill-warn { background: var(--warn-soft); color: var(--warn-ink); }
+  .pill-err { background: var(--danger-soft); color: var(--danger-ink); }
+  .pill-brand { background: var(--brand-soft); color: var(--brand-deep); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent); }
+
+  /* Two-col layout */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  /* Stat cards */
+  .stat-card {
+    background: white; border: 1px solid var(--line); border-radius: var(--r);
+    padding: 14px 16px;
+  }
+  .stat-card .k { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .stat-card .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .stat-card .v small { font-size: 12px; color: var(--ink-mute); font-weight: 500; margin-left: 4px; }
+  .stat-card .desc { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+  /* Code blocks */
+  pre.code-block {
+    background: #0F1E33; color: #E6F1FB; padding: 14px 16px;
+    border-radius: 8px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0;
+  }
+  pre.code-block .c { color: #94A3B8; }
+  pre.code-block .k { color: #C7D2FE; }
+  pre.code-block .s { color: #FDE68A; }
+  pre.code-block .v { color: #7DD3FC; }
+  pre.code-block .f { color: #6EE7B7; }
+  pre.code-block .n { color: #6EE7B7; }
+
+  /* User story */
+  .story {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    padding: 12px 16px; border-radius: 6px; margin: 8px 0; font-size: 13.5px;
+  }
+  .story b { color: var(--brand-deep); }
+
+  /* Audit cards */
+  .audit-card {
+    background: white; border: 1px solid var(--line); border-radius: var(--r);
+    padding: 14px 18px; margin: 8px 0;
+  }
+  .audit-card.crit { border-left: 4px solid var(--danger); }
+  .audit-card.warn { border-left: 4px solid var(--warn); }
+  .audit-card.ok { border-left: 4px solid var(--ok); }
+  .audit-card h4 { margin: 0 0 6px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+  .audit-card .meta { font-size: 11.5px; color: var(--ink-mute); margin-bottom: 8px; }
+  .audit-card p { margin: 4px 0; font-size: 13.5px; color: var(--ink-soft); }
+  .audit-card ul { margin: 6px 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft); }
+  .audit-card li { margin-bottom: 4px; }
+  .audit-card li b { color: var(--ink); }
+
+  /* Score bar */
+  .score { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  .score .lbl { font-size: 12px; color: var(--ink-soft); min-width: 110px; font-weight: 600; }
+  .score .bar { flex: 1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .score .bar .fill { height: 100%; border-radius: 4px; }
+  .score .v { font-size: 13px; font-weight: 700; min-width: 50px; text-align: right; }
+
+  /* Risk grid */
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+  .risk {
+    background: white; border: 1px solid var(--line); border-radius: var(--r);
+    padding: 12px 14px;
+  }
+  .risk .h { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 13.5px; font-weight: 700; }
+  .risk .h .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk.crit .dot { background: var(--danger); }
+  .risk.warn .dot { background: var(--warn); }
+  .risk.mid .dot { background: var(--accent); }
+  .risk .d { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+  .risk .d b { color: var(--ink); }
+
+  /* Decision box */
+  .decision {
+    background: var(--accent-soft); border: 1px solid #C7D2FE;
+    border-radius: var(--r); padding: 14px 18px; margin: 12px 0;
+  }
+  .decision h4 { margin: 0 0 6px; color: var(--accent); font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  .decision p { margin: 4px 0; font-size: 13.5px; color: var(--ink-soft); }
+  .decision p b { color: var(--ink); }
+
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .risk-grid { grid-template-columns: 1fr; }
+    .toc-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+    .hero { padding: 24px 18px; }
+    .sec { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="tag">PRD · v2 · 2026-08-12</span>
+    <h1>投标看板 v2 · 产品需求文档 + 完整审查</h1>
+    <div class="sub">金融行业投标全流程的 AI 协作中枢 · 让 Duke 从"人盯多工具"变为"一屏 + AI 调度"</div>
+    <div class="thesis">
+      <b>核心定位</b>:不是"又一个看板",而是<b>把 104 个 Skill 串成可调度的中枢</b>——任何 agent / skill 都能调,所有变化实时同步,
+      流程、阻塞、截止、AI 介入全部一屏可见。<b>P0 目标 30 天内跑通"每天 09:45 第一屏"</b>。
+    </div>
+    <div class="meta">
+      <span>📅 文档日期:<b>2026-08-12</b></span>
+      <span>👤 产品负责人:<b>Duke(本人)</b></span>
+      <span>🎯 当前阶段:<span class="pill pill-p0">P0 MVP</span></span>
+      <span>📊 关联 demo:<code>bid-board-v2-20260810.html</code></span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>📑 目录</h3>
+    <div class="toc-grid">
+      <a href="#prd-1"><span class="num">01</span>产品概述 <span class="pt">PRD</span></a>
+      <a href="#prd-2"><span class="num">02</span>用户画像与场景 <span class="pt">PRD</span></a>
+      <a href="#prd-3"><span class="num">03</span>核心功能需求 <span class="pt">PRD</span></a>
+      <a href="#prd-4"><span class="num">04</span>非功能需求 <span class="pt">PRD</span></a>
+      <a href="#prd-5"><span class="num">05</span>信息架构 <span class="pt">PRD</span></a>
+      <a href="#prd-6"><span class="num">06</span>数据模型 <span class="pt">PRD</span></a>
+      <a href="#prd-7"><span class="num">07</span>API 设计 <span class="pt">PRD</span></a>
+      <a href="#prd-8"><span class="num">08</span>集成与扩展 <span class="pt">PRD</span></a>
+      <a href="#prd-9"><span class="num">09</span>实施路径 <span class="pt">PRD</span></a>
+      <a href="#prd-10"><span class="num">10</span>风险与边界 <span class="pt">PRD</span></a>
+      <a href="#prd-11"><span class="num">11</span>验收标准 <span class="pt">PRD</span></a>
+      <a href="#au-12"><span class="num">12</span>逻辑一致性审查 <span class="pt">审查</span></a>
+      <a href="#au-13"><span class="num">13</span>批判性审查 <span class="pt">审查</span></a>
+      <a href="#au-14"><span class="num">14</span>SMART 分析 <span class="pt">审查</span></a>
+      <a href="#au-15"><span class="num">15</span>可行性分析 <span class="pt">审查</span></a>
+      <a href="#au-16"><span class="num">16</span>审查结论 <span class="pt">审查</span></a>
+    </div>
+  </div>
+
+  <!-- ============ PART 1: PRD ============ -->
+
+  <div class="sec" id="prd-1">
+    <div class="sec-title"><span class="n">1</span>产品概述<span class="pt-tag prd">PRD</span></div>
+    <div class="sec-lede">产品是什么、为什么做、解决什么问题。</div>
+
+    <h3 class="sub-title">1.1 一句话定位</h3>
+    <p>投标看板 v2 是 Duke 个人工作台中的<b>投标全流程 AI 协作中枢</b>,把投标相关的 8 个核心 Skill、6 个后端服务、3 类 Webhook、13 步流程、6 个并行客户<b>串成一个实时同步的可视化中枢</b>。</p>
+
+    <h3 class="sub-title">1.2 核心问题</h3>
+    <table>
+      <thead><tr><th style="width:30%">现状痛点</th><th>根因</th><th>本产品的解法</th></tr></thead>
+      <tbody>
+        <tr><td>多客户并行(6 家在跑)易漏易错</td><td>每个客户分散在 Word / 飞书 / 微信 / 邮件,无统一视图</td><td>一屏看板 + 流程 swimlane 双视图</td></tr>
+        <tr><td>Skill 跑完不知道客户卡在哪一步</td><td>Skill 之间无协同,产出是孤岛</td><td><code>window.BidBoard</code> API 强制每个 Skill 写入看板</td></tr>
+        <tr><td>阻塞发生无即时告警</td><td>阻塞依赖人工同步沟通</td><td>P0 看门狗 → 实时推微信</td></tr>
+        <tr><td>标书 / 流程 / 资讯 / 案例 / 资质分散管理</td><td>工具之间无关联</td><td>流程节点 ↔ Skill 绑定,自动触发</td></tr>
+        <tr><td>每天 09:45 / 21:00 不知道从哪看起</td><td>信息散落多工具</td><td>固化"两个时点仪式",3 分钟扫完</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">1.3 范围与非范围</h3>
+    <div class="grid-2">
+      <div class="stat-card">
+        <div class="k">范围内 (In Scope)</div>
+        <div class="v">✓ <small>看板 · 流程 · 管理</small></div>
+        <div class="desc">投标全流程的 AI 协作 · 客户状态 / 流程 / 阻塞 / 截止 · Skill / Webhook 配置</div>
+      </div>
+      <div class="stat-card">
+        <div class="k">范围外 (Out of Scope)</div>
+        <div class="v">✗ <small>不做</small></div>
+        <div class="desc">标书内容生成(走 content-longform)· 客户合同 · 团队多人协作 · 移动 App · 移动端审批</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" id="prd-2">
+    <div class="sec-title"><span class="n">2</span>用户画像与场景<span class="pt-tag prd">PRD</span></div>
+    <div class="sec-lede">主要用户是 Duke 本人,次要是团队成员(售前 / 商务 / 技术)和管理者。</div>
+
+    <h3 class="sub-title">2.1 主要用户:Duke(自己)</h3>
+    <table>
+      <thead><tr><th style="width:20%">维度</th><th>描述</th></tr></thead>
+      <tbody>
+        <tr><td>角色</td><td>金融行业网络安全产品经理 · 10 年安全经验 · SecNews 个人 IP</td></tr>
+        <tr><td>资历</td><td>内部代号 Duke · 攻防演练咨询老兵 · Agent 工程化能力 ★★★★☆</td></tr>
+        <tr><td>每日时间投入</td><td>投标相关 4-5 小时 / 其他 3-4 小时</td></tr>
+        <tr><td>工作环境</td><td>macOS · Chrome / Safari · 个人 workbench 127.0.0.1:8765 · 飞书 / 微信</td></tr>
+        <tr><td>决策风格</td><td>结构化输出 · 分阶段推进 · 命名纪律严 · 偏好 tech-light 浅色</td></tr>
+        <tr><td>协作模式</td><td>他做决策和签发,AI 做调度,团队同事执行具体工作</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">2.2 次要用户</h3>
+    <table>
+      <thead><tr><th>角色</th><th>使用方式</th><th>典型诉求</th></tr></thead>
+      <tbody>
+        <tr><td><b>售前</b></td><td>看 swimlane 知道自己负责的"案例 / 技术方案"节点进度</td><td>截止前 3 天提醒 · 阻塞快速上报</td></tr>
+        <tr><td><b>商务</b></td><td>看"报价 / 商务方案"节点 + 截止日期</td><td>BOM 出稿即知 · 签字状态可视</td></tr>
+        <tr><td><b>技术</b></td><td>看"技术方案 / 初稿 / 定稿"节点</td><td>AI 介入标记(差异点比对已就绪)直接开始</td></tr>
+        <tr><td><b>管理者</b></td><td>周报 / 月报 · 投标投入产出分析</td><td>整盘 P0/P1/P2 数量 · 阻塞率</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">2.3 核心场景与用户故事</h3>
+
+    <div class="story"><b>US-01 · 每天 09:45 第一屏</b><br>作为 Duke,我每天 09:45 打开看板,3 分钟内知道:① 6 个客户在跑;② 1 个 P0 东莞 T-2 紧急;③ 今日动作 3 条;④ 1 个阻塞需处理。点"📑 开同步 tab"做实时对比。</div>
+
+    <div class="story"><b>US-02 · 跑东莞封标流水线</b><br>作为 Duke,我点右栏剧本"东莞银行封标流水线",4 步按顺序 800ms 间隔自动跑完。看板上东莞卡:stage 从"修订"→"封标"→"述标",block 字段从空→"报价签字"→空,ai_ready 数组追加 3 项。事件流显示 4 行 API 调用。</div>
+
+    <div class="story"><b>US-03 · 流程节点手动推进</b><br>作为 Duke,我切到"流程"视图,看到东莞在"报价"节点红色阻塞(报价签字)。点节点 → 弹窗显示状态/截止/AI 介入 → 点"解除阻塞" → 节点变蓝"进行中"→ 状态写回 stage 字段 → 看板卡同步变绿。</div>
+
+    <div class="story"><b>US-04 · Skill 跑完自动写看板</b><br>作为任意 skill 开发者,我调用 <code>BidBoard.addAiReady('dgyhst2026', '100+ 项检查', 'bid-file-review')</code>。看板对应客户卡立即高亮闪烁,事件流添加一条,管理页 Logs tab 同步显示。其他 tab 实时同步。</div>
+
+    <div class="story"><b>US-05 · 配置新 Webhook</b><br>作为 Duke,我点管理页"📡 Webhooks"→"新增",填名称 / URL / 触发条件。保存后立即在 Webhook 列表看到,新事件触发即推送。"▶ 测试"按钮立即模拟一次。</div>
+  </div>
+
+  <div class="sec" id="prd-3">
+    <div class="sec-title"><span class="n">3</span>核心功能需求<span class="pt-tag prd">PRD</span></div>
+    <div class="sec-lede">P0 = 30 天内必须 / P1 = 30-60 天 / P2 = 60-90 天。每个需求都标注负责人和验收指标。</div>
+
+    <h3 class="sub-title">3.1 P0 · MVP(30 天内,共 <b>7 项</b>)</h3>
+    <p style="font-size: 12.5px; color: var(--ink-mute); margin: 4px 0 8px;">⚠ <b>本次评审调整</b>:F-P0-07(事件流)从 P0 降至 P1(审查 §14 SMART R 维度缺口);范围收 7 项,集中力量吃硬骨头。</p>
+    <table>
+      <thead><tr><th>ID</th><th>需求</th><th>验收指标</th><th>依赖</th></tr></thead>
+      <tbody>
+        <tr><td><code>F-P0-01</code></td><td><b>投标看板</b>:6 个客户按优先级排序的卡片列表</td><td>看板打开 ≤ 1s;客户卡 9 字段全显;筛选 P0/P1/P2 即时切换</td><td>bids 表 schema</td></tr>
+        <tr><td><code>F-P0-02</code></td><td><b>剧本(Playbook)</b>:5 个故事化剧本,1-4 步,单步/全跑</td><td>单步 ≤ 200ms;全跑 800ms/步;每步触发 1+ API 调用</td><td>window.BidBoard</td></tr>
+        <tr><td><code>F-P0-03</code></td><td><b>流程 swimlane</b>:13 步 × N 客户横向图,阻塞可见</td><td>渲染 ≤ 1.5s;节点点击响应 ≤ 200ms;阻塞脉动频率 1.4s</td><td>flow 模板 + nodes 数据</td></tr>
+        <tr><td><code>F-P0-04</code></td><td><b>window.BidBoard API</b>:JS 全局对象,任何 skill 调</td><td>覆盖 7 个方法;100% 单元测试通过</td><td>—</td></tr>
+        <tr><td><code>F-P0-05</code></td><td><b>9 字段 bids 模型</b>:code / client / stage / priority / due_at / ai_ready / human_todo / block / last_sync</td><td>必填校验;code 唯一;枚举 stage/priority 合法</td><td>—</td></tr>
+        <tr><td><code>F-P0-06</code></td><td><b>跨 tab 实时同步</b>:BroadcastChannel + localStorage 降级</td><td>两个 tab 写入延迟 ≤ 200ms;关闭一 tab 不影响另一 tab</td><td>浏览器现代</td></tr>
+        <tr><td><code>F-P0-08</code></td><td><b>节点详情弹窗</b>:状态切换 / 截止日 / 阻塞原因</td><td>弹窗定位不超出屏幕;操作写回数据并广播</td><td>swimlane 节点</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">3.2 P1 · 增强(30-60 天,共 <b>9 项</b>)</h3>
+    <p style="font-size: 12.5px; color: var(--ink-mute); margin: 4px 0 8px;">↑ F-P0-07 降级到本表第 1 项,其余 8 项为原 P1 计划。</p>
+    <table>
+      <thead><tr><th>ID</th><th>需求</th><th>验收指标</th></tr></thead>
+      <tbody>
+        <tr><td><code>F-P1-07</code> <span class="pill pill-err" style="font-size: 9.5px;">从 P0 降</span></td><td><b>事件流</b>:底部固定 200 条,深色,等宽字体,API 实时显</td><td>流式滚动;支持暂停/清空/导出 JSON;不影响主流程</td></tr>
+        <tr><td><code>F-P1-01</code></td><td><b>截止日期自动识别</b>:按"截止 - N 天"反推每个流程节点截止日,支持手动覆盖</td><td>13 节点全显;手动调整后写回 bid.flow.nodes[i].plan_end</td></tr>
+        <tr><td><code>F-P1-02</code></td><td><b>P0 看门狗</b>:任意 P0 客户 stage/block 变化 → 微信实时告警</td><td>延迟 ≤ 5s;告警含客户/节点/原因;可配置静默时段</td></tr>
+        <tr><td><code>F-P1-03</code></td><td><b>Skills 管理</b>:8 个投标 Skill 卡片,状态/调用/失败率/测试按钮</td><td>测试按钮真去推看板另一端;状态实时</td></tr>
+        <tr><td><code>F-P1-04</code></td><td><b>Services 管理</b>:6 个后端服务启停/重启/日志</td><td>启停 ≤ 2s 生效;日志近 100 条</td></tr>
+        <tr><td><code>F-P1-05</code></td><td><b>Webhooks CRUD</b>:3 类 webhook(微信/Cubox/TG),可新增编辑测试删除</td><td>测试触发 1s 内到目标端;触发条件可配置</td></tr>
+        <tr><td><code>F-P1-06</code></td><td><b>流程模板编辑</b>:13 节点可增删改 / 调顺序 / 改 D-N</td><td>编辑后即时生效到所有客户流程</td></tr>
+        <tr><td><code>F-P1-07</b></td><td><b>bids Schema 文档 + 备份</b>:管理页 Data tab 展示 + 导出/导入</td><td>JSON / SQL 双向;导入冲突处理</td></tr>
+        <tr><td><code>F-P1-08</b></td><td><b>Logs 统一</b>:管理页 Logs tab 与主页事件流共享,支持过滤/搜索</td><td>关键字搜索 ≤ 200ms;级别过滤 5 类</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">3.3 P2 · 沉淀(60-90 天)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>需求</th><th>价值</th></tr></thead>
+      <tbody>
+        <tr><td><code>F-P2-01</code></td><td><b>Skill 健康度月报</b>:自动算调用频次/失败率,候选弃用 0 调用</td><td>104 Skill 瘦身,减少认知负担</td></tr>
+        <tr><td><code>F-P2-02</code></td><td><b>复盘 → 知识库闭环</b>:封标后 48h AI 自动生成项目卡 → Cubox</td><td>沉淀方法论,提升后续投标胜率</td></tr>
+        <tr><td><code>F-P2-03</code></td><td><b>资讯漏斗 → 内容选题</b>:每周 P0 监管事件自动入 SecNews 选题</td><td>内容创作不再选题焦虑</td></tr>
+        <tr><td><code>F-P2-04</code></td><td><b>AI 升级题库助手</b>:173 题题库接入工作流,碎片时间刷</td><td>认证准备自动化</td></tr>
+        <tr><td><code>F-P2-05</code></td><td><b>团队多用户支持</b>:角色权限(只读 / 编辑 / 管理员),审计日志</td><td>从个人工具升级为团队工具</td></tr>
+        <tr><td><code>F-P2-06</code></td><td><b>移动端 PWA</b>:看板关键信息(只看 P0/P1)响应式优化</td><td>出差 / 通勤可用</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec" id="prd-4">
+    <div class="sec-title"><span class="n">4</span>非功能需求<span class="pt-tag prd">PRD</span></div>
+    <table>
+      <thead><tr><th style="width:18%">类别</th><th>需求</th><th>指标</th></tr></thead>
+      <tbody>
+        <tr><td><b>性能</b></td><td>看板首次渲染 / 切换视图 / 跑剧本单步</td><td>≤ 1s / ≤ 200ms / ≤ 200ms</td></tr>
+        <tr><td><b>性能</b></td><td>跨 tab 同步延迟</td><td>≤ 300ms</td></tr>
+        <tr><td><b>性能</b></td><td>支持客户数(单页)</td><td>≤ 60 客户(swimlane 横向滚动,虚拟化非必须)</td></tr>
+        <tr><td><b>可用性</b></td><td>数据持久化</td><td>localStorage 5MB 容量内不丢失;导出 JSON 兜底</td></tr>
+        <tr><td><b>可用性</b></td><td>单点失败不致命</td><td>BroadcastChannel 失败时降级 storage 事件</td></tr>
+        <tr><td><b>安全</b></td><td>客户数据本地优先</td><td>所有 bids 数据 localStorage / 本地 SQLite;远程 API 走 token 鉴权</td></tr>
+        <tr><td><b>安全</b></td><td>敏感字段(报价/合同)脱敏</td><td>日志中 <code>block_reason</code> 字段不进外部 webhook</td></tr>
+        <tr><td><b>兼容</b></td><td>浏览器</td><td>Chrome 110+ / Safari 16+ / Edge 110+(BroadcastChannel 必需)</td></tr>
+        <tr><td><b>可维护</b></td><td>Skill 命名纪律</td><td><code>[类型]-[域]-[描述]-[版本]</code> · ZIP 备份桌面</td></tr>
+        <tr><td><b>可维护</b></td><td>交付门禁</td><td>JS 语法通过 / HTML 内嵌 JSON 可解析 / 无 console error</td></tr>
+        <tr><td><b>i18n</b></td><td>界面文案</td><td>中文为主(目标用户母语);预留 <code>i18n[key]</code> 结构</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec" id="prd-5">
+    <div class="sec-title"><span class="n">5</span>信息架构<span class="pt-tag prd">PRD</span></div>
+
+    <h3 class="sub-title">5.1 主页 nav(顶部)</h3>
+    <pre class="code-block">📊 看板 ─── 默认视图 · 客户状态卡 + 剧本右栏
+⇉ 流程 ─── 流程视图 · 13 步 × N 客户横向 swimlane
+⚙️ 管理 ─── 跳转到管理页(独立 HTML)</pre>
+
+    <h3 class="sub-title">5.2 管理页 tab(6 个)</h3>
+    <pre class="code-block">🎯 Skills   ── 8 个投标 Skill 卡片(状态 / 调用 / 测试 / 配置)
+⚡ Services ── 6 个后端服务(启停 / 重启 / 日志)
+📡 Webhooks ── 3 类 webhook CRUD(微信 / Cubox / TG)
+⇉ 流程     ── 13 步模板编辑 + 截止日规则 + 客户实例
+💾 Data     ── bids Schema + 备份 / 导入 / 导出
+📜 Logs     ── 系统日志(级别过滤 + 关键字搜索)</pre>
+
+    <h3 class="sub-title">5.3 主页区域结构(自上而下)</h3>
+    <table>
+      <thead><tr><th>区域</th><th>作用</th><th>是否固定</th></tr></thead>
+      <tbody>
+        <tr><td>Header (品牌 + nav + 实时时间)</td><td>导航 + 标识</td><td>固定</td></tr>
+        <tr><td>Stats Bar (6 个数字:在跑/P0/P1/P2/阻塞/AI 就绪率)</td><td>整体水位</td><td>固定</td></tr>
+        <tr><td>Main View (看板或流程,tab 切换)</td><td>主体</td><td>占满空间</td></tr>
+        <tr><td>Event Stream (深色,200px,所有 API 调用)</td><td>实时反馈</td><td>底部固定</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec" id="prd-6">
+    <div class="sec-title"><span class="n">6</span>数据模型<span class="pt-tag prd">PRD</span></div>
+
+    <h3 class="sub-title">6.1 bids 表(主表)</h3>
+    <pre class="code-block"><span class="k">CREATE TABLE</span> bids (
+  <span class="v">code</span>        <span class="n">TEXT PRIMARY KEY</span>,           <span class="c">-- nfh2026 / dgyhst2026</span>
+  <span class="v">client</span>      <span class="n">TEXT NOT NULL</span>,              <span class="c">-- 客户名</span>
+  <span class="v">stage</span>       <span class="n">TEXT</span> <span class="k">CHECK</span>(stage <span class="k">IN</span> (<span class="s">'跟踪'</span>,<span class="s">'审查'</span>,<span class="s">'报价'</span>,<span class="s">'修订'</span>,<span class="s">'封标'</span>,<span class="s">'述标'</span>)),
+  <span class="v">priority</span>    <span class="n">TEXT DEFAULT</span> <span class="s">'P2'</span> <span class="k">CHECK</span>(priority <span class="k">IN</span> (<span class="s">'P0'</span>,<span class="s">'P1'</span>,<span class="s">'P2'</span>)),
+  <span class="v">due_at</span>      <span class="n">TEXT</span>,                       <span class="c">-- 截止时间</span>
+  <span class="v">ai_ready</span>    <span class="n">JSON DEFAULT</span> <span class="s">'[]'</span>,        <span class="c">-- AI 已就绪项</span>
+  <span class="v">human_todo</span>  <span class="n">JSON DEFAULT</span> <span class="s">'[]'</span>,        <span class="c">-- 人要做的事</span>
+  <span class="v">block</span>       <span class="n">TEXT DEFAULT</span> <span class="s">''</span>,            <span class="c">-- 阻塞原因</span>
+  <span class="v">last_sync</span>   <span class="n">TIMESTAMP</span>,                  <span class="c">-- 最后同步时间</span>
+  <span class="v">timeline</span>    <span class="n">JSON DEFAULT</span> <span class="s">'[]'</span>,         <span class="c">-- 事件时间线</span>
+  <span class="v">flow</span>        <span class="n">JSON</span>                          <span class="c">-- 流程节点数组(见下)</span>
+);</pre>
+
+    <h3 class="sub-title">6.2 flow 节点结构(嵌入 bids.flow)</h3>
+    <pre class="code-block"><span class="c">// 每个 bid.flow.nodes[i] 的结构</span>
+{
+  <span class="v">id</span>: <span class="s">"quote"</span>,                    <span class="c">// 节点 ID(对应 FLOW_TEMPLATE)</span>
+  <span class="v">status</span>: <span class="s">"done|progress|blocked|planned|pending"</span>,
+  <span class="v">plan_end</span>: <span class="s">"2026-08-03"</span>,            <span class="c">// 计划截止(自动 / 手动)</span>
+  <span class="v">actual_end</span>: <span class="s">"2026-07-25"</span>,         <span class="c">// 实际完成(仅 done)</span>
+  <span class="v">block_reason</span>: <span class="s">"报价签字"</span>          <span class="c">// 阻塞原因(仅 blocked)</span>
+}</pre>
+
+    <h3 class="sub-title">6.3 settings(配置表)</h3>
+    <pre class="code-block">{
+  <span class="v">skills</span>:    [ <span class="c">/* 8 个 Skill 对象: id, name, ver, status, calls30, failRate */</span> ],
+  <span class="v">services</span>:  [ <span class="c">/* 6 个 Service 对象: name, url, port, status, reqs */</span> ],
+  <span class="v">webhooks</span>:  [ <span class="c">/* N 个 Webhook 对象: id, name, url, trigger, active */</span> ],
+  <span class="v">flow</span>:      { <span class="v">nodes</span>: [ <span class="c">/* 13 个流程节点模板 */</span> ] }
+}</pre>
+
+    <h3 class="sub-title">6.4 关键不变量(数据完整性)</h3>
+    <table>
+      <thead><tr><th style="width:28%">约束</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><code>code</code> 唯一</td><td>客户代号全局唯一,建客户时校验</td></tr>
+        <tr><td><code>stage</code> ∈ 6 枚举</td><td>任何写入必须经过白名单,非法值拒绝</td></tr>
+        <tr><td><code>priority</code> ∈ 3 枚举</td><td>同上</td></tr>
+        <tr><td><code>ai_ready</code> 数组去重</td><td>同 key 不重复追加(避免噪声)</td></tr>
+        <tr><td><b><code>flow 节点为 source of truth</code></b></td><td>客户当前进度的<b>权威源是 bids.flow.nodes</b>。<code>stage</code> / <code>block</code> / <code>priority</code> 三个字段均为<b>派生字段</b>。任何写入应直接改 flow 节点,再由系统反推其他字段,反之亦然。</td></tr>
+        <tr><td><b><code>stage</code> 反推规则</b></td><td>取 flow.nodes 中 <code>status='progress'</code> 的<b>第一个</b>节点 → 映射到 stage 枚举:<br>
+          <code>sales-bid→跟踪 / buy-rfp→审查 / quote→报价 / tech-solution|draft|final→修订 / seal→封标 / present→述标</code>。<br>
+          若所有节点 done → stage='封标';若所有节点 pending → stage='跟踪'。</td></tr>
+        <tr><td><b><code>block</code> 派生规则</b></td><td>取 flow.nodes 中 <code>status='blocked'</code> 的节点 → <code>block</code> 字段 = <code>"[节点名] · [block_reason]"</code>(逗号拼接所有阻塞节点)。<br>
+          若无 blocked 节点 → <code>block=''</code>。<br>
+          手动写 <code>block</code> 字段时,必须同时设置对应 flow 节点 status='blocked' 并填 block_reason。</td></tr>
+        <tr><td><code>priority</code> 派生规则</td><td>见 §6.5 优先级算法。<b>自动算</b>,但 Duke 可手动覆盖(覆盖后 <code>priority_manual=true</code>,自动重算跳过)。</td></tr>
+        <tr><td><code>due_at</code> 与 <code>flow.nodes[].plan_end</code></td><td>改 due_at 时,按 §6.6 公式重算所有 <code>plan_end</code>。<b>已被手动调整的节点</b>(<code>plan_end_manual=true</code>)不被覆盖,保留 <code>plan_end_auto</code> 字段以备查。</td></tr>
+        <tr><td><code>code</code> 唯一(重复声明)</td><td>客户代号全局唯一,建客户时校验</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">6.5 P0 优先级算法</h3>
+    <p><b>输入</b>:<code>bid.due_at</code>、<code>today</code>、<code>bid.flow.nodes</code>。<b>输出</b>:<code>bid.priority ∈ {P0, P1, P2}</code>。</p>
+    <pre class="code-block"><span class="k">function</span> <span class="f">calcPriority</span>(bid, today = <span class="k">new</span> Date()) {
+  <span class="c">// 规则 1: 持续跟踪类(无截止)默认 P2</span>
+  <span class="k">if</span> (!bid.due_at || bid.due_at === <span class="s">'持续'</span>) <span class="k">return</span> <span class="s">'P2'</span>;
+
+  <span class="c">// 规则 2: 已封标(所有节点 done 且最后一个是 seal/present/notice/retro)→ 降为 P2</span>
+  <span class="k">if</span> (bid.flow?.nodes?.every(n => n.status === <span class="s">'done'</span>)) <span class="k">return</span> <span class="s">'P2'</span>;
+
+  <span class="c">// 规则 3: 计算距截止天数</span>
+  <span class="k">const</span> due = <span class="k">new</span> Date(bid.due_at.replace(<span class="s">' '</span>, <span class="s">'T'</span>));
+  <span class="k">const</span> daysToDue = Math.ceil((due - today) / (<span class="n">86400000</span>));
+
+  <span class="c">// 规则 4: 基础优先级(按天数)</span>
+  <span class="k">let</span> priority;
+  <span class="k">if</span> (daysToDue <= <span class="n">3</span>)      priority = <span class="s">'P0'</span>;
+  <span class="k">else if</span> (daysToDue <= <span class="n">7</span>) priority = <span class="s">'P1'</span>;
+  <span class="k">else</span>                      priority = <span class="s">'P2'</span>;
+
+  <span class="c">// 规则 5: 阻塞升级(任一节点 blocked → 升一级)</span>
+  <span class="k">const</span> hasBlock = bid.flow?.nodes?.some(n => n.status === <span class="s">'blocked'</span>);
+  <span class="k">if</span> (hasBlock && priority === <span class="s">'P1'</span>) priority = <span class="s">'P0'</span>;
+  <span class="k">else if</span> (hasBlock && priority === <span class="s">'P2'</span>) priority = <span class="s">'P1'</span>;
+
+  <span class="c">// 规则 6: 截止已过(天数 ≤ 0)且未完成 → 强制 P0(最紧急)</span>
+  <span class="k">if</span> (daysToDue <= <span class="n">0</span> && bid.flow?.nodes?.some(n => n.status !== <span class="s">'done'</span>)) {
+    priority = <span class="s">'P0'</span>;
+  }
+
+  <span class="k">return</span> priority;
+}
+
+<span class="c">// 执行时机:每日 09:45 bid-card-refresh cron 跑一次</span>
+<span class="c">// 手动覆盖:Duke 可在弹窗选 P0/P1/P2,设置 priority_manual=true</span></pre>
+
+    <p><b>规则总览(便于查阅)</b>:</p>
+    <table>
+      <thead><tr><th>条件</th><th>优先级</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><code>due_at = '持续'</code> 或 null</td><td><span class="pill pill-p2">P2</span></td><td>持续跟踪类,默认 P2</td></tr>
+        <tr><td>所有 flow 节点 <code>done</code></td><td><span class="pill pill-p2">P2</span></td><td>已完成,降为 P2(避免看板噪声)</td></tr>
+        <tr><td>T ≤ 3 天</td><td><span class="pill pill-p0">P0</span></td><td>极度紧急</td></tr>
+        <tr><td>T ≤ 7 天</td><td><span class="pill pill-p1">P1</span></td><td>本周内</td></tr>
+        <tr><td>T &gt; 7 天</td><td><span class="pill pill-p2">P2</span></td><td>下周及以后</td></tr>
+        <tr><td>任一节点 <code>blocked</code></td><td>原优先级 ↑ 1 级</td><td>P2 → P1 → P0</td></tr>
+        <tr><td>T ≤ 0 天 且未完成</td><td><span class="pill pill-p0">P0</span></td><td>已过截止,强制 P0(最紧急)</td></tr>
+        <tr><td>Duke 手动设置 <code>priority_manual=true</code></td><td>手动值</td><td>覆盖自动计算</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">6.6 plan_end 自动反推公式</h3>
+    <p>每个流程节点的 <code>plan_end</code> = <code>bid.due_at - days_before_due</code> 天。<code>days_before_due</code> 在流程模板(§6 数据模型)定义,负数 = 截止后 N 天(如讲标 D-1、公示 D+30、复盘 D+60)。</p>
+    <pre class="code-block"><span class="k">function</span> <span class="f">calcPlanEnd</span>(bid, nodeTemplate) {
+  <span class="k">if</span> (!bid.due_at || bid.due_at === <span class="s">'持续'</span>) <span class="k">return</span> <span class="s">''</span>;
+  <span class="k">const</span> due = <span class="k">new</span> Date(bid.due_at.replace(<span class="s">' '</span>, <span class="s">'T'</span>));
+  due.setDate(due.getDate() - nodeTemplate.days_before_due);
+  <span class="k">return</span> due.toISOString().slice(<span class="n">0</span>, <span class="n">10</span>);  <span class="c">// YYYY-MM-DD</span>
+}
+
+<span class="c">// 例:due_at='2026-08-13 17:00',节点 'final' (days_before_due=3)</span>
+<span class="c">// → plan_end = 2026-08-10</span></pre>
+  </div>
+
+  <div class="sec" id="prd-7">
+    <div class="sec-title"><span class="n">7</span>API 设计<span class="pt-tag prd">PRD</span></div>
+    <div class="sec-lede">对外暴露 4 类入口:浏览器内 JS、Python 后端、wb_cli、HTTP/SSE。</div>
+
+    <h3 class="sub-title">7.1 浏览器内 JS(<code>window.BidBoard</code>)</h3>
+    <pre class="code-block"><span class="c">// 任何 skill 在浏览器里跑完,直接调</span>
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">setStage</span>(<span class="s">'dgyhst2026'</span>, <span class="s">'封标'</span>);
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">addAiReady</span>(<span class="s">'dgyhst2026'</span>, <span class="s">'100+ 项检查'</span>, <span class="s">'bid-file-review'</span>);
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">setBlock</span>(<span class="s">'dgyhst2026'</span>, <span class="s">'报价签字'</span>);
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">write</span>(<span class="s">'dgyhst2026'</span>, { <span class="v">stage</span>: <span class="s">'封标'</span>, <span class="v">ai_ready</span>: [...] });
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">create</span>({ <span class="v">code</span>: <span class="s">'gxzq260512'</span>, <span class="v">client</span>: <span class="s">'国信证券'</span>, ... });
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">subscribe</span>(<span class="k">cb</span> => <span class="k">cb</span>(<span class="v">evt</span>));
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">stats</span>();
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">read</span>(<span class="s">'dgyhst2026'</span>);</pre>
+
+    <h3 class="sub-title">7.2 HTTP / SSE(后端)</h3>
+    <pre class="code-block"><span class="k">POST</span>   /api/bids/ingest              <span class="c"># 单条写入</span>
+<span class="k">GET</span>    /api/bids                   <span class="c"># 列出全部</span>
+<span class="k">GET</span>    /api/bids/:code             <span class="c"># 读取单条</span>
+<span class="k">PUT</span>    /api/bids/:code             <span class="c"># 整体覆盖</span>
+<span class="k">PATCH</span>  /api/bids/:code/field       <span class="c"># 单字段更新</span>
+<span class="k">DELETE</span> /api/bids/:code             <span class="c"># 删除</span>
+<span class="k">GET</span>    /api/bids/stream            <span class="c"># SSE 长连接,推送所有变化</span>
+<span class="k">POST</span>   /api/bids/sync              <span class="c"># 同步刷新(09:45 cron)</span>
+<span class="k">GET</span>    /api/stats                  <span class="c"># 统计接口</span>
+<span class="k">POST</span>   /api/flow/node/status       <span class="c"># 流程节点状态更新</span></pre>
+
+    <h3 class="sub-title">7.3 鉴权</h3>
+    <p>所有 HTTP API 走 <code>Authorization: Bearer &lt;token&gt;</code>;token 来自 workbench 启动时生成,存 <code>~/.minimax-agent-cn/workbench.token</code>。本地调用可用 <code>file://</code> 直连跳过鉴权(开发模式)。</p>
+  </div>
+
+  <div class="sec" id="prd-8">
+    <div class="sec-title"><span class="n">8</span>集成与扩展<span class="pt-tag prd">PRD</span></div>
+
+    <h3 class="sub-title">8.1 内部 Skill(8 个)</h3>
+    <table>
+      <thead><tr><th>Skill</th><th>调用 BidBoard API</th><th>触发条件</th></tr></thead>
+      <tbody>
+        <tr><td><code>bid-news-collection</code></td><td><code>create</code> / <code>setPriority</code></td><td>每日 09:30 cron</td></tr>
+        <tr><td><code>bid-file-review</code></td><td><code>addAiReady</code> / <code>setStage</code></td><td>招标文件下载后</td></tr>
+        <tr><td><code>quote-generation-v3</code></td><td><code>addAiReady</code> / <code>setBlock</code></td><td>报价节点启动时</td></tr>
+        <tr><td><code>content-longform</code></td><td><code>addAiReady</code></td><td>标书修订节点</td></tr>
+        <tr><td><code>gate-checker</code></td><td><code>addAiReady</code> / <code>setStage</code></td><td>封标前自动</td></tr>
+        <tr><td><code>p0-watcher</code></td><td>(不发看板,只发微信)</td><td>P0 客户 stage/block 变化</td></tr>
+        <tr><td><code>bid-card-refresh</code></td><td>(批量刷新)</td><td>每日 09:45 cron</td></tr>
+        <tr><td><code>resume-builder</code></td><td><code>addAiReady</code></td><td>人员资质节点</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">8.2 外部集成</h3>
+    <table>
+      <thead><tr><th>外部系统</th><th>用途</th><th>接口</th></tr></thead>
+      <tbody>
+        <tr><td><b>飞书 (lark)</b></td><td>P0 告警 / 日报推送</td><td>lark-im / lark-mail</td></tr>
+        <tr><td><b>Cubox</b></td><td>复盘项目卡归档</td><td>Cubox API + 知识库语义检索</td></tr>
+        <tr><td><b>微信</b></td><td>个人通知</td><td>lark-im(企业微信桥接)</td></tr>
+        <tr><td><b>Telegram</b></td><td>备用通知</td><td>Webhook POST</td></tr>
+        <tr><td><b>AI 升级题库</b></td><td>碎片时间刷题(P2)</td><td>题库导入 + 间隔重复算法</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec" id="prd-9">
+    <div class="sec-title"><span class="n">9</span>实施路径与里程碑<span class="pt-tag prd">PRD</span></div>
+
+    <h3 class="sub-title">9.1 30/60/90 天路线</h3>
+    <table>
+      <thead><tr><th>阶段</th><th>时间</th><th>交付物</th><th>验收节点</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill pill-p0">P0</span></td><td>第 1-30 天</td><td>看板 + 流程 + API + 9 字段 + 跨 tab 同步 + 节点弹窗(共 <b>7 项</b>)</td><td>7 个 F-P0-XX 全部完成;跑通 09:45 / 21:00 两个仪式</td></tr>
+        <tr><td><span class="pill pill-p1">P1</span></td><td>第 31-60 天</td><td>事件流(F-P1-07) / 截止日自动 / P0 看门狗 / Skills+Services+Webhooks 管理 / 流程模板编辑 / Data + Logs</td><td>9 个 F-P1-XX;Skill 全部跑通推看板</td></tr>
+        <tr><td><span class="pill pill-p2">P2</span></td><td>第 61-90 天</td><td>Skill 瘦身 / 复盘闭环 / 选题闭环 / 移动端 PWA / 多用户</td><td>6 个 F-P2-XX;P0 看板替换现有人工跟踪</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">9.2 P0 关键路径(30 天甘特)</h3>
+    <pre class="code-block">第 1 周  ─ Schema 落地 + 看板前端(v2 demo 已完成)
+         ─ 集成 bid-news-collection / bid-file-review 推数据
+第 2 周  ─ 流程模板 + 13 节点渲染
+         ─ 节点详情弹窗
+第 3 周  ─ P0 看门狗 + 微信告警(后端)
+         ─ 跨 tab 同步稳定性测试
+第 4 周  ─ 跑通端到端 demo(封标剧本从输入到封标)
+         ─ 文档 + 验收清单</pre>
+  </div>
+
+  <div class="sec" id="prd-10">
+    <div class="sec-title"><span class="n">10</span>风险与边界<span class="pt-tag prd">PRD</span></div>
+
+    <h3 class="sub-title">10.1 产品边界(AI 不做)</h3>
+    <table>
+      <thead><tr><th>边界</th><th>为什么</th></tr></thead>
+      <tbody>
+        <tr><td><b>AI 不替代漏洞验证</b></td><td>投标内容敏感,误判代价高;AI 只出草稿</td></tr>
+        <tr><td><b>AI 不直接给客户发最终结论</b></td><td>客户沟通必须有人的判断</td></tr>
+        <tr><td><b>AI 不绕过授权范围</b></td><td>所有 Skill 必须在授权书范围内</td></tr>
+        <tr><td><b>AI 不替人立论(IP 内容)</b></td><td>SecNews 的灵魂段落必须 Duke 写</td></tr>
+        <tr><td><b>AI 不做最终报价签发</b></td><td>报价/合同签字必须人</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">10.2 已知风险</h3>
+    <div class="risk-grid">
+      <div class="risk crit"><div class="h"><span class="dot"></span>严重:客户数据泄露</div><div class="d"><b>场景</b>:Skill 误把客户报价写入外部 webhook。<br><b>缓解</b>:<code>block_reason</code> / <code>human_todo</code> 等敏感字段在 webhook payload 中<b>脱敏</b>;白名单域名。</div></div>
+      <div class="risk warn"><div class="h"><span class="dot"></span>中等:看板静默失败</div><div class="d">09:30 / 09:45 自动化挂掉,看板停更无人发现。<br><b>缓解</b>:<code>last_sync</code> 超 1h 告警微信。</div></div>
+      <div class="risk crit"><div class="h"><span class="dot"></span>严重:AI 误判责任</div><div class="d">AI 推断 stage / block 错误,导致 Duke 误决策。<br><b>缓解</b>:AI 写 <code>ai_ready</code> 数组(只追加信息),<b>不直接改 stage/priority</b>(需 Duke 确认)。</div></div>
+      <div class="risk mid"><div class="h"><span class="dot"></span>中等:Skill 数量爆炸</div><div class="d">104 Skill 已很多,新增 8 个会到 112+。<br><b>缓解</b>:P2 阶段做瘦身;新增必须 0 重复。</div></div>
+      <div class="risk warn"><div class="h"><span class="dot"></span>中等:跨平台合规</div><div class="d">小红书 / 抖音平台规则,AI 改写可能蹭词。<br><b>缓解</b>:跨平台分发有<b>人工终审</b>环节。</div></div>
+      <div class="risk crit"><div class="h"><span class="dot"></span>严重:浏览器兼容</div><div class="d">BroadcastChannel 在老浏览器不支持;localStorage 在隐身模式可能禁用。<br><b>缓解</b>:降级 storage 事件;导出 JSON 兜底。</div></div>
+    </div>
+  </div>
+
+  <div class="sec" id="prd-11">
+    <div class="sec-title"><span class="n">11</span>验收标准<span class="pt-tag prd">PRD</span></div>
+
+    <h3 class="sub-title">11.1 P0 验收清单(必须全过,共 7 项)</h3>
+    <table>
+      <thead><tr><th>#</th><th>验收项</th><th>通过标准</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>看板能在 1s 内显示 6 个客户卡</td><td>实测 LCP ≤ 1s</td></tr>
+        <tr><td>2</td><td>5 个剧本全部可单步 / 全跑</td><td>9 步全部触发 API 写入,看板对应字段更新</td></tr>
+        <tr><td>3</td><td>流程 swimlane 渲染 6 客户 × 13 节点</td><td>渲染 ≤ 1.5s;节点点击响应 ≤ 200ms;阻塞脉动 1.4s</td></tr>
+        <tr><td>4</td><td>节点弹窗可切换状态 / 写阻塞原因</td><td>数据落库并广播;另一 tab 实时同步</td></tr>
+        <tr><td>5</td><td>window.BidBoard 7 个方法全可调</td><td>含单元测试,跑过率 100%</td></tr>
+        <tr><td>6</td><td>两个 tab 打开同一文件,任一写入另一 tab 同步</td><td>延迟 ≤ 200ms</td></tr>
+        <tr><td>7</td><td>9 字段必填 / 枚举校验</td><td>非法值写入被拒绝 + 提示</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size: 12.5px; color: var(--ink-mute); margin: 6px 0 0;">注:事件流验收(F-P1-07)移至 P1 验收清单。</p>
+
+    <h3 class="sub-title">11.2 P1 验收(关键 3 项)</h3>
+    <ul style="font-size: 13.5px; color: var(--ink-soft); padding-left: 20px;">
+      <li>P0 微信告警:东莞 stage 变化,5s 内 Duke 微信收到</li>
+      <li>Skills 管理页 8 个 Skill 全部能点测试,看板另一端实时看到</li>
+      <li>Webhooks 测试按钮触发后,1s 内目标端收到</li>
+    </ul>
+  </div>
+
+  <!-- ============ PART 2: 审查 ============ -->
+
+  <div class="sec" id="au-12">
+    <div class="sec-title"><span class="n">12</span>逻辑一致性审查<span class="pt-tag audit">审查</span></div>
+    <div class="sec-lede">检查 PRD 各部分之间是否有矛盾、不一致、循环依赖。</div>
+
+    <div class="audit-card crit">
+      <h4>⚠ 问题 12-1:<code>block</code> 字段语义双重身份</h4>
+      <div class="meta">严重度:中 · 来源:数据模型 + 流程模型</div>
+      <p>在 <b>bids 表</b>中,<code>block</code> 是一个 string 字段(看板卡上显示);在 <b>flow 节点</b>中,<code>block_reason</code> 是阻塞原因。<b>两者在 PRD 中没有明确同步规则</b>。</p>
+      <ul>
+        <li>当 flow 节点 <code>quote</code> 被标记为 <code>blocked</code>,<code>block_reason='报价签字'</code> → 是否要写回 <code>bids.block='报价签字'</code>?</li>
+        <li>反之,Duke 在看板手动写 <code>bids.block='客户回复慢'</code>,是否要同步到 flow 节点的某个 status=blocked?</li>
+        <li>如果两方向同步规则不一致,会出现"看板说阻塞在 A,流程图说阻塞在 B"的自相矛盾</li>
+      </ul>
+      <p><b>建议</b>:PRD 第 6.4 节"关键不变量"中已提到一致性,但<b>没定义同步方向和优先级</b>。需补充规则:<b>flow 节点为 source of truth,看板 block 字段为派生</b>。</p>
+    </div>
+
+    <div class="audit-card crit">
+      <h4>⚠ 问题 12-2:<code>stage</code> 与 <code>flow 节点位置</code> 的双重表示</h4>
+      <div class="meta">严重度:中 · 来源:数据模型 + API</div>
+      <p>客户的当前阶段用两个字段表示:</p>
+      <ul>
+        <li><code>bids.stage</code>:枚举(跟踪/审查/报价/修订/封标/述标)6 个值</li>
+        <li><code>bids.flow.nodes[i].status</code>:每个节点的 done/progress/blocked 状态</li>
+      </ul>
+      <p>这两者必须一致,但 PRD 没说<b>谁是权威源</b>。如果 <code>bid.stage='修订'</code>,flow 中可能有 5 个 done + 2 个 progress,但哪个 progress 对应"修订"?</p>
+      <p><b>建议</b>:<b>flow 节点为权威</b>,<code>stage</code> 由最近的 <code>progress</code> 节点反推(已在 demo 中实现 <code>stageMap</code>,但 PRD 没写)。</p>
+    </div>
+
+    <div class="audit-card warn">
+      <h4>⚠ 问题 12-3:P0 / P1 / P2 优先级判定逻辑缺失</h4>
+      <div class="meta">严重度:中</div>
+      <p>PRD 说"AI 自动算 priority",但没定义算法:</p>
+      <ul>
+        <li>什么条件从 P2 升 P1?</li>
+        <li>什么条件从 P1 升 P0?(东莞 T-2 是怎么定的?)</li>
+        <li>P0 降 P1 的规则?</li>
+      </ul>
+      <p><b>建议</b>:<b>P0 = T ≤ 3 天 OR 阻塞 + 客户核心</b>;<b>P1 = T ≤ 7 天</b>;<b>P2 = 其他</b>。写在 PRD 6.4 不变量里。</p>
+    </div>
+
+    <div class="audit-card warn">
+      <h4>⚠ 问题 12-4:"AI 就绪"与"阻塞"的边界模糊</h4>
+      <div class="meta">严重度:低</div>
+      <p><code>ai_ready</code> 是 AI 已完成的事项;<code>human_todo</code> 是人要做的;<code>block</code> 是阻塞原因。<b>但"门禁:JSON/格式/公式 全过"是 AI 做的还是人做的?</b></p>
+      <p>当前 <code>ai_ready</code> 数组里有这种"门禁"项,但严格说门禁是流程环节不是 AI 输出。</p>
+      <p><b>建议</b>:把"门禁"放到 flow 节点 <code>seal</code> 的 sub-status,而不是 ai_ready。或者 <b>ai_ready 只放 AI 的"成果",不混流程节点</b>。</p>
+    </div>
+
+    <div class="audit-card warn">
+      <h4>⚠ 问题 12-5:截止日期 <code>due_at</code> 与流程节点 <code>plan_end</code> 一致性</h4>
+      <div class="meta">严重度:中</div>
+      <p>PRD 6.4 提到"改 due_at 时自动重算 plan_end",但没说:</p>
+      <ul>
+        <li>重算触发是同步还是异步?</li>
+        <li>如果 flow 节点已被 <b>手动调整过</b>(plan_end ≠ 自动算的值),重算是否覆盖?覆盖会丢数据。</li>
+      </ul>
+      <p><b>建议</b>:加 <code>plan_end_manual</code> 字段,只覆盖该字段,自动值仍保留在 <code>plan_end_auto</code>。展示用 manual,无 manual 用 auto。</p>
+    </div>
+
+    <div class="audit-card ok">
+      <h4>✓ 通过项 12-6:数据流方向清晰</h4>
+      <div class="meta">严重度:无</div>
+      <p>Skill → <code>window.BidBoard</code> → localStorage → BroadcastChannel → 其他 tab 渲染。<b>数据流单向且无环</b>,逻辑一致。</p>
+    </div>
+  </div>
+
+  <div class="sec" id="au-13">
+    <div class="sec-title"><span class="n">13</span>批判性审查(找问题)<span class="pt-tag audit">审查</span></div>
+    <div class="sec-lede">站在"为什么这个产品可能失败 / 没人用"的角度找问题。</div>
+
+    <div class="audit-card crit">
+      <h4>🔴 假设错误风险:单用户场景是否真的够?</h4>
+      <p>PRD 假设主要用户是 Duke 自己,但实际工作流中 Duke 经常把标书撰写交给同事。当同事也要看 swimlane 当前在哪一步,他们去哪里看?</p>
+      <p><b>可能后果</b>:P1/P2 阶段多用户需求不解决,看板变成 Duke 的"个人玩具",团队价值衰减。</p>
+      <p><b>建议</b>:P1 阶段加<b>只读分享</b>(生成只读链接),P2 加完整多用户。P0 不阻塞。</p>
+    </div>
+
+    <div class="audit-card crit">
+      <h4>🔴 价值假设:"AI 跑完会推看板"是赌博</h4>
+      <p>整个产品的核心价值是"<b>Skill 跑完会调 BidBoard API</b>"。但:</p>
+      <ul>
+        <li>已存在的 8 个 Skill 是过去 6-12 月写的,代码里没集成 BidBoard</li>
+        <li>改造需要改 8 个 Skill 源码 → 回归测试 → 部署</li>
+        <li>如果某个 Skill 跑完没调 API,看板永远停更(无信号 → Duke 误判)→ Duke 不信任看板 → 看板被弃用</li>
+      </ul>
+      <p><b>建议</b>:<b>P0 第一周先做"卡死式强制"——如果 Skill 跑完没调 API,直接 block Skill 输出</b>。要么改 Skill,要么用 <code>webhook 兜底</code>监听 Skill stdout。</p>
+    </div>
+
+    <div class="audit-card warn">
+      <h4>🟡 噪音爆炸:107 源 × 看板 = 信息过载</h4>
+      <p>看板当前 6 客户已够看,如果 107 源新闻事件都尝试写"action_items"到看板,会出现:每天 200+ 提示,90% 是噪声。</p>
+      <p><b>建议</b>:<b>看板只放人工/AI 已确认事项</b>;新闻事件先经"漏斗"(L1 采集 → L2 去重 → L3 P0/P1)才进看板,不要直接把全部塞进去。</p>
+    </div>
+
+    <div class="audit-card warn">
+      <h4>🟡 性能陷阱:swimlane 横向滚动 + 60 客户</h4>
+      <p>PRD 说"支持 60 客户",但 swimlane 设计是"所有客户共享 13 列"。60 客户意味着 60 行 × 13 节点 = 780 个 DOM + 大量事件监听。在 4K 屏 / 大屏还行,MacBook 13 寸会很挤。</p>
+      <p><b>建议</b>:</p>
+      <ul>
+        <li>10 客户以下:全显</li>
+        <li>10-30 客户:分组折叠(按 P0/P1/P2 折叠非当前优先级)</li>
+        <li>30+ 客户:虚拟滚动 + 默认折叠非 P0 客户</li>
+      </ul>
+    </div>
+
+    <div class="audit-card warn">
+      <h4>🟡 离线场景:飞机 / 断网怎么办?</h4>
+      <p>Demo 用 localStorage 完全离线可用,但 PRD 7.1-7.3 的 HTTP API 需要联网。如果 Duke 在飞机上想看今天的看板,WebSocket / SSE 全部失效。</p>
+      <p><b>建议</b>:<b>localStorage 为权威源,API 仅用于远程同步</b>;离线时所有操作入 localStorage,上线时 sync 队列冲掉(或冲突解决)。</p>
+    </div>
+
+    <div class="audit-card warn">
+      <h4>🟡 移动端:PRD 说"P2 PWA",但没具体方案</h4>
+      <p>投标常发生在客户现场、出租车上。手机上看 13 节点 swimlane 几乎不可读。</p>
+      <p><b>建议</b>:<b>移动端应该只看"今日动作 + 阻塞列表",不是完整 swimlane</b>。PWA 也要拆 2 套布局。</p>
+    </div>
+
+    <div class="audit-card mid">
+      <h4>🔵 边界案例:due_at='持续' 的客户(平安银行)</h4>
+      <p>当前 <code>due_at='持续'</code> 时,flow 节点 plan_end 算不出(NaN date),swimlane 会显示"—"。但 PRD 没规定"持续"客户的优先级算法。是不是"持续"=P2?还是单独一类?</p>
+      <p><b>建议</b>:加 <code>bid.type='opportunity|tracking|active'</code> 字段,active 走流程,opportunity 只看商机阶段。</p>
+    </div>
+
+    <div class="audit-card mid">
+      <h4>🔵 时间戳混乱:<code>last_sync</code> 含义不清</h4>
+      <p>PRD 5.4 说 <code>last_sync</code> = "最后同步时间",但没说是:</p>
+      <ul>
+        <li>任何字段变化的最后时间?</li>
+        <li>还是只看 AI 写入?</li>
+        <li>还是人工操作的最后时间?</li>
+      </ul>
+      <p>Demo 当前是"任何 write 都更新",但 PRD 没明确。<b>建议</b>:<b>last_sync = 最后任意写入(AI 或人)</b>,加 <code>last_human_at</code> / <code>last_ai_at</code> 拆开。</p>
+    </div>
+  </div>
+
+  <div class="sec" id="au-14">
+    <div class="sec-title"><span class="n">14</span>SMART 分析<span class="pt-tag audit">审查</span></div>
+    <div class="sec-lede">对每个 P0 需求用 SMART 框架检查:Specific / Measurable / Achievable / Relevant / Time-bound。</div>
+
+    <table>
+      <thead><tr>
+        <th>需求 ID</th><th>S 具体</th><th>M 可测</th><th>A 可达</th><th>R 相关</th><th>T 有期</th><th>结论</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><code>F-P0-01</code><br>投标看板</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓ ≤1s</td>
+          <td class="pill pill-ok">✓ demo 已跑</td>
+          <td class="pill pill-ok">✓ 核心</td>
+          <td class="pill pill-ok">✓ 30 天</td>
+          <td><span class="pill pill-ok">SMART 通过</span></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-02</code><br>剧本</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓ 9 步全跑</td>
+          <td class="pill pill-ok">✓ demo 已跑</td>
+          <td class="pill pill-ok">✓ 核心</td>
+          <td class="pill pill-ok">✓ 30 天</td>
+          <td><span class="pill pill-ok">SMART 通过</span></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-03</code><br>流程 swimlane</td>
+          <td class="pill pill-warn">⚠ 部分</td>
+          <td class="pill pill-warn">⚠ 阻塞可见没量化</td>
+          <td class="pill pill-ok">✓ demo 已跑</td>
+          <td class="pill pill-ok">✓ 核心</td>
+          <td class="pill pill-ok">✓ 30 天</td>
+          <td><span class="pill pill-warn">M 需补指标</span></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-04</code><br>window.BidBoard</td>
+          <td class="pill pill-ok">✓ 7 方法</td>
+          <td class="pill pill-warn">⚠ "覆盖"无测试</td>
+          <td class="pill pill-ok">✓ demo 已实现</td>
+          <td class="pill pill-ok">✓ 核心</td>
+          <td class="pill pill-ok">✓ 30 天</td>
+          <td><span class="pill pill-warn">M 需单元测试</span></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-05</code><br>9 字段模型</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓ 校验完整</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓</td>
+          <td><span class="pill pill-ok">SMART 通过</span></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-06</code><br>跨 tab 同步</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓ ≤300ms</td>
+          <td class="pill pill-ok">✓ BroadcastChannel</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓</td>
+          <td><span class="pill pill-ok">SMART 通过</span></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-07</code><br>事件流</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-warn">⚠ 200 条容量上限?</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-warn">⚠ 锦上添花</td>
+          <td class="pill pill-ok">✓</td>
+          <td><span class="pill pill-warn">R 优先级可降</span></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-08</code><br>节点详情弹窗</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓ 定位校验</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓</td>
+          <td class="pill pill-ok">✓</td>
+          <td><span class="pill pill-ok">SMART 通过</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>📊 SMART 总分(评审调整后)</h4>
+      <p>本次评审将 P0 范围从 8 项缩到 <b>7 项</b>(F-P0-07 事件流降至 P1)。<br>
+        7 个 P0 需求中:<b>5 个完全 SMART 通过</b>,<b>2 个有 M 维度缺口</b>(F-P0-03 量化、F-P0-04 测试覆盖)。</p>
+      <p><b>修复动作(已并入 P0 表)</b>:</p>
+      <ul style="margin: 6px 0; padding-left: 20px;">
+        <li>F-P0-03 加量化指标:"swimlane 渲染 ≤ 1.5s / 阻塞节点脉动频率 1.4s / 节点点击响应 ≤ 200ms" ✓</li>
+        <li>F-P0-04 加单元测试覆盖 7 个方法,跑过率 100% ✓</li>
+        <li>F-P0-07 事件流 → 降 P1(原 R 维度缺口已通过降级解决)✓</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec" id="au-15">
+    <div class="sec-title"><span class="n">15</span>可行性分析<span class="pt-tag audit">审查</span></div>
+    <div class="sec-lede">从技术、人力、时间、风险四个维度评估 PRD 是否能落地。</div>
+
+    <h3 class="sub-title">15.1 技术可行性</h3>
+    <table>
+      <thead><tr><th>维度</th><th>现状</th><th>目标</th><th>差距</th><th>风险</th></tr></thead>
+      <tbody>
+        <tr><td>前端 (HTML/CSS/JS)</td><td>已熟悉,demo 已跑</td><td>v2 看板 + 流程 + 管理</td><td>低</td><td>无</td></tr>
+        <tr><td>本地后端 (wb_cli)</td><td>已有 127.0.0.1:8765</td><td>接 8 个 Skill 推数据</td><td>中</td><td>Skill 改造工作量</td></tr>
+        <tr><td>数据存储 (localStorage / SQLite)</td><td>已有</td><td>9000+ 字段 + 200 events</td><td>低</td><td>无</td></tr>
+        <tr><td>实时同步 (BroadcastChannel)</td><td>浏览器原生</td><td>跨 tab 同步</td><td>低</td><td>无</td></tr>
+        <tr><td>飞书 / 微信告警</td><td>已有 lark-im</td><td>P0 看门狗</td><td>低</td><td>无</td></tr>
+        <tr><td>AI 集成</td><td>已有 Mavis + 104 Skill</td><td>Skill 推 BidBoard</td><td>中</td><td>需改造 8 个 Skill</td></tr>
+      </tbody>
+    </table>
+    <p><b>结论</b>:技术可行性 <b>85%</b>。<b>最大风险在 Skill 改造</b>(8 个老 Skill 没集成 BidBoard)。</p>
+
+    <h3 class="sub-title">15.2 人力可行性</h3>
+    <table>
+      <thead><tr><th>角色</th><th>投入</th><th>能力要求</th><th>是否具备</th></tr></thead>
+      <tbody>
+        <tr><td>产品 / 设计 / 测试(同一:Duke)</td><td>50% 时间</td><td>PRD 写 / UI 设计 / E2E 测试</td><td>✓ 已有</td></tr>
+        <tr><td>前端</td><td>40% 时间</td><td>HTML/CSS/JS 熟练</td><td>✓ 已有</td></tr>
+        <tr><td>后端</td><td>20% 时间</td><td>Python / Node / wb_cli</td><td>✓ 已有</td></tr>
+        <tr><td>Skill 改造</td><td>30% 时间</td><td>读老 Skill 代码 + 加 API 调用</td><td>⚠ 经验,需逐个 review</td></tr>
+        <tr><td>测试 (回归)</td><td>10% 时间</td><td>手动 + Playwright 自动化</td><td>部分,自动化缺</td></tr>
+      </tbody>
+    </table>
+    <p><b>结论</b>:<b>Duke 一人驱动 30 天 P0 可行</b>,但需砍掉 F-P0-07(事件流)和 P2 多项以保证质量。<b>建议 P0 范围收 7 项</b>。</p>
+
+    <h3 class="sub-title">15.3 时间可行性</h3>
+    <div class="grid-3">
+      <div class="stat-card">
+        <div class="k">P0 工作量(粗估)</div>
+        <div class="v">~22 <small>人天</small></div>
+        <div class="desc">8 个需求 × 平均 2-3 天/个(含联调)</div>
+      </div>
+      <div class="stat-card">
+        <div class="k">可用工时</div>
+        <div class="v">~25 <small>人天</small></div>
+        <div class="desc">30 天 × 80% 实际投入</div>
+      </div>
+      <div class="stat-card">
+        <div class="k">缓冲</div>
+        <div class="v">~3 <small>人天</small></div>
+        <div class="desc">风险预留 ≈ 13%</div>
+      </div>
+    </div>
+    <p><b>结论</b>:<b>时间紧但可行</b>。<b>最大风险:Skill 改造超期</b>(估计 5-7 天),吃掉全部缓冲。</p>
+    <p><b>建议</b>:第 1 周立即开始改造 1-2 个最常用 Skill(bid-news-collection + bid-file-review),第 2 周接入。</p>
+
+    <h3 class="sub-title">15.4 风险与缓解总表</h3>
+    <table>
+      <thead><tr><th>风险</th><th>概率</th><th>影响</th><th>缓解</th></tr></thead>
+      <tbody>
+        <tr><td>Skill 改造超期</td><td><span class="pill pill-warn">中</span></td><td><span class="pill pill-err">高</span></td><td>第 1 周立刻开始;P0 只接入 2 个核心 Skill</td></tr>
+        <tr><td>浏览器兼容问题</td><td><span class="pill pill-ok">低</span></td><td><span class="pill pill-warn">中</span></td><td>Chrome 主测;降级 storage 事件</td></tr>
+        <tr><td>数据丢失</td><td><span class="pill pill-ok">低</span></td><td><span class="pill pill-err">高</span></td><td>localStorage + 每日 JSON 导出</td></tr>
+        <tr><td>Duke 没时间用</td><td><span class="pill pill-warn">中</span></td><td><span class="pill pill-err">高</span></td><td>强制 09:45 / 21:00 仪式;21 天习惯养成</td></tr>
+        <tr><td>客户数据泄露</td><td><span class="pill pill-ok">低</span></td><td><span class="pill pill-err">高</span></td><td>敏感字段脱敏 + webhook 白名单</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec" id="au-16">
+    <div class="sec-title"><span class="n">16</span>审查结论<span class="pt-tag audit">审查</span></div>
+
+    <h3 class="sub-title">16.1 综合评分</h3>
+
+    <div class="score">
+      <div class="lbl">逻辑一致性</div>
+      <div class="bar"><div class="fill" style="width: 75%; background: var(--warn);"></div></div>
+      <div class="v">75%</div>
+    </div>
+    <div class="score">
+      <div class="lbl">批判性深度</div>
+      <div class="bar"><div class="fill" style="width: 82%; background: var(--ok);"></div></div>
+      <div class="v">82%</div>
+    </div>
+    <div class="score">
+      <div class="lbl">SMART 合规</div>
+      <div class="bar"><div class="fill" style="width: 88%; background: var(--ok);"></div></div>
+      <div class="v">88%</div>
+    </div>
+    <div class="score">
+      <div class="lbl">技术可行性</div>
+      <div class="bar"><div class="fill" style="width: 85%; background: var(--ok);"></div></div>
+      <div class="v">85%</div>
+    </div>
+    <div class="score">
+      <div class="lbl">人力可行性</div>
+      <div class="bar"><div class="fill" style="width: 70%; background: var(--warn);"></div></div>
+      <div class="v">70%</div>
+    </div>
+    <div class="score">
+      <div class="lbl">时间可行性</div>
+      <div class="bar"><div class="fill" style="width: 65%; background: var(--warn);"></div></div>
+      <div class="v">65%</div>
+    </div>
+
+    <h3 class="sub-title">16.2 总体判断</h3>
+    <div class="decision">
+      <h4>✅ 建议进入 P0,但需先做 5 件事</h4>
+      <p><b>PRD 整体可行</b>。demo 已验证核心 UX,数据模型合理,API 设计清晰。<b>主要风险</b>:Skill 改造超期、单用户假设、Duke 习惯养成。</p>
+      <p><b>进入 P0 前必做的 5 件事</b>:</p>
+      <ol style="margin: 6px 0; padding-left: 20px; font-size: 13.5px; color: var(--ink-soft);">
+        <li><b>补 PRD 6.4 不变量</b>:<code>flow 节点为 source of truth</code>;<code>stage</code> 由 flow 节点反推;<code>block</code> 字段由 <code>blocked</code> 节点派生(优先级:flow 优先)</li>
+        <li><b>补 P0 优先级算法</b>:T ≤ 3 → P0;T ≤ 7 → P1;其他 P2(写在 6.4)</li>
+        <li><b>Skill 改造优先</b>:第 1 周立即改造 bid-news-collection 和 bid-file-review 两个最高频 Skill</li>
+        <li><b>缩 P0 范围到 7 项</b>:事件流(F-P0-07)降到 P1;先把硬骨头吃了</li>
+        <li><b>每日强制仪式</b>:09:45 第一屏 + 21:00 收尾,Duke 自身承诺 21 天</li>
+      </ol>
+    </div>
+
+    <h3 class="sub-title">16.3 风险预警(按优先级)</h3>
+    <div class="risk-grid">
+      <div class="risk crit"><div class="h"><span class="dot"></span>P0 阻塞:Skill 没改造</div><div class="d">demo 数据是模拟的,真实数据没流。P0 第 2 周必须看到真数据,否则看板只是"好看"。</div></div>
+      <div class="risk warn"><div class="h"><span class="dot"></span>P1 阻塞:数据一致性</div><div class="d"><code>stage</code> / <code>block</code> / flow 节点三方不同步,会出现"看板说 P0 但 swimlane 显示已完成"的乌龙。</div></div>
+      <div class="risk crit"><div class="h"><span class="dot"></span>P0 阻塞:Duke 三天打鱼</div><div class="d">看板工具的最大风险是"造了不用"。必须强制 09:45 / 21:00 仪式,21 天习惯养成。</div></div>
+      <div class="risk mid"><div class="h"><span class="dot"></span>P2 关注:多用户</div><div class="d">P2 不解决,看板只能 Duke 自己用,价值天花板低。</div></div>
+    </div>
+
+    <h3 class="sub-title">16.4 下一步动作</h3>
+    <table>
+      <thead><tr><th>动作</th><th>负责人</th><th>截止</th></tr></thead>
+      <tbody>
+        <tr><td>PRD 6.4 不变量补完(flow 权威、stage 反推、block 派生)</td><td>Duke</td><td>本周内</td></tr>
+        <tr><td>改造 bid-news-collection 调用 BidBoard</td><td>Duke</td><td>第 1 周末</td></tr>
+        <tr><td>改造 bid-file-review 调用 BidBoard</td><td>Duke</td><td>第 2 周末</td></tr>
+        <tr><td>P0 范围缩到 7 项(F-P0-07 降 P1)</td><td>Duke</td><td>本周内</td></tr>
+        <tr><td>09:45 / 21:00 仪式启动 + 21 天记录</td><td>Duke</td><td>明天起</td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 20px; padding: 14px 18px; background: var(--accent-soft); border: 1px solid #C7D2FE; border-radius: var(--r); font-size: 13.5px; color: var(--ink-soft); line-height: 1.7;">
+      <b style="color: var(--accent);">📋 文档清单</b><br>
+      本 PRD 关联文件:
+      <ul style="margin: 6px 0; padding-left: 20px;">
+        <li>看板 demo:<code>bid-board-v2-20260810.html</code>(68KB)</li>
+        <li>管理 demo:<code>bid-board-management-v2-20260810.html</code>(57KB)</li>
+        <li>方案文档:<code>bid-dashboard-blueprint-20260810.html</code>(27KB)</li>
+        <li>本 PRD:<code>prd-bid-board-v2-20260812.html</code>(本文档)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px;">
+    <code>prd-bid-board-v2-20260812.html</code> · PRD + 完整审查 · 16 章节 · 5.4 万字 · 2026-08-12
+  </div>
+</div>
+</body>
+</html>

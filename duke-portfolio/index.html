@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Duke — 网络安全销售 × 独立产品构建者</title>
+<meta name="description" content="Duke (TsengDuke) 的个人作品集。10 年金融行业网络安全销售与售前经验，独立开发 bid-board 投标看板，运营 SecNews 网络安全资讯 IP。" />
+<meta name="author" content="Duke / TsengDuke" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Duke — 网络安全销售 × 独立产品构建者" />
+<meta property="og:description" content="10 年金融安全 · bid-board · SecNews · 零依赖工具链" />
+<meta property="og:image" content="./og-image.svg" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Duke — 网络安全销售 × 独立产品构建者" />
+<meta name="twitter:description" content="10 年金融安全 · bid-board · SecNews · 零依赖工具链" />
+<meta name="twitter:image" content="./og-image.svg" />
+
+<!-- Theme -->
+<meta name="theme-color" content="#0F1419" />
+<meta name="color-scheme" content="light" />
+
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<!-- Subtle grain overlay -->
+<div class="grain" aria-hidden="true"></div>
+
+<!-- Toast for placeholder actions -->
+<div class="toast" role="status" aria-live="polite">
+  <span aria-hidden="true">i</span>
+  <p></p>
+</div>
+
+<!-- Top navigation -->
+<nav class="site-nav" aria-label="主导航">
+  <a class="name-pill" href="#top" aria-label="回到首页">
+    <span class="pill-mark" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 1.4 L13.6 3.6 V8 C13.6 11.2 11.2 13.4 8 14.6 C4.8 13.4 2.4 11.2 2.4 8 V3.6 Z" fill="currentColor"/><path d="M5.8 7.8 L7.4 9.4 L10.4 6" fill="none" stroke="var(--paper)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span>Duke</span>
+    <span class="pill-divider" aria-hidden="true"></span>
+    <span>网络安全 × 独立产品</span>
+  </a>
+  <div class="nav-links">
+    <a href="#projects">作品</a>
+    <a href="#workflow">流程</a>
+    <a href="#about">关于</a>
+    <a href="#contact">联系</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ============== HERO ============== -->
+<section class="page-shell intro-shell" id="top" aria-labelledby="intro-title">
+  <div class="section-kicker">
+    <span>个人作品集 / 2026</span>
+    <span>深圳 · 远程协作</span>
+  </div>
+
+  <div class="hero-grid">
+
+    <!-- 01 / Identity -->
+    <article class="hero-card identity-card">
+      <div class="card-label"><span>01 / 身份</span><span>独立构建者</span></div>
+      <div class="identity-body">
+        <!-- Custom SVG illustration: shield + network + monogram -->
+        <div class="identity-scene" aria-label="身份插画 — 盾牌与网络节点">
+          <svg class="scene-svg" viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="scene-bg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#E8F4FB"/>
+                <stop offset="1" stop-color="#F4F1EA"/>
+              </linearGradient>
+              <radialGradient id="shield-fill" cx="0.5" cy="0.3" r="0.7">
+                <stop offset="0" stop-color="#38BDF8"/>
+                <stop offset="1" stop-color="#0EA5E9"/>
+              </radialGradient>
+              <pattern id="dotgrid" width="14" height="14" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="rgba(15,20,25,0.15)"/>
+              </pattern>
+            </defs>
+
+            <rect width="360" height="220" fill="url(#scene-bg)"/>
+            <rect width="360" height="220" fill="url(#dotgrid)"/>
+
+            <!-- Network nodes -->
+            <g stroke="rgba(15,20,25,0.25)" stroke-width="1" fill="none">
+              <line x1="80" y1="50" x2="180" y2="110"/>
+              <line x1="280" y1="50" x2="180" y2="110"/>
+              <line x1="60" y1="170" x2="180" y2="110"/>
+              <line x1="300" y1="170" x2="180" y2="110"/>
+              <line x1="80" y1="50" x2="280" y2="50" stroke-dasharray="2 4"/>
+              <line x1="60" y1="170" x2="300" y2="170" stroke-dasharray="2 4"/>
+            </g>
+
+            <!-- Nodes -->
+            <g fill="#0F1419">
+              <circle cx="80" cy="50" r="4"/>
+              <circle cx="280" cy="50" r="4"/>
+              <circle cx="60" cy="170" r="4"/>
+              <circle cx="300" cy="170" r="4"/>
+            </g>
+            <g font-family="JetBrains Mono, monospace" font-size="8" fill="#5C6470" letter-spacing="0.5">
+              <text x="92" y="44">L1 抓取</text>
+              <text x="252" y="44">L2 评分</text>
+              <text x="20" y="190">L3 投标</text>
+              <text x="252" y="190">L4 交付</text>
+            </g>
+
+            <!-- Central shield -->
+            <g transform="translate(180,110)">
+              <path d="M0 -42 L34 -30 V8 C34 30 18 46 0 56 C-18 46 -34 30 -34 8 V-30 Z" fill="url(#shield-fill)" stroke="#0B7AB8" stroke-width="1.5"/>
+              <path d="M-12 4 L-3 13 L14 -8" fill="none" stroke="#0F1419" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+
+            <!-- "10" accent -->
+            <g transform="translate(310,30)">
+              <text font-family="Fraunces, serif" font-size="36" font-weight="500" font-style="italic" fill="#0F1419" letter-spacing="-2">10</text>
+              <text y="14" font-family="JetBrains Mono, monospace" font-size="7" fill="#5C6470" letter-spacing="1">YEARS / 10</text>
+            </g>
+          </svg>
+          <span class="identity-stamp" aria-hidden="true">DK / 26</span>
+        </div>
+
+        <div class="identity-copy">
+          <p class="micro-copy">DUKE / SECURITY × PRODUCT</p>
+          <h1 id="intro-title">把复杂的金融安全，<br/>做成可落地的方法和工具。</h1>
+        </div>
+      </div>
+      <p class="identity-footnote">销售 × 售前 × 独立产品 / 工作于深圳，覆盖华南 / 华北 / 华东。</p>
+    </article>
+
+    <!-- 02 / Intro -->
+    <article class="hero-card intro-card">
+      <div class="card-label"><span>02 / 简介</span><span class="live-dot"><i aria-hidden="true"></i> 接受合作</span></div>
+      <div class="intro-card-content">
+        <p>10 年金融行业网络安全经验，前腾讯金融安全团队成员。当前以独立身份同时推进销售交付、<strong>bid-board 投标看板</strong>、<strong>SecNews 资讯 IP</strong>，以及一套零依赖的 skill 工具链。</p>
+        <dl class="intro-meta">
+          <div><dt>工作范围</dt><dd>售前 / 产品 / 内容</dd></div>
+          <div><dt>客户行业</dt><dd>银行 · 政府 · 金融</dd></div>
+          <div><dt>工作语言</dt><dd>中文 / 工具链</dd></div>
+        </dl>
+        <a class="button primary-button" href="#projects">查看精选作品 <span aria-hidden="true" class="arrow">→</span></a>
+      </div>
+    </article>
+
+    <!-- 03 / Field note -->
+    <article class="hero-card signal-card">
+      <div class="card-label"><span>FIELD NOTE</span><span>03</span></div>
+      <div class="field-note-body">
+        <strong>13 节点</strong>
+        <p>把投标做成一条可追踪的流水线，而不是一沓散落的文件。</p>
+      </div>
+      <a class="text-action inverted" href="#workflow">了解流程 <span aria-hidden="true" class="arrow">→</span></a>
+    </article>
+
+    <!-- 04 / CV -->
+    <article class="hero-card resume-card">
+      <div class="card-label"><span>资料</span><span>04</span></div>
+      <div class="resume-word">CV</div>
+      <dl class="resume-meta">
+        <div><dt>内容</dt><dd>经历 / 项目 / 工具</dd></div>
+        <div><dt>版本</dt><dd>2026 / 8 页</dd></div>
+        <div><dt>格式</dt><dd>PDF</dd></div>
+      </dl>
+      <button class="button quiet-button" type="button" data-toast="简历正在整理中，即将开放下载。">点击获取</button>
+    </article>
+
+    <!-- 05 / Skills -->
+    <article class="hero-card skills-card">
+      <div class="card-label"><span>专业能力</span><span>05 组</span></div>
+      <div class="skill-list">
+        <div><span>01 / 销售</span><strong>大B战略 / 段位管理</strong></div>
+        <div><span>02 / 售前</span><strong>方案 / 评分 / 演示</strong></div>
+        <div><span>03 / 产品</span><strong>bid-board 全栈</strong></div>
+        <div><span>04 / 内容</span><strong>SecNews 三平台</strong></div>
+        <div><span>05 / 工具</span><strong>零依赖 skill 链</strong></div>
+        <div><span>06 / 协作</span><strong>独立 / 远程 / 工作坊</strong></div>
+      </div>
+    </article>
+
+    <!-- 06 / Featured project preview -->
+    <article class="hero-card hero-project-card">
+      <div class="card-label"><span>精选项目 / 01</span><span>投标看板</span></div>
+      <div class="hero-product-preview" aria-label="bid-board 投标看板界面预览">
+        <!-- Custom SVG: bid-board dashboard mockup -->
+        <svg class="preview-svg" viewBox="0 0 480 280" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bbg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#E0F2FE"/>
+              <stop offset="1" stop-color="#F0F9FF"/>
+            </linearGradient>
+          </defs>
+          <rect width="480" height="280" fill="url(#bbg)"/>
+          <!-- Sidebar -->
+          <rect x="0" y="0" width="100" height="280" fill="rgba(15,20,25,0.04)"/>
+          <g font-family="JetBrains Mono, monospace" font-size="8" fill="#5C6470">
+            <text x="14" y="22" letter-spacing="0.5">bid-board</text>
+            <text x="14" y="50" fill="#0F1419" font-weight="600">▸ 看板</text>
+            <text x="14" y="68">标讯</text>
+            <text x="14" y="86">客户</text>
+            <text x="14" y="104">资质</text>
+            <text x="14" y="122">投标</text>
+            <text x="14" y="140">交付</text>
+            <text x="14" y="158">复盘</text>
+          </g>
+          <!-- Header -->
+          <g>
+            <text x="118" y="26" font-family="Inter Tight, sans-serif" font-size="13" font-weight="600" fill="#0F1419">本周看板</text>
+            <text x="118" y="42" font-family="Inter Tight, sans-serif" font-size="9" fill="#5C6470">v0.3.2 · SSE 实时</text>
+            <circle cx="430" cy="28" r="3" fill="#10B981"/>
+            <text x="438" y="32" font-family="JetBrains Mono, monospace" font-size="8" fill="#5C6470">LIVE</text>
+          </g>
+          <!-- Cards columns -->
+          <g font-family="Inter Tight, sans-serif" font-size="8" fill="#5C6470" letter-spacing="0.5">
+            <text x="118" y="66">抓取 / 12</text>
+            <text x="200" y="66">评分 / 7</text>
+            <text x="282" y="66">投标 / 4</text>
+            <text x="364" y="66">交付 / 2</text>
+          </g>
+          <!-- Cards -->
+          <g>
+            <rect x="118" y="74" width="76" height="36" rx="4" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+            <text x="124" y="88" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419" font-weight="500">招商银行</text>
+            <text x="124" y="98" font-family="Inter Tight, sans-serif" font-size="6" fill="#5C6470">WAF 升级</text>
+            <text x="124" y="106" font-family="JetBrains Mono, monospace" font-size="6" fill="#0EA5E9">¥ 280w</text>
+
+            <rect x="118" y="116" width="76" height="36" rx="4" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+            <text x="124" y="130" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419" font-weight="500">某证券机构A</text>
+            <text x="124" y="140" font-family="Inter Tight, sans-serif" font-size="6" fill="#5C6470">零信任</text>
+            <text x="124" y="148" font-family="JetBrains Mono, monospace" font-size="6" fill="#0EA5E9">¥ 420w</text>
+
+            <rect x="118" y="158" width="76" height="36" rx="4" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+            <text x="124" y="172" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419" font-weight="500">国信证券</text>
+            <text x="124" y="182" font-family="Inter Tight, sans-serif" font-size="6" fill="#5C6470">态势感知</text>
+            <text x="124" y="190" font-family="JetBrains Mono, monospace" font-size="6" fill="#0EA5E9">¥ 180w</text>
+
+            <rect x="200" y="74" width="76" height="36" rx="4" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+            <circle cx="208" cy="84" r="3" fill="#10B981"/>
+            <text x="216" y="88" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419" font-weight="500">A 级</text>
+            <text x="206" y="98" font-family="Inter Tight, sans-serif" font-size="6" fill="#5C6470">战略匹配</text>
+
+            <rect x="200" y="116" width="76" height="36" rx="4" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+            <circle cx="208" cy="126" r="3" fill="#0EA5E9"/>
+            <text x="216" y="130" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419" font-weight="500">B+ 级</text>
+            <text x="206" y="140" font-family="Inter Tight, sans-serif" font-size="6" fill="#5C6470">重点跟进</text>
+
+            <rect x="282" y="74" width="76" height="36" rx="4" fill="#0F1419" stroke="#0F1419"/>
+            <text x="288" y="88" font-family="Inter Tight, sans-serif" font-size="7" fill="#F4F1EA" font-weight="500">编写中</text>
+            <text x="288" y="98" font-family="Inter Tight, sans-serif" font-size="6" fill="#A0A8B4">P0 · 9 节点</text>
+            <text x="288" y="106" font-family="JetBrains Mono, monospace" font-size="6" fill="#F4A82C">D-3</text>
+
+            <rect x="282" y="116" width="76" height="36" rx="4" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+            <text x="288" y="130" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419" font-weight="500">已递交</text>
+            <text x="288" y="140" font-family="Inter Tight, sans-serif" font-size="6" fill="#5C6470">等开标</text>
+
+            <rect x="364" y="74" width="76" height="36" rx="4" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+            <text x="370" y="88" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419" font-weight="500">实施中</text>
+            <text x="370" y="98" font-family="Inter Tight, sans-serif" font-size="6" fill="#5C6470">P0 项目</text>
+            <text x="370" y="106" font-family="JetBrains Mono, monospace" font-size="6" fill="#10B981">65%</text>
+          </g>
+          <!-- SSE feed lines -->
+          <g font-family="JetBrains Mono, monospace" font-size="7" fill="#5C6470">
+            <text x="118" y="218">▸ 22:54 SSE · 招商银行 WAF 升级 进入评分</text>
+            <text x="118" y="232">▸ 22:31 SSE · 某证券机构A 零信任 评分 A</text>
+            <text x="118" y="246">▸ 21:18 SSE · 国信证券 抓取成功</text>
+            <text x="118" y="260">▸ 20:47 SSE · 平安银行 已中标</text>
+          </g>
+          <line x1="118" y1="210" x2="440" y2="210" stroke="rgba(15,20,25,0.12)" stroke-width="1"/>
+          <text x="118" y="208" font-family="JetBrains Mono, monospace" font-size="7" fill="#0EA5E9" letter-spacing="1">▾ SSE FEED</text>
+        </svg>
+        <div class="hero-preview-note">
+          <span>NEXT / 02</span>
+          <strong>v0.4 P0-MVP · 5 天冲刺。</strong>
+          <small>2026-08-19 上线 · 14 项任务</small>
+        </div>
+      </div>
+      <div class="hero-project-bottom">
+        <div>
+          <span class="micro-copy">BID-BOARD / 投标看板</span>
+          <h2>把投标做成流水线</h2>
+        </div>
+        <a class="hero-case-link" href="#project-bidboard">查看项目 <span aria-hidden="true" class="arrow">→</span></a>
+      </div>
+    </article>
+
+    <!-- 07 / Explore -->
+    <article class="hero-card explore-card">
+      <div class="card-label"><span>索引</span><span>07</span></div>
+      <a href="#projects" class="explore-link"><span>精选项目</span><small>01</small></a>
+      <a href="#workflow" class="explore-link"><span>5 阶段流程</span><small>02</small></a>
+      <a href="#about" class="explore-link"><span>工作方法</span><small>03</small></a>
+      <a href="#contact" class="explore-link"><span>开始对话</span><small>04</small></a>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============== FEATURED PROJECTS ============== -->
+<section class="page-shell projects-section" id="projects" aria-labelledby="projects-title">
+  <div class="section-heading" data-reveal="true">
+    <span class="section-title" id="projects-title">精选项目</span>
+    <p>四个项目，分别关于投标、资讯 IP、AI 售前 与 工具链。</p>
+  </div>
+
+  <!-- 01 / bid-board -->
+  <article class="project-row" id="project-bidboard" data-reveal="true">
+    <div class="project-info">
+      <div class="project-info-main">
+        <p class="project-index">01 / 工具产品 · 全栈开发</p>
+        <h2>bid-board</h2>
+        <p class="project-type">把 13 节点投标流程装进一块看板，让销售 / 售前 / 投标在一个界面里协作。</p>
+      </div>
+      <dl class="project-facts">
+        <div><dt>当前版本</dt><dd>v0.3.2 已发布</dd></div>
+        <div><dt>技术栈</dt><dd>SQLite WAL · SSE · 零依赖</dd></div>
+        <div><dt>质量测试</dt><dd>31 / 31 通过</dd></div>
+        <div><dt>注册命令</dt><dd>11 个 / CLI</dd></div>
+      </dl>
+      <div class="project-footer">
+        <div class="project-meta"><span>2024 — 现在</span><span>产品 / 全栈 / 工具链</span></div>
+        <button class="case-link" type="button" data-toast="项目案例正在整理中，可通过联系页直接了解。">查看项目详情 <span aria-hidden="true" class="arrow">→</span></button>
+      </div>
+    </div>
+    <div class="project-visual editorial-visual bb-visual" aria-label="bid-board 看板项目场景与核心指标">
+      <div class="editorial-head">
+        <span>01 / bid-board</span>
+        <span>13 NODES / KANBAN</span>
+      </div>
+      <div class="editorial-stage">
+        <div class="editorial-image">
+          <!-- bid-board mini scene -->
+          <svg class="art-svg" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bb1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#F0F9FF"/>
+                <stop offset="1" stop-color="#E0F2FE"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="280" fill="url(#bb1)"/>
+            <!-- Mini columns -->
+            <g font-family="JetBrains Mono, monospace" font-size="9" fill="#0F1419" letter-spacing="0.5">
+              <rect x="20" y="40" width="80" height="220" rx="6" fill="#FFFFFF" stroke="rgba(15,20,25,0.12)"/>
+              <text x="28" y="58">抓取 / 12</text>
+              <rect x="110" y="40" width="80" height="220" rx="6" fill="#FFFFFF" stroke="rgba(15,20,25,0.12)"/>
+              <text x="118" y="58">评分 / 7</text>
+              <rect x="200" y="40" width="80" height="220" rx="6" fill="#FFFFFF" stroke="rgba(15,20,25,0.12)"/>
+              <text x="208" y="58">投标 / 4</text>
+              <rect x="290" y="40" width="80" height="220" rx="6" fill="#FFFFFF" stroke="rgba(15,20,25,0.12)"/>
+              <text x="298" y="58">交付 / 2</text>
+            </g>
+            <!-- Mini cards -->
+            <g>
+              <rect x="28" y="68" width="64" height="22" rx="3" fill="#0F1419"/>
+              <text x="34" y="82" font-family="Inter Tight, sans-serif" font-size="7" fill="#F4F1EA">招商银行 WAF</text>
+              <rect x="28" y="96" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="34" y="110" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">某证券机构A 零信任</text>
+              <rect x="28" y="124" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="34" y="138" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">国信证券 态势</text>
+              <rect x="28" y="152" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="34" y="166" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">平安银行 SOC</text>
+
+              <rect x="118" y="68" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="124" y="82" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">A 级</text>
+              <rect x="118" y="96" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="124" y="110" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">B+ 级</text>
+              <rect x="118" y="124" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="124" y="138" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">B 级</text>
+
+              <rect x="208" y="68" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="214" y="82" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">编写中 · 9 节点</text>
+              <rect x="208" y="96" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="214" y="110" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">已递交</text>
+              <rect x="208" y="124" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="214" y="138" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">开标准备</text>
+
+              <rect x="298" y="68" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="304" y="82" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">P0 实施 65%</text>
+              <rect x="298" y="96" width="64" height="22" rx="3" fill="#F0F9FF" stroke="rgba(15,20,25,0.15)"/>
+              <text x="304" y="110" font-family="Inter Tight, sans-serif" font-size="7" fill="#0F1419">P1 维保</text>
+            </g>
+            <!-- Status dots -->
+            <g>
+              <circle cx="84" cy="79" r="2" fill="#10B981"/>
+              <circle cx="174" cy="79" r="2" fill="#0EA5E9"/>
+              <circle cx="264" cy="79" r="2" fill="#F4A82C"/>
+              <circle cx="354" cy="79" r="2" fill="#10B981"/>
+            </g>
+          </svg>
+        </div>
+        <div class="editorial-feature">
+          <span>核心指标</span>
+          <strong>31/31 测试通过，<br/>上线即可生产。</strong>
+          <p>零外部依赖，单文件可执行。SSE 实时推送，CLI 11 命令，SQLite WAL 高并发。</p>
+        </div>
+      </div>
+      <div class="editorial-foot">
+        <span>v0.3.2 · 2026-08-14</span>
+        <span>11 命令 / SSE / 31 测试</span>
+      </div>
+    </div>
+  </article>
+
+  <!-- 02 / SecNews -->
+  <article class="project-row project-palimpsest" data-reveal="true">
+    <div class="project-info">
+      <div class="project-info-main">
+        <p class="project-index">02 / 内容 IP · 三平台运营</p>
+        <h2>SecNews</h2>
+        <p class="project-type">每日网络安全资讯与行业洞察，覆盖微信 / 小红书 / 抖音三平台，沉淀个人专业 IP。</p>
+      </div>
+      <dl class="project-facts">
+        <div><dt>平台</dt><dd>微信 · 小红书 · 抖音</dd></div>
+        <div><dt>更新频率</dt><dd>日更 / 重大事件</dd></div>
+        <div><dt>主题</dt><dd>漏洞 · 攻击 · 政策</dd></div>
+        <div><dt>形式</dt><dd>图文 / 短视频 / 长文</dd></div>
+      </dl>
+      <div class="project-footer">
+        <div class="project-meta"><span>2023 — 现在</span><span>内容 / 品牌 / IP</span></div>
+        <button class="case-link" type="button" data-toast="SecNews 详细数据正在整理中。">查看项目详情 <span aria-hidden="true" class="arrow">→</span></button>
+      </div>
+    </div>
+    <div class="project-visual editorial-visual secnews-visual" aria-label="SecNews 多平台内容 IP 场景">
+      <div class="editorial-head">
+        <span>02 / SecNews</span>
+        <span>3 PLATFORMS / DAILY</span>
+      </div>
+      <div class="editorial-stage reading-stage">
+        <div class="editorial-feature reading-feature">
+          <span>多平台分发</span>
+          <strong>一次采编，<br/>三端触达。</strong>
+          <p>从漏洞预警到行业政策，把每天值得知道的安全事件，按平台调性分发。</p>
+        </div>
+        <div class="editorial-image">
+          <!-- SecNews multi-platform scene -->
+          <svg class="art-svg" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sn1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#FEF3C7"/>
+                <stop offset="1" stop-color="#F4F1EA"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="280" fill="url(#sn1)"/>
+            <!-- WeChat phone -->
+            <g transform="translate(30,30)">
+              <rect width="80" height="160" rx="10" fill="#0F1419"/>
+              <rect x="4" y="4" width="72" height="152" rx="7" fill="#F4F1EA"/>
+              <text x="10" y="22" font-family="Inter Tight, sans-serif" font-size="7" font-weight="600" fill="#0F1419">SecNews</text>
+              <text x="10" y="32" font-family="JetBrains Mono, monospace" font-size="5" fill="#5C6470">DAILY · 08:30</text>
+              <rect x="10" y="40" width="60" height="40" rx="3" fill="rgba(15,20,25,0.06)"/>
+              <text x="14" y="52" font-family="Inter Tight, sans-serif" font-size="6" fill="#0F1419" font-weight="500">CVE-2026-3128</text>
+              <text x="14" y="62" font-family="Inter Tight, sans-serif" font-size="5" fill="#5C6470">Spring 框架 RCE</text>
+              <text x="14" y="74" font-family="Inter Tight, sans-serif" font-size="5" fill="#0EA5E9">►阅读全文</text>
+              <rect x="10" y="86" width="60" height="40" rx="3" fill="rgba(15,20,25,0.06)"/>
+              <text x="14" y="98" font-family="Inter Tight, sans-serif" font-size="6" fill="#0F1419" font-weight="500">金融监管</text>
+              <text x="14" y="108" font-family="Inter Tight, sans-serif" font-size="5" fill="#5C6470">数据安全新规</text>
+              <text x="14" y="120" font-family="Inter Tight, sans-serif" font-size="5" fill="#0EA5E9">►阅读全文</text>
+              <text x="10" y="146" font-family="JetBrains Mono, monospace" font-size="5" fill="#5C6470">公众号 · 长文</text>
+            </g>
+            <!-- Connection line -->
+            <g stroke="rgba(15,20,25,0.3)" stroke-width="1" fill="none" stroke-dasharray="3 3">
+              <path d="M115 100 Q 160 80 200 110"/>
+            </g>
+            <!-- Hub -->
+            <g transform="translate(180,90)">
+              <circle r="22" fill="#0F1419"/>
+              <text text-anchor="middle" y="-2" font-family="JetBrains Mono, monospace" font-size="6" fill="#F4A82C" letter-spacing="1">SEC</text>
+              <text text-anchor="middle" y="8" font-family="Inter Tight, sans-serif" font-size="7" fill="#F4F1EA" font-weight="600">NEWS</text>
+            </g>
+            <g stroke="rgba(15,20,25,0.3)" stroke-width="1" fill="none" stroke-dasharray="3 3">
+              <path d="M205 105 Q 250 100 285 90"/>
+              <path d="M205 115 Q 250 140 285 175"/>
+            </g>
+            <!-- XHS card -->
+            <g transform="translate(285,50)">
+              <rect width="80" height="80" rx="6" fill="#FFFFFF" stroke="rgba(15,20,25,0.18)"/>
+              <rect x="4" y="4" width="72" height="50" rx="3" fill="url(#sn1)"/>
+              <text x="8" y="18" font-family="Inter Tight, sans-serif" font-size="6" fill="#0F1419" font-weight="600">⚠ 漏洞预警</text>
+              <text x="8" y="32" font-family="Inter Tight, sans-serif" font-size="5" fill="#5C6470">3 分钟看懂</text>
+              <text x="8" y="42" font-family="Inter Tight, sans-serif" font-size="5" fill="#5C6470">CVE-2026-3128</text>
+              <text x="8" y="62" font-family="Inter Tight, sans-serif" font-size="6" fill="#0F1419" font-weight="500">小红书图文</text>
+              <text x="8" y="72" font-family="JetBrains Mono, monospace" font-size="5" fill="#5C6470">❤️ 1.2k · ⭐ 320</text>
+            </g>
+            <!-- Douyin card -->
+            <g transform="translate(285,150)">
+              <rect width="80" height="100" rx="6" fill="#0F1419"/>
+              <rect x="4" y="4" width="72" height="92" rx="3" fill="url(#sn1)"/>
+              <text x="8" y="20" font-family="Inter Tight, sans-serif" font-size="6" fill="#0F1419" font-weight="600">▶ 短视频</text>
+              <text x="8" y="32" font-family="Inter Tight, sans-serif" font-size="5" fill="#5C6470">60 秒讲清</text>
+              <text x="8" y="42" font-family="Inter Tight, sans-serif" font-size="5" fill="#5C6470">一个漏洞</text>
+              <circle cx="40" cy="62" r="8" fill="rgba(15,20,25,0.6)"/>
+              <path d="M37 58 L37 66 L44 62 Z" fill="#F4F1EA"/>
+              <text x="8" y="86" font-family="Inter Tight, sans-serif" font-size="6" fill="#0F1419" font-weight="500">抖音 · 60s</text>
+            </g>
+            <!-- Title -->
+            <text x="200" y="260" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#5C6470" letter-spacing="1">SINGLE SOURCE → MULTI-CHANNEL</text>
+          </svg>
+        </div>
+      </div>
+      <div class="editorial-foot">
+        <span>3 平台同步</span>
+        <span>日更 / 重大事件</span>
+      </div>
+    </div>
+  </article>
+
+  <!-- 03 / AI 售前 -->
+  <article class="project-row" data-reveal="true">
+    <div class="project-info">
+      <div class="project-info-main">
+        <p class="project-index">03 / 售前工具 · AI 评分</p>
+        <h2>AI 售前助手</h2>
+        <p class="project-type">用 AI 给客户打标，从大B战略 / 中B / 小B / 微 四档分级，让售前资源精准投入。</p>
+      </div>
+      <dl class="project-facts">
+        <div><dt>评分维度</dt><dd>行业 / 预算 / 关系 / 紧迫度</dd></div>
+        <div><dt>客户分级</dt><dd>大B · 中B · 小B · 微</dd></div>
+        <div><dt>应用场景</dt><dd>每日新标讯自动评级</dd></div>
+        <div><dt>交付形式</dt><dd>评分报告 / 优先级列表</dd></div>
+      </dl>
+      <div class="project-footer">
+        <div class="project-meta"><span>2025 — 现在</span><span>工具 / AI / 评分</span></div>
+        <button class="case-link" type="button" data-toast="项目细节正在整理中。">查看项目详情 <span aria-hidden="true" class="arrow">→</span></button>
+      </div>
+    </div>
+    <div class="project-visual editorial-visual ai-visual" aria-label="AI 售前助手项目场景与评分矩阵">
+      <div class="editorial-head">
+        <span>03 / AI 售前</span>
+        <span>SCORING / 4 TIERS</span>
+      </div>
+      <div class="editorial-stage transfer-stage">
+        <div class="editorial-feature transfer-feature">
+          <span>核心能力</span>
+          <strong>让"该打谁"，<br/>变成一道选择题。</strong>
+          <p>把行业 / 预算 / 关系 / 紧迫度拆成可量化维度，自动给出 A+ / A / B+ / B 四档建议。</p>
+        </div>
+        <div class="editorial-image">
+          <!-- AI scoring matrix -->
+          <svg class="art-svg" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="ai1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#F0FDF4"/>
+                <stop offset="1" stop-color="#F0F9FF"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="280" fill="url(#ai1)"/>
+            <!-- Matrix frame -->
+            <g transform="translate(40,30)">
+              <line x1="0" y1="200" x2="320" y2="200" stroke="#0F1419" stroke-width="1"/>
+              <line x1="0" y1="0" x2="0" y2="200" stroke="#0F1419" stroke-width="1"/>
+              <!-- Quadrants -->
+              <line x1="160" y1="0" x2="160" y2="200" stroke="rgba(15,20,25,0.15)" stroke-dasharray="3 3"/>
+              <line x1="0" y1="100" x2="320" y2="100" stroke="rgba(15,20,25,0.15)" stroke-dasharray="3 3"/>
+              <!-- Axis labels -->
+              <text x="-6" y="-8" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="7" fill="#0F1419" letter-spacing="0.5">高</text>
+              <text x="-6" y="208" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="7" fill="#5C6470" letter-spacing="0.5">低</text>
+              <text x="0" y="220" font-family="JetBrains Mono, monospace" font-size="7" fill="#5C6470" letter-spacing="0.5">预算</text>
+              <text x="160" y="220" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#5C6470" letter-spacing="0.5">→</text>
+              <text x="320" y="220" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="7" fill="#5C6470" letter-spacing="0.5">需求匹配</text>
+              <!-- Tier labels -->
+              <g font-family="Inter Tight, sans-serif" font-size="6" letter-spacing="0.5">
+                <text x="6" y="14" fill="#0F1419" font-weight="600">A+ 大B战略</text>
+                <text x="166" y="14" fill="#0F1419" font-weight="600">A 中B</text>
+                <text x="6" y="114" fill="#5C6470" font-weight="500">B+ 小B</text>
+                <text x="166" y="114" fill="#5C6470" font-weight="500">B 微</text>
+              </g>
+              <!-- Data points -->
+              <g>
+                <circle cx="40" cy="40" r="6" fill="#10B981" opacity="0.85"/>
+                <text x="40" y="30" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419" font-weight="600">招行</text>
+                <circle cx="80" cy="60" r="5" fill="#10B981" opacity="0.85"/>
+                <text x="80" y="50" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419" font-weight="600">中信</text>
+                <circle cx="120" cy="30" r="4" fill="#10B981" opacity="0.85"/>
+                <text x="120" y="22" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419" font-weight="600">国信</text>
+
+                <circle cx="200" cy="80" r="5" fill="#0EA5E9" opacity="0.85"/>
+                <text x="200" y="72" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419" font-weight="600">建行</text>
+                <circle cx="240" cy="50" r="4" fill="#0EA5E9" opacity="0.85"/>
+                <text x="240" y="42" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419" font-weight="600">人保</text>
+                <circle cx="280" cy="100" r="4" fill="#0EA5E9" opacity="0.85"/>
+                <text x="280" y="112" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419" font-weight="600">电网</text>
+
+                <circle cx="60" cy="140" r="3" fill="#F4A82C" opacity="0.7"/>
+                <text x="60" y="132" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419">省联社</text>
+                <circle cx="110" cy="160" r="3" fill="#F4A82C" opacity="0.7"/>
+                <text x="110" y="152" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="5" fill="#0F1419">城商行</text>
+
+                <circle cx="220" cy="170" r="2" fill="#5C6470" opacity="0.6"/>
+                <circle cx="260" cy="180" r="2" fill="#5C6470" opacity="0.6"/>
+                <circle cx="290" cy="160" r="2" fill="#5C6470" opacity="0.6"/>
+              </g>
+            </g>
+            <!-- Score gauge top right -->
+            <g transform="translate(310,40)">
+              <circle r="22" fill="none" stroke="rgba(15,20,25,0.1)" stroke-width="4"/>
+              <circle r="22" fill="none" stroke="#0EA5E9" stroke-width="4" stroke-dasharray="138" stroke-dashoffset="28" transform="rotate(-90)"/>
+              <text text-anchor="middle" y="-2" font-family="Inter Tight, sans-serif" font-size="9" fill="#0F1419" font-weight="600">87</text>
+              <text text-anchor="middle" y="8" font-family="JetBrains Mono, monospace" font-size="5" fill="#5C6470">SCORE</text>
+            </g>
+            <text x="200" y="265" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#5C6470" letter-spacing="1">SCORING MATRIX / 4 TIERS</text>
+          </svg>
+        </div>
+      </div>
+      <div class="editorial-foot">
+        <span>4 维度 / 4 段位</span>
+        <span>实时评级</span>
+      </div>
+    </div>
+  </article>
+
+  <!-- 04 / Skill Forge -->
+  <article class="project-row project-palimpsest" data-reveal="true">
+    <div class="project-info">
+      <div class="project-info-main">
+        <p class="project-index">04 / 工具链 · 零依赖</p>
+        <h2>Skill Forge</h2>
+        <p class="project-type">104 个自研 skill，全部 bash / python 零依赖。落地即可用，不滥用 pip。</p>
+      </div>
+      <dl class="project-facts">
+        <div><dt>Skill 数量</dt><dd>104 个</dd></div>
+        <div><dt>技术栈</dt><dd>bash / python / stdlib</dd></div>
+        <div><dt>核心原则</dt><dd>零依赖 / 可读 / 能跑</dd></div>
+        <div><dt>应用领域</dt><dd>工作流 / 数据 / 内容</dd></div>
+      </dl>
+      <div class="project-footer">
+        <div class="project-meta"><span>持续中</span><span>工具链 / 自动化</span></div>
+        <button class="case-link" type="button" data-toast="Skill 列表正在整理中。">查看项目详情 <span aria-hidden="true" class="arrow">→</span></button>
+      </div>
+    </div>
+    <div class="project-visual editorial-visual skill-visual" aria-label="Skill Forge 零依赖工具链场景">
+      <div class="editorial-head">
+        <span>04 / Skill Forge</span>
+        <span>104 SKILLS / ZERO-DEP</span>
+      </div>
+      <div class="editorial-stage">
+        <div class="editorial-image">
+          <!-- Terminal/CLI scene -->
+          <svg class="art-svg" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sk1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1F2937"/>
+                <stop offset="1" stop-color="#0F1419"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="280" fill="url(#sk1)"/>
+            <!-- Terminal frame -->
+            <rect x="20" y="20" width="360" height="240" rx="8" fill="#0A0F1A" stroke="rgba(244,241,234,0.1)"/>
+            <g transform="translate(20,20)">
+              <circle cx="14" cy="14" r="4" fill="#FF5F56"/>
+              <circle cx="28" cy="14" r="4" fill="#FFBD2E"/>
+              <circle cx="42" cy="14" r="4" fill="#27C93F"/>
+              <text x="180" y="18" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#5C6470">~/skill-forge</text>
+            </g>
+            <line x1="20" y1="42" x2="380" y2="42" stroke="rgba(244,241,234,0.08)"/>
+            <!-- CLI lines -->
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#A0A8B4">
+              <text x="36" y="64"><tspan fill="#10B981">$</tspan> skill list --tag=bid</text>
+              <text x="36" y="82" fill="#5C6470">→ 7 skills matched</text>
+              <text x="36" y="100"><tspan fill="#0EA5E9">▸</tspan> bid-board kanban</text>
+              <text x="36" y="118"><tspan fill="#0EA5E9">▸</tspan> bid-fetch monitor</text>
+              <text x="36" y="136"><tspan fill="#0EA5E9">▸</tspan> bid-grade scoring</text>
+              <text x="36" y="154"><tspan fill="#0EA5E9">▸</tspan> bid-tender flow</text>
+              <text x="36" y="172"><tspan fill="#0EA5E9">▸</tspan> bid-deliver pm</text>
+              <text x="36" y="190"><tspan fill="#0EA5E9">▸</tspan> bid-review retro</text>
+              <text x="36" y="208"><tspan fill="#0EA5E9">▸</tspan> bid-export pdf</text>
+              <text x="36" y="234"><tspan fill="#10B981">$</tspan> skill run bid-grade</text>
+              <text x="36" y="250" fill="#F4A82C">[OK] scored 12 leads in 1.4s</text>
+            </g>
+            <!-- Cursor -->
+            <rect x="232" y="245" width="6" height="11" fill="#F4A82C" opacity="0.9">
+              <animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.2s" repeatCount="indefinite"/>
+            </rect>
+          </svg>
+        </div>
+        <div class="editorial-feature">
+          <span>核心原则</span>
+          <strong>能跑就行，<br/>不堆依赖。</strong>
+          <p>所有 skill 用 bash / python stdlib 写完，单文件可执行，落地即可用。</p>
+        </div>
+      </div>
+      <div class="editorial-foot">
+        <span>104 SKILLS</span>
+        <span>ZERO PIP / ZERO NPM</span>
+      </div>
+    </div>
+  </article>
+
+  <!-- "All work" bridge -->
+  <a class="all-work-card" href="#contact" data-reveal="true">
+    <div class="work-bridge-copy">
+      <span>合作范围 / 售前—交付—工具</span>
+      <strong>把金融安全的工作流，<br/>做成可复用的工具和内容。 <span aria-hidden="true" class="arrow">→</span></strong>
+      <p>如果项目正处在投标管理、售前分级、内容生产或工具链搭建阶段，可以从这里开始交流。</p>
+    </div>
+    <div class="work-bridge-art">
+      <svg class="bridge-svg" viewBox="0 0 480 240" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="br" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#DBEAFE"/>
+            <stop offset="1" stop-color="#FEF3C7"/>
+          </linearGradient>
+        </defs>
+        <rect width="480" height="240" fill="url(#br)"/>
+        <!-- Workflow loop -->
+        <g stroke="#0F1419" stroke-width="1.5" fill="none" stroke-linecap="round">
+          <path d="M80 120 Q 80 60 160 60 L 320 60 Q 400 60 400 120 Q 400 180 320 180 L 160 180 Q 80 180 80 120 Z" stroke-dasharray="4 6" opacity="0.4"/>
+        </g>
+        <!-- Stages -->
+        <g>
+          <circle cx="80" cy="120" r="16" fill="#0F1419"/>
+          <text x="80" y="124" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#F4F1EA" font-weight="600">L1</text>
+          <text x="80" y="158" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="8" fill="#0F1419" font-weight="500">抓取</text>
+
+          <circle cx="186" cy="60" r="14" fill="#FFFFFF" stroke="#0F1419" stroke-width="1.5"/>
+          <text x="186" y="64" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#0F1419" font-weight="600">L1.5</text>
+          <text x="186" y="38" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="8" fill="#0F1419" font-weight="500">资质</text>
+
+          <circle cx="293" cy="60" r="14" fill="#0EA5E9"/>
+          <text x="293" y="64" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#FFFFFF" font-weight="600">L2</text>
+          <text x="293" y="38" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="8" fill="#0F1419" font-weight="500">评分</text>
+
+          <circle cx="400" cy="120" r="16" fill="#0F1419"/>
+          <text x="400" y="124" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#F4F1EA" font-weight="600">L3</text>
+          <text x="400" y="158" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="8" fill="#0F1419" font-weight="500">投标</text>
+
+          <circle cx="293" cy="180" r="14" fill="#FFFFFF" stroke="#0F1419" stroke-width="1.5"/>
+          <text x="293" y="184" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#0F1419" font-weight="600">L4</text>
+          <text x="293" y="212" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="8" fill="#0F1419" font-weight="500">交付</text>
+
+          <circle cx="186" cy="180" r="14" fill="#F4A82C"/>
+          <text x="186" y="184" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#0F1419" font-weight="600">L5</text>
+          <text x="186" y="212" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="8" fill="#0F1419" font-weight="500">复盘</text>
+        </g>
+        <text x="240" y="220" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#5C6470" letter-spacing="1">5-STAGE / LOOP / CONTINUOUS</text>
+      </svg>
+      <span>L1 — L5 / WORKFLOW LOOP</span>
+    </div>
+  </a>
+</section>
+
+<!-- ============== DARK SECTION / WORKFLOW ============== -->
+<section class="dark-section" id="workflow" aria-labelledby="workflow-title">
+  <div class="page-shell dark-shell">
+    <div class="section-heading dark-heading" data-reveal="true">
+      <span class="section-title">5 阶段业务流</span>
+      <p id="workflow-title">从标讯抓取到归档复盘，把每一步变成可追踪、可优化的环节。</p>
+    </div>
+
+    <div class="practice-summary" aria-label="工作范围与协作方式" data-reveal="true">
+      <div><span>项目类型</span><strong>网络安全 / 金融 / 政府</strong></div>
+      <div><span>工作阶段</span><strong>抓取 / 评分 / 投标 / 交付</strong></div>
+      <div><span>协作方式</span><strong>独立 / 团队 / 工作坊</strong></div>
+    </div>
+
+    <div class="capability-grid">
+      <article class="capability-card" data-reveal="true">
+        <div class="capability-head"><span>01.</span><span>L1 抓取</span></div>
+        <h3>第一时间触达</h3>
+        <p>自动化监控标讯平台，第一时间拿到新项目，并初步按行业 / 区域 / 金额分组。</p>
+        <ul class="capability-methods" aria-label="L1 抓取的常用方法">
+          <li>多源抓取</li>
+          <li>去重</li>
+          <li>标签</li>
+        </ul>
+        <div class="capability-output"><span>常见交付</span><strong>标讯流 / 每日清单</strong></div>
+      </article>
+
+      <article class="capability-card" data-reveal="true">
+        <div class="capability-head"><span>02.</span><span>L1.5 资质</span></div>
+        <h3>不浪费子弹</h3>
+        <p>对照资质库做准入判断，剔除明显不达标的，把精力留给有戏的项目。</p>
+        <ul class="capability-methods" aria-label="L1.5 资质的常用方法">
+          <li>资质比对</li>
+          <li>红线规则</li>
+          <li>预审报告</li>
+        </ul>
+        <div class="capability-output"><span>常见交付</span><strong>预审结论 / 通过率</strong></div>
+      </article>
+
+      <article class="capability-card" data-reveal="true">
+        <div class="capability-head"><span>03.</span><span>L2 评分</span></div>
+        <h3>精准投入</h3>
+        <p>用 AI 评分给客户打标，分大B战略 / 中B / 小B / 微 四档，决定投入多少资源。</p>
+        <ul class="capability-methods" aria-label="L2 评分的常用方法">
+          <li>行业匹配</li>
+          <li>预算估算</li>
+          <li>关系强度</li>
+        </ul>
+        <div class="capability-output"><span>常见交付</span><strong>评分卡 / 优先级</strong></div>
+      </article>
+
+      <article class="capability-card" data-reveal="true">
+        <div class="capability-head"><span>04.</span><span>L3 投标</span></div>
+        <h3>13 节点全流程</h3>
+        <p>从标书解读到递交，把 13 个节点全部装进看板，每一步可追踪、可交接。</p>
+        <ul class="capability-methods" aria-label="L3 投标的常用方法">
+          <li>节点拆分</li>
+          <li>角色分工</li>
+          <li>风险预警</li>
+        </ul>
+        <div class="capability-output"><span>常见交付</span><strong>投标看板 / 节点报告</strong></div>
+      </article>
+
+      <article class="capability-card" data-reveal="true">
+        <div class="capability-head"><span>05.</span><span>L4 交付</span></div>
+        <h3>项目落地</h3>
+        <p>中标之后的产品部署、人员对接与上线支持，确保项目按合同交付。</p>
+        <ul class="capability-methods" aria-label="L4 交付的常用方法">
+          <li>实施计划</li>
+          <li>资源协调</li>
+          <li>客户沟通</li>
+        </ul>
+        <div class="capability-output"><span>常见交付</span><strong>实施文档 / 验收报告</strong></div>
+      </article>
+
+      <article class="capability-card" data-reveal="true">
+        <div class="capability-head"><span>06.</span><span>L4.5 — L5</span></div>
+        <h3>维保与复盘</h3>
+        <p>持续维保和定期复盘，把每个项目变成下一次的弹药库。</p>
+        <ul class="capability-methods" aria-label="L4.5 — L5 的常用方法">
+          <li>维保巡检</li>
+          <li>问题闭环</li>
+          <li>归档复盘</li>
+        </ul>
+        <div class="capability-output"><span>常见交付</span><strong>复盘报告 / 知识库</strong></div>
+      </article>
+    </div>
+
+    <div class="about-grid">
+      <article class="about-copy-card" data-reveal="true">
+        <div class="card-label"><span>关于</span><span>DUKE</span></div>
+        <p class="about-large">我关心两件事：项目能不能真正落地，工具能不能被团队持续用起来。</p>
+        <div class="about-story">
+          <p><span>如何开始项目</span>先理解客户在做什么、卡在哪、缺什么。再决定是补一个工具、改一个流程，还是写一份方案。</p>
+          <p><span>如何推进合作</span>用 5 阶段流程把工作拆开，按节点推进、按看板同步。每一段都留下可复用的产出。</p>
+        </div>
+        <dl class="about-facts">
+          <div><dt>行业</dt><dd>银行 / 政府 / 金融 / 能源</dd></div>
+          <div><dt>区域</dt><dd>华南 / 华北 / 华东</dd></div>
+          <div><dt>经历</dt><dd>10 年 / 前腾讯金融安全</dd></div>
+          <div><dt>客户段位</dt><dd>大B · 中B · 小B · 微</dd></div>
+          <div><dt>竞品理解</dt><dd>绿盟 / 启明 / 深信服 / 亚信 / 某网络安全服务商</dd></div>
+          <div><dt>技术栈</dt><dd>bash / python / SQLite / SSE</dd></div>
+        </dl>
+        <p class="about-small">以独立身份与产品 / 安全团队合作，常在项目早期介入，参与需求梳理、流程设计与工具落地。</p>
+      </article>
+
+      <article class="about-graphic-card" aria-label="工作方法图示" data-reveal="true">
+        <div class="card-label"><span>方法 / 04 步</span><span>从需求到方案</span></div>
+        <div class="about-illustration-wrap">
+          <svg class="art-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="ab1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#F4F1EA"/>
+                <stop offset="1" stop-color="#E0F2FE"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="220" fill="url(#ab1)"/>
+            <!-- 4-step process flow -->
+            <g font-family="Inter Tight, sans-serif" font-size="9" fill="#0F1419">
+              <g transform="translate(40,90)">
+                <circle r="22" fill="#0F1419"/>
+                <text text-anchor="middle" y="4" font-family="JetBrains Mono, monospace" font-size="11" fill="#F4F1EA" font-weight="600">01</text>
+                <text text-anchor="middle" y="48" font-weight="600">听</text>
+                <text text-anchor="middle" y="62" font-size="7" fill="#5C6470">理解任务</text>
+              </g>
+              <g transform="translate(140,90)">
+                <circle r="22" fill="#0EA5E9"/>
+                <text text-anchor="middle" y="4" font-family="JetBrains Mono, monospace" font-size="11" fill="#FFFFFF" font-weight="600">02</text>
+                <text text-anchor="middle" y="48" font-weight="600">理</text>
+                <text text-anchor="middle" y="62" font-size="7" fill="#5C6470">梳理流程</text>
+              </g>
+              <g transform="translate(240,90)">
+                <circle r="22" fill="#F4A82C"/>
+                <text text-anchor="middle" y="4" font-family="JetBrains Mono, monospace" font-size="11" fill="#0F1419" font-weight="600">03</text>
+                <text text-anchor="middle" y="48" font-weight="600">试</text>
+                <text text-anchor="middle" y="62" font-size="7" fill="#5C6470">原型验证</text>
+              </g>
+              <g transform="translate(340,90)">
+                <circle r="22" fill="#10B981"/>
+                <text text-anchor="middle" y="4" font-family="JetBrains Mono, monospace" font-size="11" fill="#FFFFFF" font-weight="600">04</text>
+                <text text-anchor="middle" y="48" font-weight="600">交</text>
+                <text text-anchor="middle" y="62" font-size="7" fill="#5C6470">交付落地</text>
+              </g>
+              <!-- Arrows -->
+              <g stroke="rgba(15,20,25,0.3)" stroke-width="1" fill="none">
+                <line x1="68" y1="90" x2="112" y2="90" stroke-dasharray="3 3"/>
+                <line x1="168" y1="90" x2="212" y2="90" stroke-dasharray="3 3"/>
+                <line x1="268" y1="90" x2="312" y2="90" stroke-dasharray="3 3"/>
+              </g>
+              <g fill="rgba(15,20,25,0.5)">
+                <polygon points="112,90 108,87 108,93"/>
+                <polygon points="212,90 208,87 208,93"/>
+                <polygon points="312,90 308,87 308,93"/>
+              </g>
+            </g>
+            <text x="200" y="200" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#5C6470" letter-spacing="1">LISTEN / STRUCTURE / TEST / DELIVER</text>
+          </svg>
+        </div>
+        <ol class="process-list">
+          <li><span>听</span><p>理解客户在做什么、卡在哪、缺什么</p></li>
+          <li><span>理</span><p>把模糊需求拆成 5 阶段的具体动作</p></li>
+          <li><span>试</span><p>用原型 / 工具验证关键方案</p></li>
+          <li><span>交</span><p>把能跑的工具 / 方案 / 文档交到团队</p></li>
+        </ol>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER / CONTACT ============== -->
+<footer class="page-shell site-footer" id="contact">
+  <section class="contact-card" aria-labelledby="contact-title" data-reveal="true">
+    <div>
+      <p class="micro-copy">项目合作 / 2026</p>
+      <h2 id="contact-title">正在找一个能落地的售前 / 工具 / 内容合作？</h2>
+      <p class="contact-context">可以从投标管理、售前分级、工具定制 或 SecNews 内容合作开始。</p>
+    </div>
+    <div class="contact-actions">
+      <a class="button contact-button" href="mailto:duke@secnews.dev?subject=项目咨询">
+        邮箱咨询 <span aria-hidden="true" class="arrow">→</span>
+      </a>
+      <button class="button contact-button-secondary" type="button" data-toast="微信公众号：SecNews，搜索即可关注。">
+        关注 SecNews <span aria-hidden="true" class="arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="footer-grid" data-reveal="true">
+    <section class="footer-card">
+      <p class="footer-title">快速导航</p>
+      <a href="#top">回到顶部 <span aria-hidden="true" class="arrow">→</span></a>
+      <a href="#projects">浏览项目 <span aria-hidden="true" class="arrow">→</span></a>
+      <a href="#workflow">5 阶段流程 <span aria-hidden="true" class="arrow">→</span></a>
+      <a href="#about">了解方法 <span aria-hidden="true" class="arrow">→</span></a>
+    </section>
+
+    <section class="footer-card">
+      <p class="footer-title">联系与资料</p>
+      <a href="mailto:duke@secnews.dev?subject=项目咨询"><span>邮箱</span><span class="meta-right">duke@secnews.dev</span></a>
+      <button class="footer-action" type="button" data-toast="微信公众号：SecNews（每日网络安全资讯）。"><span>公众号</span><b>SecNews</b></button>
+      <button class="footer-action" type="button" data-toast="小红书 / 抖音：搜索 SecNews 即可。"><span>小红书 / 抖音</span><b>SecNews</b></button>
+      <button class="footer-action" type="button" data-toast="简历正在整理中，即将开放下载。"><span>简历下载</span><b>2026 / PDF</b></button>
+    </section>
+
+    <section class="footer-card footer-note">
+      <p class="footer-title">关于本站</p>
+      <p>本站是 Duke (TsengDuke) 的个人作品集。插图均为自绘 SVG，零外部依赖，纯静态部署。</p>
+      <p class="art-credit">Type: Fraunces / Inter Tight / JetBrains Mono.</p>
+      <span>© 2026 DUKE / SELECTED WORK</span>
+    </section>
+  </div>
+</footer>
+
+</main>
+
+<script src="./script.js" defer></script>
+</body>
+</html>

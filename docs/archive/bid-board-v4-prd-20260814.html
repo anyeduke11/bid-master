@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>bid-board v4 PRD · Duke · 2026-08-14</title>
+<style>
+  :root { --bg:#F0F7FF; --card:#FFF; --line:#DCE7F2; --ink:#0F1E33; --ink-soft:#4A5A75; --ink-mute:#7A8AA0;
+    --brand:#0EA5E9; --brand-deep:#0369A1; --brand-soft:#E0F2FE; --ok:#10B981; --ok-soft:#D1FAE5;
+    --warn:#F59E0B; --warn-soft:#FEF3C7; --warn-ink:#92400E; --danger:#EF4444; --danger-soft:#FEE2E2;
+    --purple:#8B5CF6; --purple-soft:#EDE9FE; --shadow:0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06); --r:10px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "SF Pro SC", "PingFang SC", system-ui, sans-serif; font-size: 14px; line-height: 1.65; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 36px 28px 80px; }
+  .hero { background: linear-gradient(135deg, #FFF 0%, var(--brand-soft) 100%); border: 1px solid var(--line);
+    border-radius: 20px; padding: 30px 36px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .hero .tag { display: inline-block; font-size: 12px; letter-spacing: .12em; color: var(--brand-deep);
+    background: var(--brand-soft); padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+  .hero h1 { font-size: 26px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 22px 26px;
+    box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px; border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .sec-title.purple .n { background: var(--purple); }
+  .sec-title.warn .n { background: var(--danger); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 10px 0; }
+  th { text-align: left; padding: 10px 12px; background: var(--bg-soft); color: var(--brand-deep); font-weight: 700; font-size: 12px; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code { font-family: "SF Mono", monospace; font-size: 12px; background: var(--bg-soft);
+    padding: 1px 5px; border-radius: 4px; color: var(--brand-deep); }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .p-ok { background: var(--ok-soft); color: #065F46; }
+  .p-warn { background: var(--warn-soft); color: var(--warn-ink); }
+  .p-err { background: var(--danger-soft); color: #991B1B; }
+  .p-p1 { background: var(--purple-soft); color: var(--purple); }
+
+  .principle { background: #FEF3C7; border-left: 3px solid var(--warn); border-radius: var(--r);
+    padding: 12px 16px; margin: 10px 0; font-size: 13px; }
+  .principle b { color: var(--warn-ink); }
+
+  code.block { display: block; background: var(--bg-soft); padding: 10px 14px; border-radius: 6px;
+    margin: 8px 0; font-size: 12px; overflow-x: auto; line-height: 1.5; }
+
+  .layer { background: white; border: 1px solid var(--line); border-radius: var(--r);
+    padding: 12px 16px; margin: 8px 0; }
+  .layer h5 { margin: 0 0 6px; font-size: 13px; color: var(--brand-deep); }
+  .layer p { margin: 0; font-size: 12px; color: var(--ink-soft); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">V4 PRD · 2026-08-14</span>
+    <h1>投标看板 v4 PRD · 借鉴 bid-news-kanban v0.3 架构</h1>
+    <div class="sub">第一性原理:经营事实源 · 四类事实 · 命令化 · LTC 状态机 · 幂等可审计</div>
+  </div>
+
+  <!-- 0. 第一性原理 -->
+  <div class="sec">
+    <div class="sec-title warn"><span class="n">0</span>第一性原理</div>
+    <div class="principle">
+      <b>系统唯一职责 = 经营事实源。</b>不是"工具集合",不是"自动化平台",不是"AI Agent"。它只回答 4 个问题:
+    </div>
+    <ol style="line-height: 1.9; padding-left: 22px;">
+      <li><b>发现事实</b>:外部 Agent 在什么时间、通过什么来源发现了什么?(可观察、可审计,但不可直接改变业务)</li>
+      <li><b>业务事实</b>:平台认可的 Bid / Lead / Opportunity / Quotation / Contract / Delivery / Invoice / Payment 各是什么状态</li>
+      <li><b>业务决策</b>:谁以什么理由推进了哪个状态(谁、什么时间、什么命令、什么参数、什么证据)</li>
+      <li><b>可追溯结果</b>:任意一条数据可以回溯到 Agent / Skill / 外部运行 / 同步批次 / 证据 / 命令</li>
+    </ol>
+    <div class="principle" style="margin-top: 14px;">
+      <b>推论</b>:Agent 不能直接写库。报告不能成为事实唯一来源。推荐不能自动变客户/合同。所有业务更新必须是已注册命令,而不是任意 PATCH。
+    </div>
+  </div>
+
+  <!-- 1. 与 v0.3 架构的映射 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">1</span>v0.3 借鉴映射</div>
+    <table>
+      <thead><tr><th style="width:25%">v0.3 原则</th><th style="width:35%">应用到 bid-board v4</th><th style="width:25%">改动范围</th><th style="width:15%">优先级</th></tr></thead>
+      <tbody>
+        <tr><td>三区分层(观察/事实/控制)</td><td>SQLite 拆 3 个 schema:collection / platform / control</td><td>server.py + DB schema</td><td><span class="pill p-ok">P0</span></td></tr>
+        <tr><td>命令注册表(禁止任意 PATCH)</td><td>所有写操作改为 `POST /api/commands {commandId, params}`</td><td>API 重构</td><td><span class="pill p-ok">P0</span></td></tr>
+        <tr><td>幂等键 + 载荷哈希</td><td>请求带 `Idempotency-Key` + `Payload-Hash`,服务器去重</td><td>server.py 中间件</td><td><span class="pill p-ok">P0</span></td></tr>
+        <tr><td>可追溯审计</td><td>每条命令存 CommandExecution(谁/何时/什么/为什么/证据)</td><td>DB 新表 + server</td><td><span class="pill p-ok">P0</span></td></tr>
+        <tr><td>审计失败不能返回成功</td><td>事务化:DB 写 + 审计 + 事件必须原子成功,任一失败回滚</td><td>server.py</td><td><span class="pill p-ok">P0</span></td></tr>
+        <tr><td>外部 Agent 禁止直接写</td><td>Mavis 写 AI 摘要必须通过 `bid.attach_summary` 命令,需带证据</td><td>Agent hook</td><td><span class="pill p-ok">P0</span></td></tr>
+        <tr><td>推荐不能自动变客户</td><td>qualify_score → 落 leads 表(观察层),人工确认后才转 opportunity</td><td>状态机</td><td><span class="pill p-warn">P1</span></td></tr>
+        <tr><td>LTC 状态机</td><td>5 阶段扩展为 LTC:Lead → Opportunity → Quotation → Contract → Delivery → Invoice → Payment</td><td>数据模型</td><td><span class="pill p-warn">P1</span></td></tr>
+        <tr><td>CLI + HTTP 双协议</td><td>新增 `bid-board` CLI(scripts/bid_board_cli.py),HTTP 不变</td><td>新增文件</td><td><span class="pill p-warn">P1</span></td></tr>
+        <tr><td>Token + Scope 认证</td><td>个人使用可降级为"本地模式"(无 token),生产可启用 Bearer Token + scope</td><td>可选</td><td><span class="pill p-err">P2</span></td></tr>
+        <tr><td>Agent Credential 独立 scope</td><td>只读 scope vs 可写 scope vs 管理员 scope</td><td>可选</td><td><span class="pill p-err">P2</span></td></tr>
+        <tr><td>DataQualityTask 异常标记</td><td>外部数据冲突时创建复核任务</td><td>DB 新表</td><td><span class="pill p-err">P2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. 数据模型(分层) -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">2</span>数据模型 · 三层分区</div>
+
+    <div class="layer" style="border-left: 3px solid var(--brand);">
+      <h5>🟦 外部观察层 (Collection · 可部分失败,可重复,可复核,不可直接改 LTC)</h5>
+      <p><b>表</b>:
+        collection_run(批次,含时间/来源/状态) ·
+        collection_channel_run(单渠道) ·
+        sync_batch(同步批次,带 idempotency_key) ·
+        sync_item(单条,带 payload_hash,状态:applied/rejected/pending_review) ·
+        bid_evidence(证据,链接/截图/原文) ·
+        report_artifact(报告,只存摘要+引用,不存全文) ·
+        external_action_result(外部动作结果)
+      </p>
+    </div>
+
+    <div class="layer" style="border-left: 3px solid var(--ok);">
+      <h5>🟩 平台事实层 (Platform · 人工或命令确认的经营事实)</h5>
+      <p><b>表</b>:
+        bid(规范采购事实) ·
+        customer(确认企业对象) ·
+        lead(业务资格,来源 collection 提升) ·
+        opportunity(销售机会) ·
+        quotation(报价) ·
+        contract(合同) ·
+        delivery(交付) ·
+        invoice(发票) ·
+        payment(回款) ·
+        ai_summary(只存引用 + 作者 + 时间,不当事实)
+      </p>
+    </div>
+
+    <div class="layer" style="border-left: 3px solid var(--purple);">
+      <h5>🟪 控制层 (Control · 安全与追溯)</h5>
+      <p><b>表</b>:
+        agent_credential(token + scope) ·
+        agent_request_audit(请求审计:谁/何时/什么 IP) ·
+        command_execution(命令执行:commandId/params/状态/result) ·
+        domain_event(领域事件) ·
+        activity_log(活动日志) ·
+        data_quality_task(数据冲突复核任务) ·
+        lifecycle_state(lifecycle + created_at + updated_at + closed_at + archived_at)
+      </p>
+    </div>
+  </div>
+
+  <!-- 3. 命令注册表 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">3</span>命令注册表(替代任意 PATCH)</div>
+    <p>所有业务写操作必须通过已注册命令。不允许任意 <code>PATCH /api/bids/{code}/{field}</code>。</p>
+    <table>
+      <thead><tr><th style="width:30%">commandId</th><th style="width:35%">作用</th><th style="width:20%">scope</th><th style="width:15%">idempotent</th></tr></thead>
+      <tbody>
+        <tr><td><code>bid.create</code></td><td>从 opportunity 升级到 bid(规范采购事实)</td><td>write:platform</td><td>yes (idempotency_key = code)</td></tr>
+        <tr><td><code>bid.update_stage</code></td><td>改 stage(必须带 reason)</td><td>write:platform</td><td>no(同 cmdId+同 params 视为重放,直接返原结果)</td></tr>
+        <tr><td><code>bid.update_block</code></td><td>改 block(必须带 reason)</td><td>write:platform</td><td>同上</td></tr>
+        <tr><td><code>bid.update_priority</code></td><td>改 priority</td><td>write:platform</td><td>同上</td></tr>
+        <tr><td><code>bid.add_ai_ready</code></td><td>追加 AI 完成项</td><td>write:platform</td><td>yes (item 不重复)</td></tr>
+        <tr><td><code>bid.add_human_todo</code></td><td>追加人工 todo</td><td>write:platform</td><td>yes</td></tr>
+        <tr><td><code>bid.lifecyle</code></td><td>状态机推进(active→paused→closed→archived)</td><td>write:lifecycle</td><td>no(状态机保证)</td></tr>
+        <tr><td><code>bid.attach_summary</code></td><td>Mavis 写 AI 摘要(必须带 author + evidence_ref)</td><td>write:summary</td><td>yes</td></tr>
+        <tr><td><code>lead.qualify</code></td><td>从 collection 提升 lead 到 opportunity(必须人工确认)</td><td>write:platform</td><td>yes (idempotency_key = lead_id)</td></tr>
+        <tr><td><code>opportunity.create</code></td><td>新建 opportunity</td><td>write:platform</td><td>yes</td></tr>
+        <tr><td><code>quotation.create</code></td><td>新建报价</td><td>write:platform</td><td>yes</td></tr>
+        <tr><td><code>contract.create</code></td><td>新建合同</td><td>write:platform</td><td>yes</td></tr>
+        <tr><td><code>flow.update_node</code></td><td>改流程节点(必须带 status + 可选 block_reason)</td><td>write:platform</td><td>no(状态机保证)</td></tr>
+        <tr><td><code>collection.sync</code></td><td>外部 Agent 同步观察层数据(lead/raw bid 证据)</td><td>write:collection</td><td>yes (idempotency_key + payload_hash)</td></tr>
+        <tr><td><code>playbook.run</code></td><td>跑剧本(会触发多个内部命令)</td><td>write:platform</td><td>yes (playbook_run_id)</td></tr>
+        <tr><td><code>command.replay</code></td><td>管理员重放失败命令</td><td>admin</td><td>no</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. LTC 状态机 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">4</span>LTC 状态机(Lead to Cash)</div>
+    <p>把当前的 5 阶段业务流细化到 7 个 LTC 阶段,每个独立命令 + 独立事件 + 独立审计。</p>
+    <table>
+      <thead><tr><th style="width:10%">阶段</th><th style="width:15%">对象</th><th style="width:25%">关键字段</th><th style="width:20%">从谁升级</th><th style="width:30%">状态机转换</th></tr></thead>
+      <tbody>
+        <tr><td>L1 标讯</td><td>collection_run → lead</td><td>title, buyer, amount, deadline, source</td><td>外部(Agent 抓取)</td><td>new → reviewed → qualified</td></tr>
+        <tr><td>L1.5 资质</td><td>lead.qualify_score</td><td>score, recommend, reason</td><td>lead</td><td>score → manual_review</td></tr>
+        <tr><td>L2 识别</td><td>opportunity</td><td>customer_id, est_amount, decision_maker</td><td>qualified lead(人工)</td><td>open → contacted → engaged</td></tr>
+        <tr><td>L3a 应标</td><td>bid</td><td>code, due_at, stage, priority</td><td>engaged opportunity</td><td>drafting → submitted</td></tr>
+        <tr><td>L3b 述标</td><td>bid.flow</td><td>present_at, retro_at</td><td>submitted bid</td><td>presented → won / lost</td></tr>
+        <tr><td>L4 交付</td><td>delivery</td><td>contract_no, milestones, kickoff_at</td><td>won bid</td><td>kicked_off → delivered</td></tr>
+        <tr><td>L4.5 维保</td><td>delivery.warranty</td><td>warranty_months, support_until</td><td>delivered</td><td>in_warranty → expired</td></tr>
+        <tr><td>L5 归档</td><td>archive</td><td>summary, lessons, reusable</td><td>expired / 30 天 closed</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. 标准调用协议 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span>标准调用协议</div>
+
+    <h4 style="margin: 10px 0 6px;">5.1 HTTP 命令调用</h4>
+    <code class="block">
+POST /api/commands
+Headers:
+  Content-Type: application/json
+  Idempotency-Key: &lt;uuid&gt;       ← 必须
+  Payload-Hash: &lt;sha256&gt;          ← 必须
+  Authorization: Bearer &lt;token&gt;   ← 生产模式
+Body:
+  {
+    "commandId": "bid.update_stage",
+    "params": {
+      "code": "dgyhst2026",
+      "stage": "封标",
+      "reason": "评审通过",
+      "evidence_refs": ["ev_001", "ev_002"]   ← 可选,引用 collection 表
+    }
+  }
+
+Response 200:
+  {
+    "ok": true,
+    "commandId": "bid.update_stage",
+    "executionId": "cmd_abc123",
+    "result": {...},          ← 业务结果
+    "appliedAt": "2026-08-14 13:00:00"
+  }
+
+Response 200(幂等重放):
+  { 返原结果  }
+
+Response 409:
+  { "err": "IDEMPOTENCY_PAYLOAD_MISMATCH" }  ← 相同 idempotency_key 但 payload_hash 不同</code>
+
+    <h4 style="margin: 14px 0 6px;">5.2 CLI 接口</h4>
+    <code class="block">
+$ bid-board capabilities
+$ bid-board commands list                       # 列出所有已注册命令
+$ bid-board run bid.update_stage --code dgyhst2026 --stage 封标 --reason 评审
+$ bid-board status --execution cmd_abc123       # 查询命令执行状态
+$ bid-board replay --execution cmd_failed_xyz  # 管理员重放
+$ bid-board export --entity opportunities --format json --out opps.json
+$ bid-board import --file leads.json --type collection  # 导入外部 lead</code>
+
+    <h4 style="margin: 14px 0 6px;">5.3 幂等保证</h4>
+    <code class="block">
+# 相同 Agent + idempotency_key + payload_hash → 返原结果
+# 相同 idempotency_key 但 payload_hash 不同 → 409 IDEMPOTENCY_PAYLOAD_MISMATCH
+# 不同 idempotency_key 视为新命令
+# 命令状态机保证:bid.update_stage 在相同 (code, stage) 时返原结果</code>
+  </div>
+
+  <!-- 6. 事务化 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>事务化(审计失败不能返回成功)</div>
+    <p>所有命令执行必须在单 SQLite 事务中完成:</p>
+    <code class="block">
+def execute_command(commandId, params, idempotency_key, payload_hash, agent_id):
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("BEGIN IMMEDIATE")  # 串行化,避免并发写竞争
+        try:
+            # 1. 幂等检查
+            existing = lookup_by_idempotency(conn, idempotency_key)
+            if existing:
+                if existing.payload_hash != payload_hash:
+                    return 409, "IDEMPOTENCY_PAYLOAD_MISMATCH"
+                return 200, existing.result  # 重放
+
+            # 2. 验证命令 + scope
+            validate_command(commandId, params, agent_id)
+
+            # 3. 业务写(在 domain 层)
+            result = dispatch_to_domain(commandId, params, conn)
+
+            # 4. 写 CommandExecution
+            exec_id = insert_command_execution(conn, commandId, params, result, agent_id)
+
+            # 5. 写 ActivityLog + DomainEvent
+            insert_activity_log(conn, exec_id, agent_id)
+            insert_domain_event(conn, commandId, exec_id)
+
+            conn.execute("COMMIT")
+            return 200, result
+        except Exception as e:
+            conn.execute("ROLLBACK")
+            # 即使失败,也要写 failed CommandExecution(独立事务)
+            log_failed_execution(commandId, params, str(e), agent_id)
+            return 500, {"err": str(e)}</code>
+  </div>
+
+  <!-- 7. UI 改造 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>UI 改造</div>
+    <table>
+      <thead><tr><th style="width:25%">改造</th><th style="width:45%">说明</th><th style="width:30%">v3 → v4</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>所有写按钮走命令面板</td>
+          <td>改 stage / block / 关闭 / 暂停 → 都打开命令面板(命令名 + 参数 + 原因 + 证据)</td>
+          <td>简单表单 → 命令面板</td>
+        </tr>
+        <tr>
+          <td>执行历史 tab</td>
+          <td>每个 bid 卡片下拉"📜 执行历史",显示所有命令执行记录</td>
+          <td>无 → 新增</td>
+        </tr>
+        <tr>
+          <td>数据质量任务 tab</td>
+          <td>管理 tab 加"⚠ 质量任务",显示冲突待复核项</td>
+          <td>无 → 新增</td>
+        </tr>
+        <tr>
+          <td>观察层(leads)入口</td>
+          <td>看板顶部加"📥 商机",显示未升级的 lead(可手动转 opportunity)</td>
+          <td>无 → 新增</td>
+        </tr>
+        <tr>
+          <td>LTC 阶段切换器</td>
+          <td>看板顶部加 LTC 7 阶段切换,默认在 L3 投标</td>
+          <td>5 阶段 → 7 阶段</td>
+        </tr>
+        <tr>
+          <td>报告 ≠ 事实 标识</td>
+          <td>AI 摘要区显示"📋 摘要引用 · 不是事实 · 来源: Mavis 2026-08-14 13:00"</td>
+          <td>ai_summary 混着 → 明确标识</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 8. 实施路线 -->
+  <div class="sec">
+    <div class="sec-title purple"><span class="n">8</span>实施路线(分 4 个 sprint)</div>
+    <table>
+      <thead><tr><th style="width:8%">Sprint</th><th style="width:25%">主题</th><th style="width:35%">内容</th><th style="width:15%">估时</th><th style="width:22%">验收</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="pill p-err">P0-A</span></td>
+          <td>SQLite 3 层分区</td>
+          <td>拆 collection / platform / control 3 个 schema · 迁移 v3 数据 · 加 sync_batch / sync_item / command_execution / activity_log / domain_event / bid_evidence 6 张新表</td>
+          <td>4h</td>
+          <td>查询各层数据正确隔离</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-err">P0-B</span></td>
+          <td>命令注册表 + 事务化</td>
+          <td>所有写操作改为 POST /api/commands · 16 个命令注册 · 幂等中间件 · 事务封装 · CommandExecution 审计</td>
+          <td>6h</td>
+          <td>16 命令全部可调 · 幂等测试通过 · 失败回滚</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-err">P0-C</span></td>
+          <td>前端命令面板 + 执行历史</td>
+          <td>所有写操作走命令面板 · 显示命令名/参数/原因 · 卡片下拉"执行历史" · toast 显示 execution_id</td>
+          <td>4h</td>
+          <td>UI 改完 · 历史可查</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-warn">P1-A</span></td>
+          <td>LTC 状态机 + 7 阶段切换</td>
+          <td>collection_run / lead / opportunity / quotation / contract / delivery / invoice / payment 8 张表 · 状态机转换规则 · 升级命令 · LTC 阶段切换 UI</td>
+          <td>8h</td>
+          <td>1 条数据走完整 LTC</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-warn">P1-B</span></td>
+          <td>Agent 边界(权限/scope)</td>
+          <td>Mavis 写摘要必须用 bid.attach_summary + evidence_ref · 本地模式(无 token) · 可选 Bearer Token</td>
+          <td>3h</td>
+          <td>Mavis 不能再直接 PATCH</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-warn">P1-C</span></td>
+          <td>CLI 工具</td>
+          <td>scripts/bid_board_cli.py · 16 个命令的 CLI 包装 · 与 HTTP 同源</td>
+          <td>3h</td>
+          <td>bid-board commands list / run / status 跑通</td>
+        </tr>
+        <tr>
+          <td><span class="pill p-err">P2</span></td>
+          <td>数据质量任务 + 多租户 + Scope</td>
+          <td>data_quality_task 冲突检测 · 多用户 Token + scope · report_artifact 摘要+引用</td>
+          <td>8h</td>
+          <td>冲突自动入任务 · scope 控制生效</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 9. 批判性审查 -->
+  <div class="sec">
+    <div class="sec-title warn"><span class="n">9</span>批判性审查(对自己方案的反思)</div>
+    <div class="principle">
+      <b>问题 1 · 个人使用 vs 多用户:</b>v0.3 是"多 Agent 多用户数据中台",bid-board 是"个人看板"。把整套协议照搬可能过度设计。
+      <br><b>决策</b>:核心原则(命令化/幂等/审计/LTC)借鉴,认证/scope/data_quality_task 推到 P2(可选)。
+    </div>
+    <div class="principle">
+      <b>问题 2 · SQLite 够不够:</b>v0.3 用 Prisma + SQLite 支持中型场景。当前 bid-board 单用户完全够,加事务 + 索引足够。
+      <br><b>决策</b>:不引入 Prisma/ORM,直接 sqlite3 stdlib,降低复杂度。事务用 `BEGIN IMMEDIATE` 保证串行。
+    </div>
+    <div class="principle">
+      <b>问题 3 · 8 张新表是不是太多:</b>collection_run/lead/opportunity/quotation/contract/delivery/invoice/payment 全分,小项目用 1 张 bids 就能装。
+      <br><b>决策</b>:先做 collection + bid + command_execution + activity_log 4 张核心表,其他表用 JSON 字段延后(等业务真有 LTC 流转时再分)。
+    </div>
+    <div class="principle">
+      <b>问题 4 · 命令化让 UI 变复杂:</b>每个 PATCH 都变成"打开命令面板 → 填原因 → 提交",Duke 一开始会觉得烦。
+      <br><b>决策</b>:本地模式(无认证)下,简化为"按钮 + 必填原因下拉框",1 步完成。命令面板作为高级入口。
+    </div>
+    <div class="principle">
+      <b>问题 5 · 幂等键需要客户端管理:</b>前端 JS 要生成 UUID,容易出错。
+      <br><b>决策</b>:前端用 `crypto.randomUUID()`,fallback 到 `Date.now() + Math.random()`。本地模式不强校验。
+    </div>
+    <div class="principle">
+      <b>问题 6 · LTC 7 阶段在招投标可能过度:</b>Duke 主要做 L3 投标,其他阶段是辅助。
+      <br><b>决策</b>:LTC 模型保留,但 UI 默认在 L3 投标,其他阶段折叠收起来,需要时展开。
+    </div>
+    <div class="principle">
+      <b>问题 7 · ai_summary 算不算事实:</b>v0.3 严格说"报告不能成为业务事实"。但 ai_summary 是 Mavis 写的语义总结,Duke 用来辅助决策。
+      <br><b>决策</b>:ai_summary 标记为 `summary_type="ai_reference"`,带 author + source,UI 显式标"📋 不是事实"。业务事实必须人工或命令确认。
+    </div>
+  </div>
+
+  <!-- 10. 与 v3 对比 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">10</span>v3 → v4 关键变化</div>
+    <table>
+      <thead><tr><th style="width:30%">维度</th><th style="width:35%">v3 (现状)</th><th style="width:35%">v4 (目标)</th></tr></thead>
+      <tbody>
+        <tr><td>写接口</td><td>任意 PATCH/POST</td><td>统一 POST /api/commands(16 个注册命令)</td></tr>
+        <tr><td>幂等</td><td>无</td><td>Idempotency-Key + Payload-Hash</td></tr>
+        <tr><td>审计</td><td>事件日志(简单)</td><td>CommandExecution + ActivityLog + DomainEvent</td></tr>
+        <tr><td>事务</td><td>分开写(可能不一致)</td><td>单事务(DB + 审计 + 事件)</td></tr>
+        <tr><td>Agent 边界</td><td>Mavis 直接 PATCH</td><td>Mavis 必须用命令 + 证据</td></tr>
+        <tr><td>业务流</td><td>5 阶段(L1-L5)</td><td>7 阶段 LTC + Lead/Opportunity/Quotation/Contract/Delivery/Invoice/Payment</td></tr>
+        <tr><td>CLI</td><td>无</td><td>bid-board 命令(与 HTTP 同源)</td></tr>
+        <tr><td>认证</td><td>无</td><td>本地模式(无) / 生产模式(Bearer + scope)</td></tr>
+        <tr><td>数据质量</td><td>无</td><td>冲突自动入 DataQualityTask(P2)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 30px;">
+    v4 PRD · 待 Duke 确认后分 sprint 实施
+  </p>
+
+</div>
+</body>
+</html>

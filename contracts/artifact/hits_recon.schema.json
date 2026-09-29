@@ -1,0 +1,41 @@
+{
+ "required": [
+  "bid_id",
+  "items",
+  "recon_rate",
+  "status"
+ ],
+ "properties": {
+  "bid_id": {
+   "type": "string"
+  },
+  "items": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "pattern": "^(收录|排除)$"
+   }
+  },
+  "recon_rate": {
+   "type": "number"
+  },
+  "total_hits": {
+   "type": "number"
+  },
+  "recast_from": {
+   "type": "string"
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "registered",
+    "final",
+    "confirmed"
+   ]
+  }
+ },
+ "patterns": {
+  "all_have_reason": "(收录|排除)"
+ }
+}

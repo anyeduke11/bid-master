@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>看板管理 v2 · Duke · Mavis</title>
+<style>
+  :root {
+    --bg: #F4F7FB;
+    --bg-soft: #E8EFF8;
+    --card: #FFFFFF;
+    --line: #DDE5F0;
+    --line-soft: #ECF1F7;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --p0: #EF4444;
+    --p1: #F59E0B;
+    --p2: #38BDF8;
+    --dash-bg: #0F1E33;
+    --dash-line: rgba(255,255,255,.08);
+    --dash-ink: #E6F1FB;
+    --dash-mute: #94A3B8;
+    --shadow-sm: 0 1px 2px rgba(15,30,51,.04);
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --r-sm: 6px;
+    --r: 10px;
+    --r-lg: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.55; font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1480px; margin: 0 auto; padding: 18px 24px 60px; }
+
+  /* ====== HEADER ====== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--brand));
+    color: white; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; box-shadow: var(--shadow);
+  }
+  .brand h1 { font-size: 17px; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+  .brand h1 .sub { color: var(--ink-mute); font-size: 12px; font-weight: 500; margin-left: 8px; letter-spacing: .02em; }
+  .topbar .nav { display: flex; gap: 4px; align-items: center; }
+  .nav a {
+    padding: 6px 12px; border-radius: 6px; color: var(--ink-soft);
+    text-decoration: none; font-size: 13px; font-weight: 500;
+  }
+  .nav a:hover { background: var(--bg-soft); color: var(--ink); }
+  .nav a.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; }
+
+  /* ====== Tabs ====== */
+  .tabs {
+    display: flex; gap: 4px; border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  .tab {
+    padding: 10px 16px; font-size: 13.5px; color: var(--ink-soft);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    font-weight: 500; transition: all .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--brand-deep); border-bottom-color: var(--brand); font-weight: 700; }
+  .tab .count {
+    font-size: 11px; padding: 1px 7px; border-radius: 999px;
+    background: var(--bg-soft); color: var(--ink-soft); font-weight: 600;
+  }
+  .tab.active .count { background: var(--brand-soft); color: var(--brand-deep); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadein .25s; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ====== Common ====== */
+  .sec-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .sec-head h2 { font-size: 16px; margin: 0; font-weight: 700; }
+  .sec-head .sub { font-size: 12.5px; color: var(--ink-mute); margin-top: 2px; }
+  .sec-head .right { display: flex; gap: 6px; }
+  .btn {
+    border: 1px solid var(--line); background: white; color: var(--ink);
+    padding: 6px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .btn:hover { border-color: var(--brand); color: var(--brand-deep); }
+  .btn.primary { background: var(--brand); color: white; border-color: var(--brand); }
+  .btn.primary:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+  .btn.tiny { padding: 3px 9px; font-size: 11.5px; }
+  .btn.danger { color: var(--danger); border-color: var(--danger-soft); }
+  .btn.danger:hover { background: var(--danger-soft); }
+
+  /* ====== Skills Grid ====== */
+  .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .skill {
+    background: white; border: 1px solid var(--line);
+    border-radius: var(--r); padding: 14px 16px; transition: all .2s;
+    position: relative; overflow: hidden;
+  }
+  .skill:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+  .skill .head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .skill .ic {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .skill .ic.bid { background: var(--brand-soft); color: var(--brand-deep); }
+  .skill .ic.quote { background: #FED7AA; color: #9A3412; }
+  .skill .ic.content { background: var(--accent-soft); color: var(--accent); }
+  .skill .ic.review { background: #FBCFE8; color: #9D174D; }
+  .skill .ic.gate { background: #FEE2E2; color: #991B1B; }
+  .skill .ic.noti { background: var(--ok-soft); color: #065F46; }
+  .skill .info { flex: 1; min-width: 0; }
+  .skill .name { font-size: 14px; font-weight: 700; }
+  .skill .ver { font-family: "SF Mono", monospace; font-size: 11px; color: var(--ink-mute); margin-top: 1px; }
+  .skill .desc { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; margin: 4px 0 10px; }
+  .skill .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    padding: 8px 0; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+  .skill .meta .item { font-size: 11px; }
+  .skill .meta .item .k { color: var(--ink-mute); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .skill .meta .item .v { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+  .skill .meta .item .v.ok { color: var(--ok); }
+  .skill .meta .item .v.warn { color: var(--warn); }
+  .skill .meta .item .v.err { color: var(--danger); }
+  .skill .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .skill .status {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px;
+    font-weight: 600;
+  }
+  .skill .status .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .skill .status.active .dot { background: var(--ok); box-shadow: 0 0 0 0 var(--ok); animation: pulse 1.6s infinite; }
+  .skill .status.paused .dot { background: var(--warn); }
+  .skill .status.error .dot { background: var(--danger); }
+  .skill .status.active { color: var(--ok); }
+  .skill .status.paused { color: var(--warn); }
+  .skill .status.error { color: var(--danger); }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.4); } 70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+  .skill .actions { display: flex; gap: 4px; }
+
+  /* ====== Services List ====== */
+  .service-list { display: flex; flex-direction: column; gap: 8px; }
+  .service {
+    background: white; border: 1px solid var(--line);
+    border-radius: var(--r); padding: 12px 16px;
+    display: grid; grid-template-columns: auto 1fr auto auto; gap: 14px;
+    align-items: center; transition: all .15s;
+  }
+  .service:hover { box-shadow: var(--shadow-sm); }
+  .service .ic {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--bg-soft); color: var(--brand-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-family: "SF Mono", monospace; font-size: 11px; font-weight: 700;
+  }
+  .service .info .name { font-size: 14px; font-weight: 700; }
+  .service .info .url { font-family: "SF Mono", monospace; font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+  .service .info .desc { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .service .stat { font-size: 12px; color: var(--ink-soft); text-align: right; }
+  .service .stat .v { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .service .stat .k { color: var(--ink-mute); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .service .actions { display: flex; gap: 4px; }
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    font-weight: 600;
+  }
+  .badge.ok { background: var(--ok-soft); color: #065F46; }
+  .badge.warn { background: var(--warn-soft); color: #92400E; }
+  .badge.err { background: var(--danger-soft); color: #991B1B; }
+
+  /* ====== Webhooks ====== */
+  .webhook-list { display: flex; flex-direction: column; gap: 8px; }
+  .webhook {
+    background: white; border: 1px solid var(--line);
+    border-radius: var(--r); padding: 12px 16px;
+    transition: all .15s;
+  }
+  .webhook:hover { box-shadow: var(--shadow-sm); }
+  .webhook .row1 { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .webhook .name { font-size: 14px; font-weight: 700; }
+  .webhook .url { font-family: "SF Mono", monospace; font-size: 12px; color: var(--brand-deep);
+    background: var(--bg-soft); padding: 2px 8px; border-radius: 4px; }
+  .webhook .trigger { font-size: 12px; color: var(--ink-soft); margin: 6px 0; }
+  .webhook .trigger code { font-family: "SF Mono", monospace; font-size: 11.5px; color: var(--brand-deep);
+    background: var(--bg-soft); padding: 1px 5px; border-radius: 3px; }
+  .webhook .meta { display: flex; gap: 16px; font-size: 11.5px; color: var(--ink-mute); }
+  .webhook .meta b { color: var(--ink); }
+
+  /* ====== Data / Schema ====== */
+  .schema-block {
+    background: var(--dash-bg); color: #94A3B8;
+    border-radius: var(--r); padding: 16px 20px;
+    font-family: "SF Mono", monospace; font-size: 12px; line-height: 1.7;
+    overflow-x: auto;
+  }
+  .schema-block .k { color: #C7D2FE; }
+  .schema-block .s { color: #FDE68A; }
+  .schema-block .c { color: #64748B; }
+  .schema-block .v { color: #7DD3FC; }
+  .schema-block .n { color: #6EE7B7; }
+
+  /* ====== Logs ====== */
+  .log-viewer {
+    background: var(--dash-bg); color: var(--dash-ink);
+    border-radius: var(--r); padding: 14px 18px;
+    font-family: "SF Mono", monospace; font-size: 12px; line-height: 1.7;
+    max-height: 600px; overflow-y: auto;
+  }
+  .log-viewer .log-line { padding: 1px 0; }
+  .log-viewer .log-line .ts { color: #475569; }
+  .log-viewer .log-line .lvl { display: inline-block; min-width: 50px; font-weight: 600; }
+  .log-viewer .log-line .lvl.info { color: #7DD3FC; }
+  .log-viewer .log-line .lvl.warn { color: #FCD34D; }
+  .log-viewer .log-line .lvl.err { color: #FCA5A5; }
+  .log-viewer .log-line .src { color: #C7D2FE; }
+  .log-viewer .log-line .msg { color: #94A3B8; }
+  .log-viewer .log-line .k { color: #C7D2FE; }
+  .log-viewer .log-line .s { color: #FDE68A; }
+  .log-viewer .log-line .v { color: #6EE7B7; }
+
+  .log-toolbar { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .log-toolbar select, .log-toolbar input {
+    background: white; border: 1px solid var(--line);
+    border-radius: 6px; padding: 5px 10px; font-size: 12px;
+    font-family: "SF Mono", monospace; color: var(--ink);
+  }
+  .log-toolbar input { flex: 1; }
+  .log-toolbar input:focus, .log-toolbar select:focus { outline: none; border-color: var(--brand); }
+
+  /* ====== Modal ====== */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(15,30,51,.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; animation: fadein .15s;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: white; border-radius: var(--r-lg);
+    width: 520px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal .m-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .modal .m-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+  .modal .m-head .x { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--line); background: white; cursor: pointer; color: var(--ink-soft); }
+  .modal .m-body { padding: 18px 20px; }
+  .modal .m-foot { padding: 12px 20px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 6px; }
+  .form-row { margin-bottom: 12px; }
+  .form-row .lbl { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; font-weight: 600; }
+  .form-row .lbl .req { color: var(--danger); }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%; border: 1px solid var(--line); background: white;
+    border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--ink);
+    font-family: inherit;
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus { outline: none; border-color: var(--brand); }
+  .form-row textarea { font-family: "SF Mono", monospace; font-size: 12px; min-height: 80px; resize: vertical; }
+  .form-row .help { font-size: 11.5px; color: var(--ink-mute); margin-top: 3px; }
+
+  .empty {
+    padding: 40px 20px; text-align: center; color: var(--ink-mute);
+    font-size: 13px; background: white; border: 1px dashed var(--line);
+    border-radius: var(--r);
+  }
+  .empty .ic { font-size: 28px; margin-bottom: 8px; opacity: .4; }
+
+  @media (max-width: 900px) {
+    .skill-grid { grid-template-columns: 1fr; }
+    .service { grid-template-columns: auto 1fr; }
+    .service .stat, .service .actions { grid-column: 2; }
+    .flow-mgmt-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ====== Flow Management ====== */
+  .flow-mgmt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .flow-mgmt { min-width: 0; }
+  .node-list { display: flex; flex-direction: column; gap: 6px; }
+  .node-item {
+    background: white; border: 1px solid var(--line); border-radius: var(--r);
+    padding: 10px 14px; display: grid; grid-template-columns: 28px 1fr auto;
+    gap: 10px; align-items: center; transition: all .15s;
+  }
+  .node-item:hover { box-shadow: var(--shadow-sm); border-color: var(--brand); }
+  .node-item .n-idx {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--brand-soft); color: var(--brand-deep);
+    font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .node-item .n-info .n-name { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .node-item .n-info .n-meta { font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+  .node-item .n-info .n-meta code { font-family: "SF Mono", monospace; color: var(--brand-deep); background: var(--bg-soft); padding: 0 4px; border-radius: 3px; }
+  .node-item .n-actions { display: flex; gap: 4px; }
+
+  .rule-card { background: white; border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+  .rule-demo { background: var(--bg-soft); border-radius: 6px; padding: 10px 12px; }
+  .rule-row {
+    display: grid; grid-template-columns: 70px 16px 1fr 50px; gap: 8px;
+    padding: 4px 0; align-items: center; font-size: 12.5px;
+  }
+  .rule-row .rule-step { font-weight: 600; }
+  .rule-row .rule-arrow { color: var(--ink-mute); }
+  .rule-row .rule-date { font-family: "SF Mono", monospace; color: var(--brand-deep); }
+  .rule-row .rule-meta {
+    font-family: "SF Mono", monospace; font-size: 11px;
+    color: var(--ink-mute); text-align: right;
+  }
+
+  .instance-list { display: flex; flex-direction: column; gap: 6px; }
+  .instance {
+    background: white; border: 1px solid var(--line); border-radius: var(--r);
+    padding: 10px 14px; transition: all .15s;
+  }
+  .instance:hover { box-shadow: var(--shadow-sm); }
+  .instance .row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .instance .i-name { font-size: 13.5px; font-weight: 700; }
+  .instance .i-bar {
+    display: flex; gap: 2px; margin-top: 4px; height: 8px; border-radius: 4px; overflow: hidden;
+    background: var(--bg-soft);
+  }
+  .instance .i-bar .seg { height: 100%; }
+  .instance .i-bar .seg.done { background: var(--ok); }
+  .instance .i-bar .seg.progress { background: var(--brand); }
+  .instance .i-bar .seg.blocked { background: var(--danger); }
+  .instance .i-bar .seg.planned { background: #FCD34D; }
+  .instance .i-bar .seg.pending { background: var(--line); }
+  .instance .i-stats { font-size: 11.5px; color: var(--ink-soft); margin-top: 6px; }
+  .instance .i-stats b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">⚙</div>
+      <h1>看板管理 <span class="sub">/ BOARD MANAGEMENT · Skills / Services / Webhooks / Data / Logs</span></h1>
+    </div>
+    <div class="nav">
+      <a href="bid-board-v2-20260810.html">📊 看板</a>
+      <a href="bid-board-management-v2-20260810.html" class="active">⚙️ 管理</a>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" data-tab="skills">🎯 Skills <span class="count" id="cnt-skills">8</span></div>
+    <div class="tab" data-tab="services">⚡ Services <span class="count" id="cnt-services">6</span></div>
+    <div class="tab" data-tab="webhooks">📡 Webhooks <span class="count" id="cnt-webhooks">3</span></div>
+    <div class="tab" data-tab="flow">⇉ 流程 <span class="count" id="cnt-flow">13</span></div>
+    <div class="tab" data-tab="data">💾 Data</div>
+    <div class="tab" data-tab="logs">📜 Logs <span class="count" id="cnt-logs">0</span></div>
+  </div>
+
+  <!-- ============ TAB: SKILLS ============ -->
+  <div class="tab-panel active" data-tab="skills">
+    <div class="sec-head">
+      <div>
+        <h2>投标相关 Skills</h2>
+        <div class="sub">每个 Skill 都可以调 window.BidBoard API 推送看板更新。点击"测试"模拟该 Skill 跑完。</div>
+      </div>
+      <div class="right">
+        <button class="btn tiny" onclick="filterSkills('all')">全部</button>
+        <button class="btn tiny" onclick="filterSkills('active')">●运行中</button>
+        <button class="btn tiny" onclick="filterSkills('error')">⚠ 异常</button>
+        <button class="btn primary tiny" onclick="openModal('skill')">+ 新增 Skill</button>
+      </div>
+    </div>
+    <div class="skill-grid" id="skill-grid"></div>
+  </div>
+
+  <!-- ============ TAB: SERVICES ============ -->
+  <div class="tab-panel" data-tab="services">
+    <div class="sec-head">
+      <div>
+        <h2>后端服务</h2>
+        <div class="sub">看板依赖的 6 个核心服务 · 点击可启停 / 重启 / 查看日志</div>
+      </div>
+      <div class="right">
+        <button class="btn tiny" onclick="refreshServices()">↻ 刷新状态</button>
+      </div>
+    </div>
+    <div class="service-list" id="service-list"></div>
+  </div>
+
+  <!-- ============ TAB: WEBHOOKS ============ -->
+  <div class="tab-panel" data-tab="webhooks">
+    <div class="sec-head">
+      <div>
+        <h2>Webhooks</h2>
+        <div class="sub">看板事件触发外部动作 · P0 微信告警 / 飞书机器人 / cubox 入库</div>
+      </div>
+      <div class="right">
+        <button class="btn primary tiny" onclick="openModal('webhook')">+ 新增 Webhook</button>
+      </div>
+    </div>
+    <div class="webhook-list" id="webhook-list"></div>
+  </div>
+
+  <!-- ============ TAB: DATA ============ -->
+  <div class="tab-panel" data-tab="data">
+    <div class="sec-head">
+      <div>
+        <h2>数据 / Schema</h2>
+        <div class="sub">bids 表 9 字段定义 · 备份与恢复</div>
+      </div>
+      <div class="right">
+        <button class="btn tiny" onclick="exportData('json')">↓ 导出 JSON</button>
+        <button class="btn tiny" onclick="exportData('sql')">↓ 导出 SQL</button>
+        <button class="btn primary tiny" onclick="openModal('import')">↑ 导入</button>
+      </div>
+    </div>
+
+    <h3 style="font-size: 14px; margin: 18px 0 8px;">bids 表 Schema</h3>
+    <pre class="schema-block">
+<span class="c">-- bids 表:投标看板数据源</span>
+<span class="k">CREATE TABLE</span> bids (
+  <span class="v">code</span>        <span class="n">TEXT PRIMARY KEY</span>,         <span class="c">-- 客户代号,如 nfh2026</span>
+  <span class="v">client</span>      <span class="n">TEXT NOT NULL</span>,            <span class="c">-- 客户名</span>
+  <span class="v">stage</span>       <span class="n">TEXT</span> <span class="k">CHECK</span>(stage <span class="k">IN</span> (<span class="s">'跟踪'</span>,<span class="s">'审查'</span>,<span class="s">'报价'</span>,<span class="s">'修订'</span>,<span class="s">'封标'</span>,<span class="s">'述标'</span>)),
+  <span class="v">priority</span>    <span class="n">TEXT DEFAULT</span> <span class="s">'P2'</span> <span class="k">CHECK</span>(priority <span class="k">IN</span> (<span class="s">'P0'</span>,<span class="s">'P1'</span>,<span class="s">'P2'</span>)),
+  <span class="v">due_at</span>      <span class="n">TEXT</span>,                       <span class="c">-- 截止时间</span>
+  <span class="v">ai_ready</span>    <span class="n">JSON DEFAULT</span> <span class="s">'[]'</span>,    <span class="c">-- AI 就绪项数组</span>
+  <span class="v">human_todo</span>  <span class="n">JSON DEFAULT</span> <span class="s">'[]'</span>,    <span class="c">-- 人要做的事</span>
+  <span class="v">block</span>       <span class="n">TEXT DEFAULT</span> <span class="s">''</span>,        <span class="c">-- 阻塞</span>
+  <span class="v">last_sync</span>   <span class="n">TIMESTAMP</span>,                  <span class="c">-- 最后同步时间</span>
+  <span class="v">timeline</span>    <span class="n">JSON DEFAULT</span> <span class="s">'[]'</span>     <span class="c">-- 事件时间线</span>
+);
+    </pre>
+
+    <h3 style="font-size: 14px; margin: 24px 0 8px;">数据存储位置</h3>
+    <table style="width:100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="background: var(--bg-soft);">
+          <th style="text-align: left; padding: 8px 12px; color: var(--brand-deep); font-size: 12px;">存储</th>
+          <th style="text-align: left; padding: 8px 12px; color: var(--brand-deep); font-size: 12px;">路径 / Key</th>
+          <th style="text-align: left; padding: 8px 12px; color: var(--brand-deep); font-size: 12px;">大小</th>
+          <th style="text-align: left; padding: 8px 12px; color: var(--brand-deep); font-size: 12px;">最近备份</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top: 1px solid var(--line);">
+          <td style="padding: 10px 12px;">主存储 (SQLite)</td>
+          <td style="padding: 10px 12px; font-family: 'SF Mono', monospace; font-size: 12px;">/Users/duke/.minimax-agent-cn/workbench/bids.db</td>
+          <td style="padding: 10px 12px;">12.4 KB</td>
+          <td style="padding: 10px 12px;">2026-08-10 09:00</td>
+        </tr>
+        <tr style="border-top: 1px solid var(--line);">
+          <td style="padding: 10px 12px;">JSON 备份</td>
+          <td style="padding: 10px 12px; font-family: 'SF Mono', monospace; font-size: 12px;">~/Desktop/backup/bids-20260810.json</td>
+          <td style="padding: 10px 12px;">8.1 KB</td>
+          <td style="padding: 10px 12px;">2026-08-10 09:00</td>
+        </tr>
+        <tr style="border-top: 1px solid var(--line);">
+          <td style="padding: 10px 12px;">事件日志</td>
+          <td style="padding: 10px 12px; font-family: 'SF Mono', monospace; font-size: 12px;">localStorage[bid_board_events_v2]</td>
+          <td style="padding: 10px 12px;"><span id="ev-size">--</span></td>
+          <td style="padding: 10px 12px;">实时</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ TAB: FLOW ============ -->
+  <div class="tab-panel" data-tab="flow">
+    <div class="sec-head">
+      <div>
+        <h2>投标流程模板</h2>
+        <div class="sub">13 步标准流程 · 节点可增删改 · 截止日期按"距截止天数"自动反推</div>
+      </div>
+      <div class="right">
+        <button class="btn tiny" onclick="resetFlowTemplate()">↺ 恢复默认</button>
+        <button class="btn primary tiny" onclick="openModal('flow')">+ 新增节点</button>
+      </div>
+    </div>
+
+    <div class="flow-mgmt-grid">
+      <div class="flow-mgmt">
+        <h3 style="font-size: 13px; color: var(--ink-soft); margin: 14px 0 8px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700;">节点配置</h3>
+        <div class="node-list" id="node-list"></div>
+      </div>
+
+      <div class="flow-mgmt">
+        <h3 style="font-size: 13px; color: var(--ink-soft); margin: 14px 0 8px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700;">截止日期自动识别规则</h3>
+        <div class="rule-card">
+          <p style="margin: 0 0 10px; font-size: 13px; color: var(--ink-soft); line-height: 1.6;">
+            系统按 <b style="color: var(--ink);">"截止日期 − N 天"</b> 自动反推每个节点的截止日。<br>
+            <span style="color: var(--ink-mute); font-size: 12px;">负数 = 截止后 N 天(如讲标 D-1、公示 D+30、复盘 D+60)</span>
+          </p>
+          <div class="rule-demo">
+            <div style="font-size: 12px; color: var(--ink-soft); margin-bottom: 6px;">示例: 截止 2026-08-13 17:00</div>
+            <div class="rule-row">
+              <span class="rule-step">报价</span>
+              <span class="rule-arrow">→</span>
+              <span class="rule-date">2026-08-03</span>
+              <span class="rule-meta">D-10</span>
+            </div>
+            <div class="rule-row">
+              <span class="rule-step">初稿</span>
+              <span class="rule-arrow">→</span>
+              <span class="rule-date">2026-08-06</span>
+              <span class="rule-meta">D-7</span>
+            </div>
+            <div class="rule-row">
+              <span class="rule-step">定稿</span>
+              <span class="rule-arrow">→</span>
+              <span class="rule-date">2026-08-10</span>
+              <span class="rule-meta">D-3</span>
+            </div>
+            <div class="rule-row">
+              <span class="rule-step">封标</span>
+              <span class="rule-arrow">→</span>
+              <span class="rule-date">2026-08-13</span>
+              <span class="rule-meta">D-0</span>
+            </div>
+          </div>
+          <div style="margin-top: 12px; padding: 10px 12px; background: var(--bg-soft); border-radius: 6px; font-size: 12px; color: var(--ink-soft);">
+            <b style="color: var(--ink);">手动识别:</b> 节点详情弹窗可手动调整截止日期,优先级高于自动规则。
+          </div>
+        </div>
+
+        <h3 style="font-size: 13px; color: var(--ink-soft); margin: 18px 0 8px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700;">客户流程实例</h3>
+        <div class="instance-list" id="instance-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: LOGS ============ -->
+  <div class="tab-panel" data-tab="logs">
+    <div class="sec-head">
+      <div>
+        <h2>系统日志</h2>
+        <div class="sub">所有 agent / skill / 服务 / webhooks 的事件流(与看板页同步)</div>
+      </div>
+      <div class="right">
+        <button class="btn tiny" onclick="clearAllLogs()">🗑 清空</button>
+        <button class="btn tiny" onclick="exportLogs()">↓ 导出</button>
+      </div>
+    </div>
+    <div class="log-toolbar">
+      <select id="log-filter">
+        <option value="all">全部</option>
+        <option value="api">API 调用</option>
+        <option value="system">系统事件</option>
+        <option value="warn">警告</option>
+        <option value="err">错误</option>
+      </select>
+      <input id="log-search" placeholder="搜索关键字(如 dgyhst2026 / setBlock / P0)..." />
+    </div>
+    <div class="log-viewer" id="log-viewer"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="m-head">
+      <h3 id="m-title">新增 Skill</h3>
+      <button class="x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="m-body" id="m-body"></div>
+    <div class="m-foot">
+      <button class="btn" onclick="closeModal()">取消</button>
+      <button class="btn primary" onclick="saveModal()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 数据
+// ============================================================
+const STORAGE_KEY = 'bid_board_v2';
+const CHANNEL = 'bidboard_v2';
+const SETTINGS_KEY = 'bid_board_settings_v2';
+
+const initialSkills = [
+  { id: 'bid-news-collection', name: 'bid-news-collection', ver: 'v1.6.2',
+    desc: '每日 09:30 拉取 40+ 渠道的标讯,新商机入 bids,自动评估优先级',
+    ic: '📥', icType: 'bid', status: 'active',
+    calls30: 30, failRate: 0, lastCall: '09:30:15' },
+  { id: 'bid-file-review', name: 'bid-file-review', ver: 'v2.5',
+    desc: '投标文件 100+ 项合规检查 · 输出风险评分与差异点',
+    ic: '📋', icType: 'review', status: 'active',
+    calls30: 12, failRate: 0, lastCall: '08-09 16:00' },
+  { id: 'quote-generation-v3', name: 'quote-generation-v3', ver: 'v3.0',
+    desc: 'BOM 生成 · 分包边界 · 报价表 v1/v2/v3',
+    ic: '💰', icType: 'quote', status: 'active',
+    calls30: 5, failRate: 0, lastCall: '08-09 14:30' },
+  { id: 'content-longform', name: 'content-longform', ver: 'v1.2',
+    desc: '标书长文段修订 · 客户化案例段 · 差异点比对',
+    ic: '✏️', icType: 'content', status: 'active',
+    calls30: 8, failRate: 0, lastCall: '08-09 15:00' },
+  { id: 'gate-checker', name: 'gate-checker', ver: 'v1.4',
+    desc: '封标前门禁:JSON 校验 / 格式 / 公式 / 页眉页脚',
+    ic: '🔒', icType: 'gate', status: 'active',
+    calls30: 3, failRate: 0, lastCall: '08-08 17:30' },
+  { id: 'p0-watcher', name: 'p0-watcher', ver: 'v1.0',
+    desc: 'P0 客户 stage/block 变化时推微信 · 实时告警',
+    ic: '🚨', icType: 'noti', status: 'active',
+    calls30: 7, failRate: 0, lastCall: '09:30:22' },
+  { id: 'bid-card-refresh', name: 'bid-card-refresh', ver: 'v1.0',
+    desc: '每日 09:45 看板刷新 · 重算优先级 / 拉 AI 状态 / 写 last_sync',
+    ic: '🔄', icType: 'noti', status: 'paused',
+    calls30: 0, failRate: 0, lastCall: '未启动' },
+  { id: 'cross-verify', name: 'cross-verify', ver: 'v0.9',
+    desc: '多源资讯交叉验证 · 已知有 Py3.14 兼容性问题',
+    ic: '⚠️', icType: 'gate', status: 'error',
+    calls30: 2, failRate: 50, lastCall: '08-08 11:00 (失败)' }
+];
+
+const initialServices = [
+  { name: 'ingest-api', url: 'POST /api/bids/ingest', port: 8765,
+    desc: '投标数据摄入端点 · 所有 skill 调此接口推看板',
+    status: 'active', uptime: '99.9%', latency: '12ms', reqs: 1247 },
+  { name: 'sse-stream', url: 'GET /api/bids/stream', port: 8765,
+    desc: 'Server-Sent Events 长连接 · 看板订阅变化',
+    status: 'active', uptime: '99.7%', latency: '—', reqs: '5 clients' },
+  { name: 'p0-watcher', url: 'system://p0-watcher', port: '—',
+    desc: 'P0 看门狗 · stage/block 变化 → 微信',
+    status: 'active', uptime: '99.9%', latency: '<1s', reqs: 7 },
+  { name: 'bid-card-refresh', url: 'cron://0 9 * * 1-5', port: '—',
+    desc: '每日 09:45 看板刷新任务',
+    status: 'paused', uptime: '—', latency: '—', reqs: 0 },
+  { name: 'daily-snapshot', url: 'cron://0 17 * * 1-5', port: '—',
+    desc: '每日 17:00 当日快照落执行档案',
+    status: 'paused', uptime: '—', latency: '—', reqs: 0 },
+  { name: 'cubox-link', url: 'https://cubox.pro/c/duke', port: '—',
+    desc: 'Cubox 知识库 · 4198 cards 关联',
+    status: 'active', uptime: '99.5%', latency: '180ms', reqs: 23 }
+];
+
+const initialWebhooks = [
+  { id: 'wh-p0', name: 'P0 微信告警', url: 'lark://im/send?to=duke',
+    trigger: 'priority=P0 AND (stage 变化 OR block 非空)',
+    active: true, lastFired: '17:00:22', fires: 7, success: 7 },
+  { id: 'wh-cubox', name: 'Cubox 项目卡', url: 'https://cubox.pro/api/cards',
+    trigger: '任意 bid stage=封标 → 自动入项目卡',
+    active: true, lastFired: '08-09 17:00', fires: 3, success: 3 },
+  { id: 'wh-tg', name: 'TG 通知', url: 'https://api.telegram.org/bot...',
+    trigger: '所有 P0 状态变化',
+    active: false, lastFired: '—', fires: 0, success: 0 }
+];
+
+let data = loadData();
+let events = loadEvents();
+let settings = loadSettings();
+let bc = null;
+try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
+
+function loadData() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch(e) {} return { bids: [] }; }
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function loadEvents() { try { const r = localStorage.getItem('bid_board_events_v2'); if (r) return JSON.parse(r); } catch(e) {} return []; }
+function saveEvents() { localStorage.setItem('bid_board_events_v2', JSON.stringify(events)); }
+function loadSettings() {
+  try { const r = localStorage.getItem(SETTINGS_KEY); if (r) return JSON.parse(r); } catch(e) {}
+  return { skills: initialSkills, services: initialServices, webhooks: initialWebhooks };
+}
+function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+if (bc) {
+  bc.onmessage = (e) => {
+    if (e.data.type === 'sync') {
+      data = e.data.data;
+      events = e.data.events || events;
+      renderAll();
+    }
+    if (e.data.type === 'event') {
+      const exists = events.find(x => x.ts === e.data.ev.ts && x.code === e.data.ev.code);
+      if (!exists) {
+        events.unshift(e.data.ev);
+        if (events.length > 200) events = events.slice(0, 200);
+        renderLogs();
+      }
+    }
+  };
+}
+window.addEventListener('storage', (e) => {
+  if (e.key === 'bid_board_events_v2' && e.newValue) {
+    try { events = JSON.parse(e.newValue); renderLogs(); } catch(err) {}
+  }
+});
+
+function nowHM() { return new Date().toTimeString().slice(0, 8); }
+
+// ============================================================
+// 渲染
+// ============================================================
+function renderAll() {
+  renderSkills(); renderServices(); renderWebhooks(); renderFlow(); renderLogs();
+  document.getElementById('cnt-skills').textContent = settings.skills.length;
+  document.getElementById('cnt-services').textContent = settings.services.length;
+  document.getElementById('cnt-webhooks').textContent = settings.webhooks.length;
+  document.getElementById('cnt-logs').textContent = events.length;
+  document.getElementById('ev-size').textContent = (JSON.stringify(events).length / 1024).toFixed(1) + ' KB';
+}
+
+function renderSkills() {
+  document.getElementById('skill-grid').innerHTML = settings.skills.map(s => {
+    const failCls = s.failRate > 30 ? 'err' : s.failRate > 0 ? 'warn' : 'ok';
+    return `
+      <div class="skill" data-status="${s.status}">
+        <div class="head">
+          <div class="ic ${s.icType}">${s.ic}</div>
+          <div class="info">
+            <div class="name">${s.name}</div>
+            <div class="ver">${s.ver}</div>
+          </div>
+        </div>
+        <div class="desc">${s.desc}</div>
+        <div class="meta">
+          <div class="item"><div class="k">30天调用</div><div class="v">${s.calls30}</div></div>
+          <div class="item"><div class="k">失败率</div><div class="v ${failCls}">${s.failRate}%</div></div>
+          <div class="item"><div class="k">最近</div><div class="v" style="font-size: 11px; font-family: 'SF Mono', monospace;">${s.lastCall}</div></div>
+        </div>
+        <div class="foot">
+          <div class="status ${s.status}">
+            <span class="dot"></span>
+            ${s.status === 'active' ? '运行中' : s.status === 'paused' ? '已暂停' : '异常'}
+          </div>
+          <div class="actions">
+            <button class="btn tiny" onclick="testSkill('${s.id}')">▶ 测试</button>
+            <button class="btn tiny" onclick="toggleSkill('${s.id}')">${s.status === 'paused' ? '启用' : '暂停'}</button>
+            <button class="btn tiny" onclick="openSkillConfig('${s.id}')">⚙</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderServices() {
+  document.getElementById('service-list').innerHTML = settings.services.map((s, i) => {
+    const stCls = s.status === 'active' ? 'ok' : s.status === 'paused' ? 'warn' : 'err';
+    return `
+      <div class="service">
+        <div class="ic">${String(i + 1).padStart(2, '0')}</div>
+        <div class="info">
+          <div class="name">${s.name} <span class="badge ${stCls}">${s.status === 'active' ? '运行中' : s.status === 'paused' ? '已暂停' : '异常'}</span></div>
+          <div class="url">${s.url}</div>
+          <div class="desc">${s.desc}</div>
+        </div>
+        <div class="stat">
+          <div class="k">请求 / 客户端</div>
+          <div class="v">${s.reqs}</div>
+        </div>
+        <div class="actions">
+          <button class="btn tiny" onclick="toggleService(${i})">${s.status === 'paused' ? '▶' : '⏸'}</button>
+          <button class="btn tiny" onclick="restartService(${i})">↻</button>
+          <button class="btn tiny" onclick="viewServiceLogs(${i})">📜</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderWebhooks() {
+  document.getElementById('webhook-list').innerHTML = settings.webhooks.map((w, i) => {
+    return `
+      <div class="webhook">
+        <div class="row1">
+          <div class="name">${w.name}</div>
+          <span class="badge ${w.active ? 'ok' : ''}">${w.active ? '● 启用' : '○ 停用'}</span>
+          <div style="flex: 1;"></div>
+          <div class="actions">
+            <button class="btn tiny" onclick="testWebhook(${i})">▶ 测试</button>
+            <button class="btn tiny" onclick="toggleWebhook(${i})">${w.active ? '停用' : '启用'}</button>
+            <button class="btn tiny" onclick="editWebhook(${i})">编辑</button>
+            <button class="btn tiny danger" onclick="deleteWebhook(${i})">删除</button>
+          </div>
+        </div>
+        <div class="url">${w.url}</div>
+        <div class="trigger">触发条件: <code>${w.trigger}</code></div>
+        <div class="meta">
+          <span>最近触发: <b>${w.lastFired}</b></span>
+          <span>30天触发: <b>${w.fires}</b></span>
+          <span>成功: <b>${w.success}/${w.fires}</b></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// Flow 渲染
+// ============================================================
+const DEFAULT_FLOW = [
+  { id: 'sales-bid',      name: '销售应标',      days_before_due: 30,  owner: '售前', ai: ['bid-news-collection'] },
+  { id: 'buy-rfp',        name: '购买标书',      days_before_due: 14,  owner: '商务', ai: [] },
+  { id: 'quote',          name: '报价',          days_before_due: 10,  owner: '商务', ai: ['quote-generation-v3'] },
+  { id: 'case',           name: '准备案例',      days_before_due: 10,  owner: '售前', ai: [] },
+  { id: 'qualification',  name: '人员资质',      days_before_due: 7,   owner: 'HR',   ai: ['resume-builder'] },
+  { id: 'tech-solution',  name: '技术方案',      days_before_due: 14,  owner: '技术', ai: ['content-longform'] },
+  { id: 'biz-solution',   name: '商务方案',      days_before_due: 10,  owner: '商务', ai: ['content-longform'] },
+  { id: 'draft',          name: '初稿',          days_before_due: 7,   owner: '技术', ai: ['content-longform'] },
+  { id: 'final',          name: '定稿',          days_before_due: 3,   owner: 'PM',   ai: ['bid-file-review'] },
+  { id: 'seal',           name: '封标',          days_before_due: 0,   owner: 'PM',   ai: ['gate-checker'] },
+  { id: 'present',        name: '讲标',          days_before_due: -1,  owner: 'PM',   ai: [] },
+  { id: 'notice',         name: '公示',          days_before_due: -30, owner: '商务', ai: [] },
+  { id: 'retro',          name: '复盘',          days_before_due: -60, owner: 'PM',   ai: [] }
+];
+
+if (!settings.flow) settings.flow = { nodes: JSON.parse(JSON.stringify(DEFAULT_FLOW)) };
+
+function renderFlow() {
+  // 节点列表
+  const list = document.getElementById('node-list');
+  list.innerHTML = settings.flow.nodes.map((n, i) => {
+    const days = n.days_before_due;
+    const dayLabel = days >= 0 ? `D-${days}` : `D+${Math.abs(days)}`;
+    return `
+      <div class="node-item">
+        <div class="n-idx">${i + 1}</div>
+        <div class="n-info">
+          <div class="n-name">${n.name}</div>
+          <div class="n-meta">
+            <code>${dayLabel}</code> · 负责人: <b style="color: var(--ink);">${n.owner}</b>
+            ${n.ai.length > 0 ? ` · AI: <code>${n.ai.join(', ')}</code>` : ''}
+          </div>
+        </div>
+        <div class="n-actions">
+          <button class="btn tiny" onclick="editFlowNode(${i})">编辑</button>
+          <button class="btn tiny" onclick="moveFlowNode(${i}, -1)">↑</button>
+          <button class="btn tiny" onclick="moveFlowNode(${i}, 1)">↓</button>
+          <button class="btn tiny danger" onclick="deleteFlowNode(${i})">删</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 客户实例
+  const instList = document.getElementById('instance-list');
+  const today = new Date('2026-08-10');
+  instList.innerHTML = data.bids.map(b => {
+    if (!b.flow) return '';
+    const total = b.flow.nodes.length;
+    const counts = { done: 0, progress: 0, blocked: 0, planned: 0, pending: 0 };
+    b.flow.nodes.forEach(n => counts[n.status] = (counts[n.status] || 0) + 1);
+    const donePct = Math.round(counts.done / total * 100);
+    return `
+      <div class="instance">
+        <div class="row1">
+          <span class="badge-pri pri-${b.priority.toLowerCase()}" style="font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 700; background: var(--p0); color: white;">${b.priority}</span>
+          <span class="i-name">${b.client}</span>
+          <span style="font-family: 'SF Mono', monospace; font-size: 11px; color: var(--ink-mute);">${b.code}</span>
+          <div style="flex: 1;"></div>
+          <span style="font-size: 11.5px; color: var(--ink-soft);"><b style="color: var(--ink);">${donePct}%</b></span>
+        </div>
+        <div class="i-bar">
+          <div class="seg done" style="width: ${counts.done / total * 100}%" title="完成 ${counts.done}"></div>
+          <div class="seg progress" style="width: ${counts.progress / total * 100}%" title="进行 ${counts.progress}"></div>
+          <div class="seg blocked" style="width: ${counts.blocked / total * 100}%" title="阻塞 ${counts.blocked}"></div>
+          <div class="seg planned" style="width: ${counts.planned / total * 100}%" title="计划 ${counts.planned}"></div>
+          <div class="seg pending" style="width: ${counts.pending / total * 100}%" title="未开始 ${counts.pending}"></div>
+        </div>
+        <div class="i-stats">
+          <b>${counts.done}</b> 完成 · <b>${counts.progress}</b> 进行 · <b style="color: var(--danger);">${counts.blocked}</b> 阻塞 · <b>${counts.planned}</b> 计划 · <b>${counts.pending}</b> 未开始
+        </div>
+      </div>
+    `;
+  }).join('') || '<div class="empty"><div class="ic">📭</div>暂无客户流程实例</div>';
+
+  document.getElementById('cnt-flow').textContent = settings.flow.nodes.length;
+}
+
+window.editFlowNode = (idx) => {
+  const n = settings.flow.nodes[idx];
+  const newName = prompt('节点名称', n.name);
+  if (newName === null) return;
+  const newOwner = prompt('负责人', n.owner);
+  if (newOwner === null) return;
+  const newDays = prompt('距截止天数(负数=截止后)', n.days_before_due);
+  if (newDays === null) return;
+  n.name = newName.trim() || n.name;
+  n.owner = newOwner.trim() || n.owner;
+  n.days_before_due = parseInt(newDays) || 0;
+  saveSettings(); renderFlow();
+  addLog(`更新流程节点: ${n.name} (D${n.days_before_due >= 0 ? '-' : '+'}${Math.abs(n.days_before_due)})`, 'info');
+};
+window.moveFlowNode = (idx, dir) => {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= settings.flow.nodes.length) return;
+  const [n] = settings.flow.nodes.splice(idx, 1);
+  settings.flow.nodes.splice(newIdx, 0, n);
+  saveSettings(); renderFlow();
+};
+window.deleteFlowNode = (idx) => {
+  const n = settings.flow.nodes[idx];
+  if (!confirm(`确认删除节点 "${n.name}"?`)) return;
+  settings.flow.nodes.splice(idx, 1);
+  saveSettings(); renderFlow();
+  addLog(`删除流程节点: ${n.name}`, 'warn');
+};
+window.resetFlowTemplate = () => {
+  if (!confirm('恢复默认 13 步标准流程?当前自定义会丢失。')) return;
+  settings.flow.nodes = JSON.parse(JSON.stringify(DEFAULT_FLOW));
+  saveSettings(); renderFlow();
+  addLog('流程模板已恢复默认', 'info');
+};
+
+function renderLogs() {
+  const filter = document.getElementById('log-filter').value;
+  const search = document.getElementById('log-search').value.toLowerCase();
+  let filtered = events;
+  if (filter !== 'all') {
+    filtered = filtered.filter(e => {
+      if (filter === 'api') return e.type === 'api';
+      if (filter === 'system') return e.type === 'sys';
+      if (filter === 'warn') return e.level === 'warn' || (e.msg && e.msg.includes('warn'));
+      if (filter === 'err') return e.level === 'err' || (e.msg && e.msg.includes('失败'));
+      return true;
+    });
+  }
+  if (search) {
+    filtered = filtered.filter(e => JSON.stringify(e).toLowerCase().includes(search));
+  }
+  document.getElementById('log-viewer').innerHTML = filtered.slice(0, 100).map(ev => logLineHTML(ev)).join('') ||
+    '<div style="color: #475569; padding: 20px; text-align: center;">暂无日志</div>';
+  document.getElementById('cnt-logs').textContent = events.length;
+}
+
+function logLineHTML(ev) {
+  if (ev.type === 'sys') {
+    const lvl = ev.level === 'err' ? 'err' : ev.level === 'warn' ? 'warn' : 'info';
+    return `<div class="log-line"><span class="ts">${ev.ts}</span> <span class="lvl ${lvl}">[${lvl.toUpperCase()}]</span> <span class="src">[system]</span> <span class="msg">${ev.msg || ''}</span></div>`;
+  }
+  const payload = ev.payload ? ` <span class="k">${
+    Object.entries(ev.payload).map(([k,v]) => `${k}=<span class="s">${JSON.stringify(v)}</span>`).join(' ')
+  }</span>` : '';
+  return `<div class="log-line"><span class="ts">${ev.ts}</span> <span class="lvl info">API</span> <span class="src">BidBoard.${ev.api}</span>(<span class="s">"${ev.code}"</span>)${payload}</div>`;
+}
+
+// ============================================================
+// 交互
+// ============================================================
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelector(`.tab-panel[data-tab="${t.dataset.tab}"]`).classList.add('active');
+    if (t.dataset.tab === 'flow') renderFlow();
+  });
+});
+
+document.getElementById('log-filter').addEventListener('change', renderLogs);
+document.getElementById('log-search').addEventListener('input', renderLogs);
+
+window.testSkill = (id) => {
+  const s = settings.skills.find(x => x.id === id);
+  if (!s) return;
+  // 模拟:每个 skill 跑完会触发不同的看板动作
+  if (s.status === 'paused') { alert('该 Skill 已暂停,请先启用'); return; }
+  if (s.status === 'error') { alert('该 Skill 异常,无法测试'); return; }
+  const fakeEvents = {
+    'bid-news-collection': () => { window.parent.BidBoard && window.parent.BidBoard.addAiReady('unionpay-intl26-1', '测试:标讯命中', 'bid-news-collection'); },
+    'bid-file-review': () => { window.parent.BidBoard && window.parent.BidBoard.addAiReady('dgyhst2026', '测试:100+ 项检查', 'bid-file-review'); },
+    'quote-generation-v3': () => { window.parent.BidBoard && window.parent.BidBoard.addAiReady('nfh2026', '测试:BOM v1', 'quote-generation-v3'); },
+    'content-longform': () => { window.parent.BidBoard && window.parent.BidBoard.addAiReady('nfh2026', '测试:差异点比对', 'content-longform'); },
+    'gate-checker': () => { window.parent.BidBoard && window.parent.BidBoard.addAiReady('dgyhst2026', '测试:门禁全过', 'gate-checker'); },
+    'p0-watcher': () => { /* P0 看门狗不发看板 */ }
+  };
+  if (fakeEvents[id]) fakeEvents[id]();
+  // 推一条日志到 events
+  events.unshift({ ts: new Date().toTimeString().slice(0, 8) + '.' + String(new Date().getMilliseconds()).slice(0,2), type: 'sys', msg: `▶ 测试 Skill: ${s.name} 完成`, level: 'info' });
+  saveEvents();
+  renderLogs();
+  alert(`✓ ${s.name} 测试完成\n看板上对应卡片应该已更新(在另一个 tab/窗口可见)`);
+};
+
+window.toggleSkill = (id) => {
+  const s = settings.skills.find(x => x.id === id);
+  s.status = s.status === 'paused' ? 'active' : 'paused';
+  saveSettings(); renderSkills();
+  addLog(`Skill ${s.name} → ${s.status === 'paused' ? '已暂停' : '已启用'}`, 'info');
+};
+
+window.openSkillConfig = (id) => {
+  const s = settings.skills.find(x => x.id === id);
+  openModal('skill', s);
+};
+
+window.toggleService = (i) => {
+  const s = settings.services[i];
+  s.status = s.status === 'paused' ? 'active' : 'paused';
+  saveSettings(); renderServices();
+  addLog(`服务 ${s.name} → ${s.status === 'paused' ? '已暂停' : '已启用'}`, 'warn');
+};
+window.restartService = (i) => {
+  const s = settings.services[i];
+  addLog(`服务 ${s.name} 正在重启...`, 'info');
+  setTimeout(() => { s.status = 'active'; saveSettings(); renderServices(); addLog(`服务 ${s.name} 重启完成`, 'info'); }, 1000);
+};
+window.viewServiceLogs = (i) => {
+  const s = settings.services[i];
+  alert(`服务 ${s.name} 最近日志:\n\n[${nowHM()}] [info] Service started\n[${nowHM()}] [info] Listening on port ${s.port}\n[${nowHM()}] [info] Health check passed`);
+};
+
+window.testWebhook = (i) => {
+  const w = settings.webhooks[i];
+  if (!w.active) { alert('该 Webhook 已停用'); return; }
+  w.lastFired = nowHM();
+  w.fires++; w.success++;
+  saveSettings(); renderWebhooks();
+  addLog(`Webhook ${w.name} 测试触发 → ${w.url}`, 'info');
+  alert(`✓ 已触发 ${w.name}\n${w.url}\n\n请在目标端查看是否收到`);
+};
+window.toggleWebhook = (i) => {
+  const w = settings.webhooks[i];
+  w.active = !w.active;
+  saveSettings(); renderWebhooks();
+  addLog(`Webhook ${w.name} → ${w.active ? '启用' : '停用'}`, 'info');
+};
+window.editWebhook = (i) => {
+  openModal('webhook', settings.webhooks[i], i);
+};
+window.deleteWebhook = (i) => {
+  if (confirm(`确认删除 Webhook "${settings.webhooks[i].name}"?`)) {
+    addLog(`Webhook ${settings.webhooks[i].name} 已删除`, 'warn');
+    settings.webhooks.splice(i, 1);
+    saveSettings(); renderWebhooks();
+  }
+};
+
+window.filterSkills = (f) => {
+  document.querySelectorAll('.skill').forEach(el => {
+    if (f === 'all') el.style.display = '';
+    else el.style.display = el.dataset.status === f ? '' : 'none';
+  });
+};
+
+window.refreshServices = () => {
+  addLog('刷新服务状态...', 'info');
+  setTimeout(() => { renderServices(); addLog('服务状态已刷新', 'info'); }, 500);
+};
+
+window.clearAllLogs = () => {
+  if (confirm('确认清空所有日志?')) {
+    events = []; saveEvents(); renderLogs();
+  }
+};
+window.exportLogs = () => {
+  const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bid-board-logs-${Date.now()}.json`;
+  a.click();
+  addLog('日志已导出', 'info');
+};
+
+window.exportData = (fmt) => {
+  const content = fmt === 'json' ? JSON.stringify(data, null, 2) : '/* SQL 导出 - 真实环境用 wb_cli dump */';
+  const blob = new Blob([content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bids-${Date.now()}.${fmt}`;
+  a.click();
+  addLog(`数据已导出 (${fmt})`, 'info');
+};
+
+function addLog(msg, level) {
+  events.unshift({ ts: new Date().toTimeString().slice(0, 8) + '.' + String(new Date().getMilliseconds()).slice(0,2), type: 'sys', msg, level: level || 'info' });
+  if (events.length > 200) events = events.slice(0, 200);
+  saveEvents(); renderLogs();
+}
+
+// ============================================================
+// Modal
+// ============================================================
+let modalContext = null;
+
+window.openModal = (type, item, idx) => {
+  modalContext = { type, item, idx };
+  const title = document.getElementById('m-title');
+  const body = document.getElementById('m-body');
+  if (type === 'skill') {
+    title.textContent = item ? `配置 Skill: ${item.name}` : '新增 Skill';
+    body.innerHTML = `
+      <div class="form-row"><label class="lbl">Skill ID <span class="req">*</span></label>
+        <input id="f-id" value="${item ? item.id : ''}" ${item ? 'readonly' : ''} placeholder="bid-news-collection"></div>
+      <div class="form-row"><label class="lbl">名称</label>
+        <input id="f-name" value="${item ? item.name : ''}"></div>
+      <div class="form-row"><label class="lbl">版本</label>
+        <input id="f-ver" value="${item ? item.ver : 'v1.0'}"></div>
+      <div class="form-row"><label class="lbl">描述</label>
+        <textarea id="f-desc">${item ? item.desc : ''}</textarea></div>
+      <div class="form-row"><label class="lbl">看板推送方式</label>
+        <textarea id="f-api">// 跑完时调用:
+window.BidBoard.addAiReady("code", "...");
+window.BidBoard.setBlock("code", "...");</textarea>
+        <div class="help">该 Skill 跑完会推送这些看板 API</div></div>
+    `;
+  } else if (type === 'webhook') {
+    title.textContent = item ? `编辑 Webhook: ${item.name}` : '新增 Webhook';
+    body.innerHTML = `
+      <div class="form-row"><label class="lbl">名称 <span class="req">*</span></label>
+        <input id="f-name" value="${item ? item.name : ''}" placeholder="P0 微信告警"></div>
+      <div class="form-row"><label class="lbl">URL <span class="req">*</span></label>
+        <input id="f-url" value="${item ? item.url : ''}" placeholder="lark://im/send?to=duke"></div>
+      <div class="form-row"><label class="lbl">触发条件 <span class="req">*</span></label>
+        <input id="f-trigger" value="${item ? item.trigger : ''}" placeholder="priority=P0 AND (stage 变化 OR block 非空)"></div>
+      <div class="form-row"><label class="lbl">启用</label>
+        <select id="f-active"><option value="1" ${item && item.active ? 'selected' : ''}>启用</option><option value="0" ${item && !item.active ? 'selected' : ''}>停用</option></select></div>
+    `;
+  } else if (type === 'import') {
+    title.textContent = '导入数据';
+    body.innerHTML = `
+      <div class="form-row"><label class="lbl">JSON 数据 <span class="req">*</span></label>
+        <textarea id="f-json" placeholder='{"bids": [...]}'></textarea>
+        <div class="help">从 JSON 导出文件粘贴</div></div>
+    `;
+  }
+  document.getElementById('modal').classList.add('show');
+};
+window.closeModal = () => { document.getElementById('modal').classList.remove('show'); modalContext = null; };
+window.saveModal = () => {
+  if (!modalContext) return;
+  const { type, item, idx } = modalContext;
+  if (type === 'skill') {
+    if (!item) {
+      const s = {
+        id: document.getElementById('f-id').value,
+        name: document.getElementById('f-name').value || document.getElementById('f-id').value,
+        ver: document.getElementById('f-ver').value || 'v1.0',
+        desc: document.getElementById('f-desc').value,
+        ic: '🆕', icType: 'bid', status: 'active',
+        calls30: 0, failRate: 0, lastCall: '—'
+      };
+      settings.skills.push(s);
+      addLog(`新增 Skill: ${s.name}`, 'info');
+    } else {
+      item.name = document.getElementById('f-name').value;
+      item.ver = document.getElementById('f-ver').value;
+      item.desc = document.getElementById('f-desc').value;
+      addLog(`更新 Skill: ${item.name}`, 'info');
+    }
+    saveSettings(); renderSkills();
+  } else if (type === 'webhook') {
+    const w = item || { id: 'wh-' + Date.now(), fires: 0, success: 0, lastFired: '—' };
+    w.name = document.getElementById('f-name').value;
+    w.url = document.getElementById('f-url').value;
+    w.trigger = document.getElementById('f-trigger').value;
+    w.active = document.getElementById('f-active').value === '1';
+    if (!item) settings.webhooks.push(w);
+    saveSettings(); renderWebhooks();
+    addLog(item ? `更新 Webhook: ${w.name}` : `新增 Webhook: ${w.name}`, 'info');
+  } else if (type === 'import') {
+    try {
+      const json = JSON.parse(document.getElementById('f-json').value);
+      if (json.bids) {
+        data = json;
+        saveData();
+        renderAll();
+        addLog(`已导入 ${json.bids.length} 条 bids 数据`, 'info');
+      }
+    } catch (e) { alert('JSON 解析失败: ' + e.message); return; }
+  }
+  closeModal();
+};
+
+// 启动
+renderAll();
+addLog('看板管理 v2 已就绪', 'info');
+setInterval(renderLogs, 2000);
+</script>
+</body>
+</html>

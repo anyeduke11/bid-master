@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Comment</key>
+	<string>bid-master BAW 周期任务 · 02:30 隔夜收割（DEV-0052 自 crontab 迁移：macOS TCC 拦截 cron 访问 ~/Documents，launchd 用户代理不受限）</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+	</dict>
+	<key>Label</key>
+	<string>com.bidmaster.ingest</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/duke/bid-master/rules/cron_baw.sh</string>
+		<string>ingest</string>
+	</array>
+	<key>StandardErrorPath</key>
+	<string>/Users/duke/.bidmaster/log/launchd-ingest.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/duke/.bidmaster/log/launchd-ingest.log</string>
+	<key>StartCalendarInterval</key>
+	<array>
+		<dict>
+			<key>Hour</key>
+			<integer>2</integer>
+			<key>Minute</key>
+			<integer>30</integer>
+		</dict>
+	</array>
+</dict>
+</plist>

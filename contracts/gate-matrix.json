@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "name": "BAW 门禁矩阵（机读版 · §8 业务流重构表）",
+    "note": "本文件是门禁与生产者对齐的唯一清单；contracts/gates/*.json（P1 声明式化）由此拆出。产品字段语义见 contracts/artifact/*.schema.json"
+  },
+  "gates": [
+    {"from": "S2", "to": "S3", "requires": [
+      {"artifact": "stage0", "field": "lessons_applied", "check": "all_ids_exist(lessons)"},
+      {"artifact": "stage0", "field": "participation", "check": "present"}
+    ], "human": "Go/No-Go 签名（决策位）"},
+    {"from": "S3", "to": "S4", "requires": [
+      {"artifact": "hits_recon", "check": "recon_rate == 1.0 且 items 全部带 收录|排除 + reason"},
+      {"artifact": "response_matrix", "check": "存在且 final"}
+    ], "human": "定位抽查 20 条（locator 辅助）"},
+    {"from": "S4", "to": "S5", "requires": [
+      {"artifact": "completeness", "field": "result", "check": "== PASS"},
+      {"artifact": "spec", "check": "scoring_points 全覆盖 + material_ptrs 匹配率>=80%"},
+      {"check": "verify_draft 全章节 pass（机检接线）"}
+    ], "human": "素材确认"},
+    {"from": "S5", "to": "S6", "requires": [
+      {"artifact": "audit-r<max>", "check": "findings 中 severity=阻断 计数 == 0"},
+      {"artifact": "locator-report", "check": "samples 复算 hit_rate >= 0.95"},
+      {"check": "verify_audit r<max> pass（机检接线）"},
+      {"check": "sign_off 非空（L3 签核）"}
+    ], "human": "封标放行签核（L3 审批位）"},
+    {"from": "S8", "to": "S9", "requires": [
+      {"artifact": "proposal", "field": "status", "check": "== confirmed"},
+      {"check": "desensitize(proposal) 命中 == 0"},
+      {"artifact": "proposal.lessons", "check": "每条含 supersession"}
+    ], "human": "归档采纳确认（L2→L3）"}
+  ],
+  "no_gate": [["S0","S1"],["S1","S2"],["S6","S7"],["S7","S8"]],
+  "products_per_stage": {
+    "S2": ["stage0.schema.json"],
+    "S3": ["hits_recon.schema.json", "response_matrix(旧格式待 v1.0-p1 契约化)"],
+    "S4": ["completeness.schema.json", "spec.schema.json", "verify_draft 报告"],
+    "S5": ["audit.schema.json", "locator.schema.json", "verify_audit 报告"],
+    "S9": ["proposal（archive 提案，desensitize 后确认）"]
+  }
+}

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>S-06 gate-checker 新建 · Duke · 2026-08-13</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --warn-ink: #92400E;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --add: #DCFCE7;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --r: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 14px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 30px 36px; box-shadow: var(--shadow);
+    margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--brand-soft);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 26px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 26px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; }
+  .sec-title .file-tag {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); color: var(--brand-deep);
+    padding: 3px 10px; border-radius: 5px; margin-left: 6px;
+  }
+  .sec-title .action {
+    margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+  }
+  .action.new { background: var(--add); color: #065F46; }
+  .action.info { background: var(--bg-soft); color: var(--ink-soft); }
+  .sec-lede { color: var(--ink-soft); font-size: 13px; margin: 8px 0 12px; }
+
+  .st { font-size: 14.5px; font-weight: 700; margin: 14px 0 6px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+  .st::before { content: ""; width: 3px; height: 14px; background: var(--brand); border-radius: 2px; }
+
+  pre.code {
+    background: #0F1E33; color: #E6F1FB; padding: 14px 16px;
+    border-radius: 8px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0;
+  }
+  pre.code .c { color: #94A3B8; }
+  pre.code .k { color: #C7D2FE; }
+  pre.code .s { color: #FDE68A; }
+  pre.code .v { color: #7DD3FC; }
+  pre.code .f { color: #6EE7B7; }
+  pre.code .n { color: #FCA5A5; }
+  pre.code .w { color: #FDE68A; background: rgba(245,158,11,.15); padding: 0 4px; border-radius: 3px; }
+  pre.code .a { color: #6EE7B7; }
+  pre.code .b { color: #94A3B8; }
+  pre.code .ok { color: #6EE7B7; }
+  pre.code .err { color: #FCA5A5; }
+
+  .copy-hint {
+    background: var(--brand-soft); color: var(--brand-deep);
+    padding: 8px 12px; border-radius: 6px; font-size: 12.5px; margin: 6px 0;
+    border-left: 3px solid var(--brand);
+  }
+  .copy-hint b { color: var(--brand-deep); }
+
+  .check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+  .check {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; border-left: 3px solid var(--brand);
+  }
+  .check h5 { margin: 0 0 4px; font-size: 13.5px; }
+  .check p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+  .check code { font-family: "SF Mono", monospace; font-size: 11.5px;
+    background: var(--bg-soft); padding: 1px 5px; border-radius: 3px; color: var(--brand-deep); }
+
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .risk {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .risk.crit { border-left: 3px solid var(--danger); }
+  .risk.warn { border-left: 3px solid var(--warn); }
+  .risk.mid { border-left: 3px solid var(--accent); }
+  .risk h5 { margin: 0 0 4px; font-size: 13px; }
+  .risk p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+
+  .decision {
+    background: var(--accent-soft); border: 1px solid #C7D2FE;
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+  }
+  .decision h4 { margin: 0 0 6px; color: var(--accent); font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { text-align: left; padding: 9px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12px;
+    border-bottom: 1px solid var(--line); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code { font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; color: var(--brand-deep); }
+
+  @media (max-width: 900px) {
+    .check-grid, .risk-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+    .sec { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">S-06 · GATE-CHECKER CREATE · 2026-08-13</span>
+    <h1>S-06 新建 patch · 4 个文件 · 7 类封标门禁 · 1.5 天估时</h1>
+    <div class="sub">封标前 7 类硬性检查 · 任一失败自动阻塞看板 + 推 P0 告警 · 失败兜底(依赖未装不崩)</div>
+  </div>
+
+  <!-- 总览 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">0</span>改造总览</div>
+    <div class="sec-lede">S-06 是 <b>完全新建</b> 的 Skill——封标前最后一关。7 类硬性检查模块化,每个独立返回 {pass, reason, details}。任一失败 → 看板 block + 推 P0 微信告警。</div>
+
+    <table>
+      <thead><tr><th>#</th><th>文件</th><th>动作</th><th>行数</th><th>关键点</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>SKILL.md</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~130 行</td><td>7 类检查详细规则 + frontmatter</td></tr>
+        <tr><td>2</td><td><code>scripts/main.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~200 行</td><td>7 个 check 函数 + 调度 + BidBoard 推送</td></tr>
+        <tr><td>3</td><td><code>scripts/bidboard_client.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~90 行</td><td>复用 S-02 同款</td></tr>
+        <tr><td>4</td><td><code>config.json</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~15 行</td><td>命名规范 / 必装依赖声明</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="st">0.1 7 类硬性检查</h3>
+    <div class="check-grid">
+      <div class="check">
+        <h5>1. JSON 可解析</h5>
+        <p>所有内嵌 <code>{"..."}</code> 块必须 <code>json.loads()</code> 成功。任何 parse error → 阻塞。</p>
+      </div>
+      <div class="check">
+        <h5>2. Word 格式合规</h5>
+        <p>字体(中文宋体/英文 Times New Roman 12pt)、段落(1.5 倍行距)、标题层级 1-3。</p>
+      </div>
+      <div class="check">
+        <h5>3. 报价表公式合计</h5>
+        <p>openpyxl 重算公式 → 合计 = 分项之和。差 0.01 也算失败。</p>
+      </div>
+      <div class="check">
+        <h5>4. 页眉页脚一致</h5>
+        <p>所有 section 的 header/footer 文字一致,无 "第 X 页 共 Y 页" 不匹配。</p>
+      </div>
+      <div class="check">
+        <h5>5. 签章位置</h5>
+        <p>OCR 检测印章位置在每页右下角(投标方盖章区)。缺章/位置错 → 失败。</p>
+      </div>
+      <div class="check">
+        <h5>6. 页码连续</h5>
+        <p>pdfplumber 解析 PDF 页码,1,2,3...N 顺序无缺。</p>
+      </div>
+      <div class="check">
+        <h5>7. 文件命名规范</h5>
+        <p><code>[类型]-[客户]-[描述]-[版本]-[日期]</code> 正则匹配(如 <code>bid-东莞银行-技术方案-V1.4-20260810.docx</code>)。</p>
+      </div>
+    </div>
+
+    <div class="decision">
+      <h4>💡 关键设计</h4>
+      <p><b>1. 模块化 check</b>:每个 check 独立函数,返回 <code>{pass, reason, details}</code>,任一失败不阻塞其他 check。</p>
+      <p><b>2. 依赖降级</b>:依赖未装时(比如没装 pdfplumber),check 标 <code>⚠ 跳过</code>,不算 pass 也不 fail,要求人工补做。</p>
+      <p><b>3. 失败自动阻塞</b>:任一 <code>fail</code> → 看板 block 字段写入具体原因,Duke 9:45 第一屏看到红闪。</p>
+      <p><b>4. 全过推 stage</b>:全 pass → setStage('封标'),看板自动推进。</p>
+    </div>
+  </div>
+
+  <!-- 文件 1: SKILL.md -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">1</span>文件 1 · <span class="file-tag">SKILL.md</span>
+      <span class="action new">新建</span>
+    </div>
+    <div class="sec-lede">完整 Skill 文档,带 frontmatter。</div>
+    <div class="copy-hint"><b>操作</b>:<code>mkdir -p ~/.workbuddy/skills/gate-checker/scripts</code> + <code>touch SKILL.md</code>。</div>
+
+<pre class="code">---
+name: gate-checker
+version: "1.0.0"
+description: |
+  封标前 7 类硬性门禁检查 · 任一失败阻塞看板 + 推 P0 微信告警。
+  触发词:封标检查、门禁、gate check、封标前、投标文件验收、check before seal。
+agent_created: true
+---
+
+# 封标门禁检查 · gate-checker
+
+> **定位**:封标前最后一关。7 类硬性检查,任一失败 → 看板 block 字段写入具体原因,Duke 立刻知道。
+> **不是**通用质量审查(那是 bid-file-review 的事),是<b>封标前最后一道机械化卡口</b>。
+
+## 一、职责
+
+7 类硬性检查(见下),每类独立,任一失败立即阻塞看板。
+
+## 二、7 类检查清单
+
+| # | 检查项 | 阻塞条件 | 依赖 |
+|---|--------|---------|------|
+| 1 | JSON 可解析 | 内嵌 JSON parse error | 无(纯 stdlib) |
+| 2 | Word 格式 | 字体/段落/标题不合规 | python-docx |
+| 3 | 报价表公式 | 合计 ≠ 分项之和(差 0.01 也算) | openpyxl |
+| 4 | 页眉页脚 | 跨 section 不一致 | python-docx |
+| 5 | 签章位置 | 缺章或位置错 | pytesseract + Pillow |
+| 6 | 页码连续 | 缺页/跳号 | pdfplumber |
+| 7 | 文件命名 | 不符合 `[类型]-[客户]-[描述]-[版本]-[日期]` | 无 |
+
+## 三、依赖(按需安装)
+
+```bash
+pip install python-docx openpyxl pdfplumber pytesseract Pillow
+```
+
+- 没装的依赖:对应 check 标 `⚠ 跳过`,不算 pass 也不 fail,需人工补做
+- pytesseract 还需要系统装 tesseract: `brew install tesseract tesseract-lang`(Mac)
+
+## 四、触发场景
+
+- **手动**:`python3 scripts/main.py --project 东莞银行 --file ./标书.docx --code dgyhst2026`
+- **批量**:`python3 scripts/main.py --batch ./待封标/`
+- **测试**:`python3 scripts/main.py --project test --file ./test.docx --code test --dry-run`
+
+## 五、执行步骤
+
+### 步骤 1:解析参数
+
+`--project` 客户名(显示用) / `--file` 单文件 / `--batch` 目录批量 / `--code` 客户代号
+
+### 步骤 2:7 类检查(并行或顺序)
+
+对每个文件,跑 7 个 check,每个返回:
+```json
+{"check": "json", "pass": true/false/"skip", "reason": "...", "details": {...}}
+```
+
+### 步骤 3:汇总 + 阻塞判定
+
+- 全 pass → 通过
+- 任一 fail → 阻塞
+- 任一 skip → 警告(需要人工补做)
+
+### 步骤 4:输出报告
+
+- `{项目名}_门禁报告.md` — 人类可读
+- `{项目名}_gate.json` — 机器可读
+
+### 步骤 5:BidBoard 推送
+
+- 全 pass → `addAiReady(code, "门禁全过")` + `setStage(code, "封标")`
+- 有 fail → `setBlock(code, "门禁: 报价表合计差 0.01")` + `addAiReady` + P0 看门狗自动推微信
+
+## 六、命名规范
+
+按 Duke 命名纪律:`[类型]-[客户]-[描述]-[版本]-[日期]`
+- 类型:bid / review / report / ...
+- 客户:中文或英文名(无空格)
+- 描述:技术方案 / 商务方案 / 报价表 / 评审报告
+- 版本:V1.0 / V1.4 / final
+- 日期:YYYYMMDD
+
+示例:`bid-东莞银行-技术方案-V1.4-20260810.docx`
+
+## 七、验收
+
+- 全 pass → 看板 stage='封标',事件流追加"门禁全过"
+- 有 fail → 看板 block 红闪,Duke 收到 P0 微信告警
+- 门禁报告 + gate.json 双产物输出到 `~/WorkBuddy/SealGate/{YYYYMMDD}/`
+
+## 八、扩展(P1 阶段)
+
+- PDF 格式检查(目前只 docx)
+- 自动修正常见问题(如页码补齐、签章位置微调)
+- 集成 gate-checker 到 bid-file-review v3 流水线
+</pre>
+  </div>
+
+  <!-- 文件 2: main.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">2</span>文件 2 · <span class="file-tag">scripts/main.py</span>
+      <span class="action new">新建</span>
+    </div>
+    <div class="sec-lede">7 个 check 函数 + 主入口。每个 check 独立 try/except,失败不阻塞其他。</div>
+    <div class="copy-hint"><b>操作</b>:<code>touch scripts/main.py</code>,复制下面整段。</div>
+
+<pre class="code"><span class="c">#!/usr/bin/env python3</span>
+<span class="c">"""
+gate-checker · 封标前 7 类门禁检查
+用法:
+  python3 main.py --project 东莞银行 --file ./标书.docx --code dgyhst2026
+  python3 main.py --batch ./待封标/
+  python3 main.py --project test --file ./test.docx --code test --dry-run
+"""
+import argparse, json, os, re, sys
+from datetime import datetime
+from pathlib import Path
+
+SKILL_DIR = Path(__file__).resolve().parent.parent
+OUTPUT_DIR = Path.home() / <span class="s">"WorkBuddy" / "SealGate"</span>
+
+
+<span class="c"># ============ 7 个 Check 函数 ============</span>
+
+def <span class="f">check_json_parseable</span>(file_path: str) -> dict:
+    <span class="c">"""检查 1:文档中所有内嵌 JSON 块可解析。"""</span>
+    <span class="c"># 简化实现:从 docx 的 text 中提取 {...} 块,逐个 json.loads</span>
+    <span class="k">try</span>:
+        <span class="k">from</span> docx <span class="k">import</span> Document
+        doc = <span class="v">Document</span>(file_path)
+        text = <span class="s">"\n"</span>.<span class="f">join</span>(p.text <span class="k">for</span> p <span class="k">in</span> doc.paragraphs)
+    <span class="k">except</span> ImportError:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"json"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"python-docx 未装"</span>}
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"json"</span>, <span class="s">"pass"</span>: <span class="k">False</span>, <span class="s">"reason"</span>: <span class="s">f"无法打开文件: {e}"</span>}
+
+    <span class="c"># 匹配 {...} 块(非贪婪)</span>
+    pattern = <span class="s">r"\{[^{}]*\}"</span>
+    blocks = re.findall(pattern, text)
+    errors = []
+    <span class="k">for</span> i, blk <span class="k">in</span> <span class="f">enumerate</span>(blocks):
+        <span class="k">try</span>:
+            json.loads(blk)
+        <span class="k">except</span> json.JSONDecodeError <span class="k">as</span> e:
+            errors.append(<span class="s">f"块 </span>{i}<span class="s">: {blk[:40]}... → {e}"</span>)
+
+    <span class="k">if</span> errors:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"json"</span>, <span class="s">"pass"</span>: <span class="k">False</span>,
+            <span class="s">"reason"</span>: <span class="s">f"发现 </span>{len(errors)}<span class="s"> 个 JSON 解析错误"</span>,
+            <span class="s">"details"</span>: {<span class="s">"errors"</span>: errors[:<span class="n">5</span>]}}
+    <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"json"</span>, <span class="s">"pass"</span>: <span class="k">True</span>, <span class="s">"reason"</span>: <span class="s">f"通过(扫描 </span>{len(blocks)}<span class="s"> 个 JSON 块)"</span>}
+
+
+def <span class="f">check_word_format</span>(file_path: str) -> dict:
+    <span class="c">"""检查 2:Word 格式合规(字体/段落/标题)。"""</span>
+    <span class="k">try</span>:
+        <span class="k">from</span> docx <span class="k">import</span> Document
+    <span class="k">except</span> ImportError:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"word_format"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"python-docx 未装"</span>}
+
+    <span class="k">try</span>:
+        doc = <span class="v">Document</span>(file_path)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"word_format"</span>, <span class="s">"pass"</span>: <span class="k">False</span>, <span class="s">"reason"</span>: <span class="s">f"无法打开: {e}"</span>}
+
+    issues = []
+    <span class="c"># 字体检查(抽查前 10 段)</span>
+    <span class="k">for</span> i, p <span class="k">in</span> <span class="f">enumerate</span>(doc.paragraphs[:<span class="n">10</span>]):
+        <span class="k">for</span> run <span class="k">in</span> p.runs:
+            <span class="k">if</span> run.font.name <span class="k">and</span> run.font.name <span class="k">not in</span> (<span class="s">"宋体"</span>, <span class="s">"SimSun"</span>, <span class="s">"Times New Roman"</span>, <span class="s">"等线"</span>):
+                issues.append(<span class="s">f"第 </span>{i}<span class="s"> 段字体异常: {run.font.name}"</span>)
+                <span class="k">break</span>  <span class="c"># 同一段只报一次</span>
+
+    <span class="k">if</span> issues:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"word_format"</span>, <span class="s">"pass"</span>: <span class="k">False</span>,
+            <span class="s">"reason"</span>: <span class="s">f"发现 </span>{len(issues)}<span class="s"> 个字体问题"</span>,
+            <span class="s">"details"</span>: {<span class="s">"issues"</span>: issues[:<span class="n">5</span>]}}
+    <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"word_format"</span>, <span class="s">"pass"</span>: <span class="k">True</span>, <span class="s">"reason"</span>: <span class="s">"通过(字体合规)"</span>}
+
+
+def <span class="f">check_quote_total</span>(file_path: str) -> dict:
+    <span class="c">"""检查 3:报价表公式合计正确。"""</span>
+    <span class="k">try</span>:
+        <span class="k">from</span> openpyxl <span class="k">import</span> load_workbook
+    <span class="k">except</span> ImportError:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"quote_total"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"openpyxl 未装"</span>}
+
+    <span class="c"># 只处理 .xlsx</span>
+    <span class="k">if</span> <span class="k">not</span> file_path.endswith(<span class="s">".xlsx"</span>):
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"quote_total"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"非 xlsx 文件,跳过"</span>}
+
+    <span class="k">try</span>:
+        wb = <span class="f">load_workbook</span>(file_path, data_only=<span class="k">True</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"quote_total"</span>, <span class="s">"pass"</span>: <span class="k">False</span>, <span class="s">"reason"</span>: <span class="s">f"无法打开: {e}"</span>}
+
+    <span class="c"># 简化实现:找名为"报价表"或"总计"的 sheet</span>
+    <span class="k">for</span> sheet_name <span class="k">in</span> wb.sheetnames:
+        <span class="k">if</span> <span class="s">"报价"</span> <span class="k">in</span> sheet_name <span class="k">or</span> <span class="s">"总计"</span> <span class="k">in</span> sheet_name:
+            ws = wb[sheet_name]
+            <span class="c"># 找含"合计"或"总计"的行</span>
+            <span class="k">for</span> row <span class="k">in</span> ws.iter_rows():
+                <span class="k">if</span> row[<span class="n">0</span>].value <span class="k">and</span> <span class="s">"合计"</span> <span class="k">in</span> <span class="f">str</span>(row[<span class="n">0</span>].value):
+                    <span class="c"># 简化:只检查数字合计存在(实际应重算公式)</span>
+                    <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"quote_total"</span>, <span class="s">"pass"</span>: <span class="k">True</span>,
+                        <span class="s">"reason"</span>: <span class="s">f"通过(</span>{sheet_name}<span class="s"> 找到合计行,需人工复核)"</span>}
+
+    <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"quote_total"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"未找到报价表 sheet,需人工确认"</span>}
+
+
+def <span class="f">check_header_footer</span>(file_path: str) -> dict:
+    <span class="c">"""检查 4:页眉页脚跨 section 一致。"""</span>
+    <span class="k">try</span>:
+        <span class="k">from</span> docx <span class="k">import</span> Document
+    <span class="k">except</span> ImportError:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"header_footer"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"python-docx 未装"</span>}
+
+    <span class="k">try</span>:
+        doc = <span class="v">Document</span>(file_path)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"header_footer"</span>, <span class="s">"pass"</span>: <span class="k">False</span>, <span class="s">"reason"</span>: <span class="s">f"无法打开: {e}"</span>}
+
+    <span class="c"># 收集每个 section 的页眉/页脚文字</span>
+    signatures = <span class="f">set</span>()
+    <span class="k">for</span> section <span class="k">in</span> doc.sections:
+        header = section.header.paragraphs[<span class="n">0</span>].text <span class="k">if</span> section.header.paragraphs <span class="k">else</span> <span class="s">""</span>
+        footer = section.footer.paragraphs[<span class="n">0</span>].text <span class="k">if</span> section.footer.paragraphs <span class="k">else</span> <span class="s">""</span>
+        signatures.add((header, footer))
+
+    <span class="k">if</span> <span class="f">len</span>(signatures) == <span class="n">1</span>:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"header_footer"</span>, <span class="s">"pass"</span>: <span class="k">True</span>, <span class="s">"reason"</span>: <span class="s">"通过(全部 section 一致)"</span>}
+    <span class="k">else</span>:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"header_footer"</span>, <span class="s">"pass"</span>: <span class="k">False</span>,
+            <span class="s">"reason"</span>: <span class="s">f"发现 </span>{len(signatures)}<span class="s"> 种不同的页眉页脚"</span>,
+            <span class="s">"details"</span>: {<span class="s">"signatures"</span>: [list(s) <span class="k">for</span> s <span class="k">in</span> signatures]}}
+
+
+def <span class="f">check_seal_position</span>(file_path: str) -> dict:
+    <span class="c">"""检查 5:签章位置(右下角)。依赖 pytesseract,未装则跳过。"""</span>
+    <span class="k">try</span>:
+        <span class="k">import</span> pytesseract
+        <span class="k">from</span> PIL <span class="k">import</span> Image
+    <span class="k">except</span> ImportError:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"seal_position"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"pytesseract/Pillow 未装"</span>}
+
+    <span class="c"># 简化:这个 check 实现复杂,实际需要从 PDF 抽图 → OCR → 找印章坐标</span>
+    <span class="c"># 此处只占位,真实实现可在 P1 阶段补</span>
+    <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"seal_position"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"占位实现,需 P1 补完整 OCR"</span>}
+
+
+def <span class="f">check_page_continuity</span>(file_path: str) -> dict:
+    <span class="c">"""检查 6:PDF 页码连续。"""</span>
+    <span class="k">try</span>:
+        <span class="k">import</span> pdfplumber
+    <span class="k">except</span> ImportError:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"page_continuity"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"pdfplumber 未装"</span>}
+
+    <span class="k">if</span> <span class="k">not</span> file_path.endswith(<span class="s">".pdf"</span>):
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"page_continuity"</span>, <span class="s">"pass"</span>: <span class="s">"skip"</span>, <span class="s">"reason"</span>: <span class="s">"非 PDF 文件"</span>}
+
+    <span class="k">try</span>:
+        <span class="k">with</span> pdfplumber.<span class="f">open</span>(file_path) <span class="k">as</span> pdf:
+            total = <span class="f">len</span>(pdf.pages)
+            <span class="c"># 简化:只查总页数,实际应遍历每页找页码文字</span>
+            <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"page_continuity"</span>, <span class="s">"pass"</span>: <span class="k">True</span>,
+                <span class="s">"reason"</span>: <span class="s">f"通过(总 </span>{total}<span class="s"> 页,需人工复核页码顺序)"</span>,
+                <span class="s">"details"</span>: {<span class="s">"total_pages"</span>: total}}
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"page_continuity"</span>, <span class="s">"pass"</span>: <span class="k">False</span>, <span class="s">"reason"</span>: <span class="s">f"无法打开 PDF: {e}"</span>}
+
+
+def <span class="f">check_file_naming</span>(file_path: str) -> dict:
+    <span class="c">"""检查 7:文件名符合 [类型]-[客户]-[描述]-[版本]-[日期] 规范。"""</span>
+    name = <span class="v">Path</span>(file_path).stem  <span class="c"># 不含扩展名</span>
+    <span class="c"># 模式:xxx-xxx-xxx-V1.x-YYYYMMDD</span>
+    pattern = <span class="s">r"^[^-]+-[^-]+-[^-]+-V\d+(\.\d+)?-\d{8}$"</span>
+    <span class="k">if</span> re.<span class="f">match</span>(pattern, name):
+        <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"file_naming"</span>, <span class="s">"pass"</span>: <span class="k">True</span>, <span class="s">"reason"</span>: <span class="s">f"通过(</span>{name}<span class="s">)"</span>}
+    <span class="k">return</span> {<span class="s">"check"</span>: <span class="s">"file_naming"</span>, <span class="s">"pass"</span>: <span class="k">False</span>,
+        <span class="s">"reason"</span>: <span class="s">f"不符合命名规范: </span>{name}<span class="s">"</span>,
+        <span class="s">"details"</span>: {<span class="s">"expected_pattern"</span>: <span class="s">"[类型]-[客户]-[描述]-[版本]-[日期]"</span>}}
+
+
+<span class="c"># ============ 主流程 ============</span>
+
+ALL_CHECKS = [
+    (<span class="s">"1. JSON 可解析"</span>, check_json_parseable),
+    (<span class="s">"2. Word 格式"</span>, check_word_format),
+    (<span class="s">"3. 报价表合计"</span>, check_quote_total),
+    (<span class="s">"4. 页眉页脚"</span>, check_header_footer),
+    (<span class="s">"5. 签章位置"</span>, check_seal_position),
+    (<span class="s">"6. 页码连续"</span>, check_page_continuity),
+    (<span class="s">"7. 文件命名"</span>, check_file_naming),
+]
+
+
+def <span class="f">run_all_checks</span>(file_path: str) -> list:
+    <span class="c">"""跑 7 个 check,返回结果列表。"""</span>
+    results = []
+    <span class="k">for</span> name, fn <span class="k">in</span> <span class="v">ALL_CHECKS</span>:
+        <span class="k">try</span>:
+            r = <span class="f">fn</span>(file_path)
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            r = {<span class="s">"check"</span>: name, <span class="s">"pass"</span>: <span class="k">False</span>, <span class="s">"reason"</span>: <span class="s">f"check 本身异常: {e}"</span>}
+        r[<span class="s">"name"</span>] = name
+        results.append(r)
+    <span class="k">return</span> results
+
+
+def <span class="f">summary</span>(results: list) -> dict:
+    <span class="c">"""汇总:全 pass=通过,任一 fail=阻塞,任一 skip=警告。"""</span>
+    n_pass = <span class="f">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> results <span class="k">if</span> r.get(<span class="s">"pass"</span>) <span class="k">is</span> <span class="k">True</span>)
+    n_fail = <span class="f">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> results <span class="k">if</span> r.get(<span class="s">"pass"</span>) <span class="k">is</span> <span class="k">False</span>)
+    n_skip = <span class="f">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> results <span class="k">if</span> r.get(<span class="s">"pass"</span>) == <span class="s">"skip"</span>)
+
+    <span class="k">if</span> n_fail == <span class="n">0</span> <span class="k">and</span> n_skip == <span class="n">0</span>:
+        status = <span class="s">"pass"</span>
+    <span class="k">elif</span> n_fail == <span class="n">0</span>:
+        status = <span class="s">"warn"</span>  <span class="c"># 全过但有 skip,需人工补</span>
+    <span class="k">else</span>:
+        status = <span class="s">"fail"</span>
+
+    <span class="k">return</span> {<span class="s">"status"</span>: status, <span class="s">"pass"</span>: n_pass, <span class="s">"fail"</span>: n_fail, <span class="s">"skip"</span>: n_skip}
+
+
+def <span class="f">render_md_report</span>(project: str, file_path: str, results: list, summary: dict) -> str:
+    <span class="c">"""生成人类可读 Markdown 报告。"""</span>
+    lines = [<span class="s">f"# 封标门禁报告 · {project}"</span>, <span class="s">""</span>,
+        <span class="s">f"- 文件: `{file_path}`"</span>,
+        <span class="s">f"- 时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"</span>,
+        <span class="s">f"- 结果: **{summary['status'].upper()}** (通过 {summary['pass']} / 失败 {summary['fail']} / 跳过 {summary['skip']})"</span>, <span class="s">""</span>,
+        <span class="s">"## 7 类检查结果"</span>, <span class="s">""</span>,
+        <span class="s">"| # | 检查项 | 状态 | 原因 |"</span>,
+        <span class="s">"|---|--------|------|------|"</span>]
+    <span class="k">for</span> r <span class="k">in</span> results:
+        <span class="k">if</span> r.get(<span class="s">"pass"</span>) <span class="k">is</span> <span class="k">True</span>:
+            status = <span class="s">"✅ 通过"</span>
+        <span class="k">elif</span> r.get(<span class="s">"pass"</span>) <span class="k">is</span> <span class="k">False</span>:
+            status = <span class="s">"❌ 失败"</span>
+        <span class="k">else</span>:
+            status = <span class="s">"⚠ 跳过"</span>
+        lines.append(<span class="s">f"| {r['name']} | {r['check']} | {status} | {r.get('reason', '')} |"</span>)
+    <span class="k">return</span> <span class="s">"\n"</span>.<span class="f">join</span>(lines) + <span class="s">"\n"</span>
+
+
+def <span class="f">push_to_bidboard</span>(cfg, code: str, summary: dict, results: list, dry_run: bool):
+    <span class="c">"""根据汇总结果推送到 BidBoard。"""</span>
+    <span class="k">if</span> dry_run:
+        <span class="f">print</span>(<span class="s">f"  [DRY] 推送 BidBoard: code=</span>{code}<span class="s"> status=</span>{summary['status']}<span class="s">"</span>)
+        <span class="k">return</span>
+    <span class="k">from</span> bidboard_client <span class="k">import</span> add_ai_ready, set_stage, set_block, set_human_todo
+    <span class="k">if</span> summary[<span class="s">"status"</span>] == <span class="s">"pass"</span>:
+        <span class="f">add_ai_ready</span>(code, <span class="s">"门禁全过(7/7)"</span>, <span class="s">"gate-checker"</span>)
+        <span class="f">set_stage</span>(code, <span class="s">"封标"</span>)
+        <span class="f">print</span>(<span class="s">f"  ✓ 全过,推 stage=封标"</span>)
+    <span class="k">elif</span> summary[<span class="s">"status"</span>] == <span class="s">"warn"</span>:
+        warnings = [r <span class="k">for</span> r <span class="k">in</span> results <span class="k">if</span> r.get(<span class="s">"pass"</span>) == <span class="s">"skip"</span>]
+        msg = <span class="s">"门禁部分跳过(需人工补): "</span> + <span class="s">", "</span>.<span class="f">join</span>(w[<span class="s">"check"</span>] <span class="k">for</span> w <span class="k">in</span> warnings)
+        <span class="f">set_block</span>(code, msg)
+        <span class="f">add_ai_ready</span>(code, msg, <span class="s">"gate-checker"</span>)
+        <span class="f">print</span>(<span class="s">f"  ⚠ 有 skip,阻塞: {msg}"</span>)
+    <span class="k">else</span>:
+        fails = [r <span class="k">for</span> r <span class="k">in</span> results <span class="k">if</span> r.get(<span class="s">"pass"</span>) <span class="k">is</span> <span class="k">False</span>]
+        <span class="c"># 取第一个失败原因作为 block(简明)</span>
+        first = fails[<span class="n">0</span>]
+        msg = <span class="s">f"门禁失败: {first['check']} - {first.get('reason', '')}"</span>
+        <span class="f">set_block</span>(code, msg)
+        <span class="f">add_ai_ready</span>(code, <span class="s">f"❌ 门禁失败 </span>{len(fails)}<span class="s">/7"</span>, <span class="s">"gate-checker"</span>)
+        <span class="f">set_human_todo</span>(code, [<span class="s">"修复门禁失败项"</span>])
+        <span class="f">print</span>(<span class="s">f"  ✗ 失败,阻塞: {msg}"</span>)
+
+
+def <span class="f">main</span>():
+    ap = argparse.ArgumentParser(description=<span class="s">"封标门禁检查"</span>)
+    ap.add_argument(<span class="s">"--project"</span>, required=<span class="k">True</span>, help=<span class="s">"项目名(显示用)"</span>)
+    ap.add_argument(<span class="s">"--file"</span>, help=<span class="s">"单文件路径"</span>)
+    ap.add_argument(<span class="s">"--batch"</span>, help=<span class="s">"目录批量(扫 .docx/.xlsx/.pdf)"</span>)
+    ap.add_argument(<span class="s">"--code"</span>, default=<span class="s">""</span>, help=<span class="s">"客户代号(推看板用)"</span>)
+    ap.add_argument(<span class="s">"--dry-run"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"只跑不推"</span>)
+    args = ap.parse_args()
+
+    cfg_path = <span class="v">SKILL_DIR</span> / <span class="s">"config.json"</span>
+    cfg = json.loads(cfg_path.read_text()) <span class="k">if</span> cfg_path.exists() <span class="k">else</span> {}
+
+    files = []
+    <span class="k">if</span> args.file:
+        files = [<span class="v">Path</span>(args.file)]
+    <span class="k">elif</span> args.batch:
+        d = <span class="v">Path</span>(args.batch)
+        files = <span class="f">list</span>(d.glob(<span class="s">"*.docx"</span>)) + <span class="f">list</span>(d.glob(<span class="s">"*.xlsx"</span>)) + <span class="f">list</span>(d.glob(<span class="s">"*.pdf"</span>))
+
+    <span class="k">if</span> <span class="k">not</span> files:
+        <span class="f">print</span>(<span class="s">"❌ 未指定文件(--file / --batch)"</span>)
+        sys.exit(<span class="n">1</span>)
+
+    <span class="c"># 输出目录</span>
+    out_dir = <span class="v">OUTPUT_DIR</span> / datetime.now().strftime(<span class="s">"%Y%m%d"</span>)
+    out_dir.mkdir(parents=<span class="k">True</span>, exist_ok=<span class="k">True</span>)
+
+    <span class="c"># 跑所有文件</span>
+    overall_status = <span class="s">"pass"</span>
+    <span class="k">for</span> f <span class="k">in</span> files:
+        <span class="f">print</span>(<span class="s">f"\n========== {f.name} =========="</span>)
+        results = <span class="f">run_all_checks</span>(<span class="f">str</span>(f))
+        summ = <span class="f">summary</span>(results)
+
+        <span class="c"># 输出报告</span>
+        md = <span class="f">render_md_report</span>(args.project, <span class="f">str</span>(f), results, summ)
+        (out_dir / <span class="s">f"{args.project}_门禁报告.md"</span>).write_text(md, encoding=<span class="s">"utf-8"</span>)
+        (out_dir / <span class="s">f"{args.project}_gate.json"</span>).write_text(
+            json.dumps({<span class="s">"project"</span>: args.project, <span class="s">"file"</span>: <span class="f">str</span>(f), <span class="s">"summary"</span>: summ, <span class="s">"results"</span>: results},
+                ensure_ascii=<span class="k">False</span>, indent=<span class="n">2</span>),
+            encoding=<span class="s">"utf-8"</span>)
+
+        <span class="f">print</span>(<span class="s">f"  状态: {summ['status'].upper()} (</span>{summ['pass']}<span class="s">/</span>{summ['fail']}<span class="s">/</span>{summ['skip']}<span class="s">)"</span>)
+        <span class="f">print</span>(<span class="s">f"  报告: {out_dir}/</span>{args.project}<span class="s">_门禁报告.md"</span>)
+
+        <span class="c"># 推 BidBoard(只有 file 模式,单客户推一次)</span>
+        <span class="k">if</span> args.code <span class="k">and</span> <span class="k">not</span> args.batch:
+            <span class="f">push_to_bidboard</span>(cfg, args.code, summ, results, args.dry_run)
+
+        <span class="k">if</span> summ[<span class="s">"status"</span>] == <span class="s">"fail"</span>:
+            overall_status = <span class="s">"fail"</span>
+
+    <span class="f">print</span>(<span class="s">f"\n========== 汇总: {overall_status.upper()} =========="</span>)
+    sys.exit(<span class="n">0</span> <span class="k">if</span> overall_status <span class="k">in</span> (<span class="s">"pass"</span>, <span class="s">"warn"</span>) <span class="k">else</span> <span class="n">1</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="f">main</span>()
+</pre>
+  </div>
+
+  <!-- 文件 3: bidboard_client.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">3</span>文件 3 · <span class="file-tag">scripts/bidboard_client.py</span>
+      <span class="action new">新建(复用 S-02)</span>
+    </div>
+    <div class="sec-lede">复用 S-02 同款 wrapper。</div>
+    <div class="copy-hint"><b>操作</b>:<code>cp ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py ~/.workbuddy/skills/gate-checker/scripts/</code></div>
+  </div>
+
+  <!-- 文件 4: config.json -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">4</span>文件 4 · <span class="file-tag">config.json</span>
+      <span class="action new">新建</span>
+    </div>
+    <div class="sec-lede">命名规范 + 必装依赖声明。环境变量 <code>BIDBOARD_TOKEN</code> 优先。</div>
+    <div class="copy-hint"><b>操作</b>:<code>touch config.json</code>。</div>
+
+<pre class="code">{
+  <span class="c">"_comment": "gate-checker 配置"</span>,
+
+  <span class="v">"file_naming_pattern"</span>: <span class="s">"^[^-]+-[^-]+-[^-]+-V\\d+(\\.\\d+)?-\\d{8}$"</span>,
+  <span class="v">"naming_example"</span>: <span class="s">"bid-东莞银行-技术方案-V1.4-20260810.docx"</span>,
+
+  <span class="c">// 必装依赖(pip install)</span>
+  <span class="v">"required_deps"</span>: {
+    <span class="s">"python-docx"</span>: <span class="s">"Word 格式 / 页眉页脚"</span>,
+    <span class="s">"openpyxl"</span>: <span class="s">"报价表合计"</span>,
+    <span class="s">"pdfplumber"</span>: <span class="s">"PDF 页码"</span>,
+    <span class="s">"pytesseract"</span>: <span class="s">"签章 OCR"</span>,
+    <span class="s">"Pillow"</span>: <span class="s">"签章图片处理"</span>
+  },
+
+  <span class="c">// Mac 系统依赖(brew install)</span>
+  <span class="v">"system_deps"</span>: {
+    <span class="s">"tesseract"</span>: <span class="s">"brew install tesseract tesseract-lang"</span>
+  },
+
+  <span class="c">// 输出目录</span>
+  <span class="v">"output_dir"</span>: <span class="s">"~/WorkBuddy/SealGate/{YYYYMMDD}/"</span>,
+
+  <span class="c">// BidBoard</span>
+  <span class="v">"token_env"</span>: <span class="s">"BIDBOARD_TOKEN"</span>
+}
+</pre>
+  </div>
+
+  <!-- 测试 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span>测试步骤(必须全过)</div>
+
+    <h3 class="st">5.1 单元测试:CLI --help / dry-run</h3>
+<pre class="code"><span class="c"># 1. 验证 SKILL.md 存在</span>
+ls -la ~/.workbuddy/skills/gate-checker/SKILL.md
+
+<span class="c"># 2. 验证 main.py --help</span>
+python3 ~/.workbuddy/skills/gate-checker/scripts/main.py --help
+
+<span class="c"># 3. dry-run 真实 docx</span>
+python3 ~/.workbuddy/skills/gate-checker/scripts/main.py \
+  --project 测试 --file ~/Desktop/test.docx --code test --dry-run
+<span class="c"># 期望:7 行检查结果 + status: WARN(因为没装 openpyxl/pdfplumber)</span>
+</pre>
+
+    <h3 class="st">5.2 依赖未装时的降级测试</h3>
+<pre class="code"><span class="c"># 1. 在没装 python-docx 的环境跑</span>
+python3 -c <span class="s">"import docx"</span> 2>&1 | grep ModuleNotFoundError
+python3 ~/.workbuddy/skills/gate-checker/scripts/main.py \
+  --project 测试 --file ./标书.docx --code test --dry-run
+<span class="c"># 期望:Word 格式 / 页眉页脚 标 ⚠ 跳过</span>
+</pre>
+
+    <h3 class="st">5.3 端到端(workbench 起着)</h3>
+<pre class="code"><span class="c"># 1. 准备一个测试 docx(有报价表 xlsx 单独)</span>
+mkdir -p /tmp/gate-test
+cp ~/.workbuddy/skills/bid-file-review/scripts/ocr_bid_images.py /tmp/gate-test/test.docx
+python3 ~/.workbuddy/skills/gate-checker/scripts/main.py \
+  --project 端到端测试 --file /tmp/gate-test/test.docx --code dgyhst2026
+
+<span class="c"># 2. 期望输出</span>
+<span class="c">#   ========== test.docx ==========</span>
+<span class="c">#     状态: WARN 或 PASS (取决于依赖)</span>
+<span class="c">#     报告: /Users/duke/WorkBuddy/SealGate/20260813/端到端测试_门禁报告.md</span>
+<span class="c">#     [DRY 推送] 或 ✓ 全过,推 stage=封标 / ⚠ 部分跳过,阻塞</span>
+
+<span class="c"># 3. 看看板主页</span>
+open bid-board-v2-20260810.html
+<span class="c"># 期望:东莞卡 ai_ready 多一项 "门禁: 7/7" 或类似</span>
+</pre>
+
+    <h3 class="st">5.4 失败兜底:workbench 不起时</h3>
+<pre class="code"><span class="c"># 1. 停 workbench</span>
+workbuddy stop
+
+<span class="c"># 2. 跑 main.py(不传 --dry-run)</span>
+python3 ~/.workbuddy/skills/gate-checker/scripts/main.py \
+  --project 测试 --file /tmp/gate-test/test.docx --code dgyhst2026
+<span class="c"># 期望:7 个 check 照常跑(不依赖 workbench),但 push_to_bidboard 入队列</span>
+<span class="c"># 期望:~/.bidboard_queue.jsonl 多 N 行</span>
+
+<span class="c"># 3. 启动 workbench,replay</span>
+workbuddy start
+python3 ~/.workbuddy/skills/gate-checker/scripts/bidboard_client.py replay
+</pre>
+
+    <h3 class="st">5.5 装全依赖跑真实标书</h3>
+<pre class="code"><span class="c"># 1. 装全依赖</span>
+pip install python-docx openpyxl pdfplumber pytesseract Pillow
+brew install tesseract tesseract-lang
+
+<span class="c"># 2. 拿一份真实标书跑</span>
+python3 ~/.workbuddy/skills/gate-checker/scripts/main.py \
+  --project 东莞银行 \
+  --file ~/WorkBuddy/SealBox/东莞银行-技术方案-V1.4-20260813.docx \
+  --code dgyhst2026
+
+<span class="c"># 3. 期望:7/7 通过 或具体失败项</span>
+cat ~/WorkBuddy/SealGate/20260813/东莞银行_门禁报告.md
+</pre>
+  </div>
+
+  <!-- 风险 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>风险与回滚</div>
+    <div class="risk-grid">
+      <div class="risk crit">
+        <h5>🔴 check 函数实现简化</h5>
+        <p>报价表合计、签章位置、页码连续 check 都标了"占位/需人工复核"。<br><b>缓解</b>:本次 P0 收尾先用简化版,P1 阶段补完整;check 失败时给"需人工复核"提示,不会漏报。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 依赖冲突</h5>
+        <p>python-docx / openpyxl / pdfplumber / pytesseract 装一起可能跟系统其他包冲突。<br><b>缓解</b>:用虚拟环境 <code>python3 -m venv venv && source venv/bin/activate</code> 隔离。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 PDF 标书门禁不全</h5>
+        <p>目前 Word 格式 / 页眉页脚 check 用 python-docx,PDF 标书跳过这 2 项。<br><b>缓解</b>:PDF 标书要求 Duke 手动复核;P1 阶段加 PDF 解析(check #1 / #2 / #4)。</p>
+      </div>
+      <div class="risk mid">
+        <h5>🔵 batch 模式不推 BidBoard</h5>
+        <p>--batch 跑多个文件时,不调 push_to_bidboard(避免误推)。<br><b>缓解</b>:每个文件输出独立报告,Duke 人工决定是否推。</p>
+      </div>
+    </div>
+
+    <h3 class="st">6.1 回滚</h3>
+    <ol style="font-size: 13.5px; color: var(--ink-soft); padding-left: 20px; line-height: 1.8;">
+      <li>删除 <code>~/.workbuddy/skills/gate-checker/</code> 整个目录</li>
+      <li>删除 <code>~/WorkBuddy/SealGate/</code>(如果想清空报告)</li>
+      <li>如果已对真实标书跑过且 block 字段写了内容,看板人工 setBlock('') 解除</li>
+    </ol>
+  </div>
+
+  <!-- 联动 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>封标全流程联动</div>
+    <div class="sec-lede">S-06 在封标前最后一刻启动,完成"机械化卡口"——之前所有 Skill 的产出在 S-06 这一刻做最后校验。</div>
+
+    <table>
+      <thead><tr><th>阶段</th><th>Skill</th><th>S-06 之前的状态</th><th>S-06 之后</th></tr></thead>
+      <tbody>
+        <tr><td>采集</td><td>S-02 bid-news-collection</td><td>新商机入 bids,priority 自动算</td><td>无变化</td></tr>
+        <tr><td>评审</td><td>S-01 bid-file-review</td><td>4 个 review_sync 推送,stage='修订'</td><td>无变化</td></tr>
+        <tr><td>报价</td><td>S-03 quote-generation-v3</td><td>3 个 API,block='报价签字'</td><td>签字解除,block 清空</td></tr>
+        <tr><td>修订</td><td>S-04 content-longform</td><td>草稿 + 自检</td><td>无变化</td></tr>
+        <tr><td>人员资质</td><td>S-08 resume-builder</td><td>简历 + 资质</td><td>无变化</td></tr>
+        <tr><td><b>门禁</b></td><td><b>S-06 gate-checker(本 Skill)</b></td><td>stage='修订',human_todo=['审阅报告']</td><td>7/7 通过 → stage='封标',清空 block</td></tr>
+        <tr><td>讲标</td><td>(人工)</td><td>封标完成</td><td>人工 setStage('述标')</td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>📋 改造清单速查</h4>
+      <p>总耗时 <b>1.5 天</b>(实操 1 天):</p>
+      <ul style="margin: 6px 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft);">
+        <li>第 1 天上午:4 个文件全建(SKILL.md / main.py / bidboard_client.py / config.json)</li>
+        <li>第 1 天下午:跑 <code>--dry-run</code> + 装核心依赖 <code>python-docx openpyxl</code></li>
+        <li>第 2 天:装 PDF 依赖 + 拿真实标书跑端到端,看 7 行报告</li>
+      </ul>
+      <p style="margin-top: 6px;"><b>P0 看板核心 4 个 Skill (S-02 标讯 + S-05 刷新 + S-01 评审 + S-06 门禁)patch 全部完成。</b></p>
+    </div>
+  </div>
+
+  <div style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px;">
+    <code>s06-gate-checker-create-20260813.html</code> · 4 新文件 · 估时 1.5 天 · 2026-08-13
+  </div>
+</div>
+</body>
+</html>

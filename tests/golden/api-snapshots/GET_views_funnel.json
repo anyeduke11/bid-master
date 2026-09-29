@@ -1,0 +1,1 @@
+{"ok": true, "view": "funnel", "data": {"stages": [{"stage": "S0", "count": 0}, {"stage": "S1", "count": 0}, {"stage": "S2", "count": 0}, {"stage": "S3", "count": 0}, {"stage": "S4", "count": 1}, {"stage": "S5", "count": 0}, {"stage": "S6", "count": 0}, {"stage": "S7", "count": 0}, {"stage": "S8", "count": 0}, {"stage": "S9", "count": 0}], "total": 1, "epoch": 428}}

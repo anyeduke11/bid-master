@@ -1,0 +1,3 @@
+{"title": "无证据的纳入", "source_url": "https://example.com/a", "fingerprint": "cc33", "score": 80, "recommend": "纳入", "producer": "bid-scout"}
+{"title": "指纹重复未标重复", "source_url": "https://example.com/a-dup", "fingerprint": "cc33", "score": 70, "recommend": "纳入", "evidence": {"quote": "x", "url": "u"}, "reason": "r", "producer": "bid-scout"}
+{"title": "排除缺理由", "source_url": "https://example.com/b", "fingerprint": "dd44", "score": 5, "recommend": "排除", "reason": "", "producer": "bid-scout"}

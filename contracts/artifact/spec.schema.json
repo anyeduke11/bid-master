@@ -1,0 +1,33 @@
+{
+ "required": [
+  "bid_id",
+  "scoring_points",
+  "chapters",
+  "status"
+ ],
+ "properties": {
+  "bid_id": {
+   "type": "string"
+  },
+  "scoring_points": {
+   "type": "array",
+   "minItems": 1
+  },
+  "chapters": {
+   "type": "array",
+   "minItems": 1
+  },
+  "whitelist": {
+   "type": "array"
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "registered",
+    "final",
+    "confirmed"
+   ]
+  }
+ }
+}

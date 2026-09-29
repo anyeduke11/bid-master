@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "name": "写作规格单模板 · schema v2",
+    "created_at": "2026-09-10",
+    "usage": "主 Agent 生成规格单的固化骨架（复制本文件填充；w3-drill 修订项落地：八要素+审计修复余量+统一根）",
+    "source_convention": "素材指针一律写仓库绝对根（~/Documents/bid-master/…）或数据面绝对路径，禁止相对根歧义",
+    "margin_note": "word_max 已含审计修复余量 +5%——修复期新增字符不再撞线（w3-drill 教训）"
+  },
+  "bid_id": "<bid_id>",
+  "whitelist": ["P902"],
+  "scoring_points": [
+    {
+      "id": "SP-A1",
+      "chapter": "ch-A",
+      "weight": "权重视评分办法填（如 15 分中的子项）",
+      "requirement": "招标要求原文（逐字）",
+      "cites": ["P902"],
+      "material_ptrs": ["~/Documents/bid-master/kb/slices/<file>.md#L10-L40"],
+      "note": ""
+    }
+  ],
+  "chapters": [
+    {
+      "chapter": "ch-A",
+      "title": "章节标题（不带内部代号，对外口径）",
+      "word_min": 380,
+      "word_max": 735,
+      "format": "markdown；小标题≥2；响应段-正文-佐证三段结构；编号体例与全卷一致（一/二/三）",
+      "forbidden": ["白名单外引用", "规格单未载的承诺数字", "营销口号式排比", "其他投标人/客户名称（L3/围串标红线）"]
+    }
+  ]
+}

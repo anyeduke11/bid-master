@@ -1,0 +1,13 @@
+{
+  "goal": "消费 queue/ 中全部 status=generated 的工单（隔夜批处理）",
+  "agent": "CronCreate / 人工",
+  "skill": "",
+  "inputs": [
+    "~/.bidmaster/queue/"
+  ],
+  "done_when": [
+    "每个工单 status→executed 且 executed_at/executed_by 落盘",
+    "消费记录追加到 ~/.bidmaster/log/"
+  ],
+  "prompt": "【queue 批处理】逐个读取 ~/.bidmaster/queue/*.json 中 status=generated 的工单并执行；完成后置 executed（executed_at/executed_by=cron）并在 ~/.bidmaster/log/ 追加消费记录。ticket_id={ticket_id}。"
+}

@@ -1,0 +1,31 @@
+{
+ "required": [
+  "bid_id",
+  "result",
+  "lessons",
+  "status"
+ ],
+ "properties": {
+  "result": {
+   "type": "string",
+   "enum": [
+    "win",
+    "loss",
+    "no-bid"
+   ]
+  },
+  "lessons": {
+   "type": "array",
+   "minItems": 1
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "proposed",
+    "confirmed",
+    "applied"
+   ]
+  }
+ }
+}

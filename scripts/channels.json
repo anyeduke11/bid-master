@@ -1,0 +1,95 @@
+{
+  "version": "2026-08-14",
+  "channels": [
+    {
+      "id": "gov-zhfcg",
+      "name": "中国政府采购网",
+      "url": "https://www.ccgp.gov.cn/cggg/zygg/",
+      "region": "全国",
+      "industry": "政府",
+      "parser": "html_gov",
+      "enabled": true
+    },
+    {
+      "id": "bid-chna",
+      "name": "中国招标投标公共服务平台",
+      "url": "https://www.cebpubservice.com/ctps/index.shtml",
+      "region": "全国",
+      "industry": "通用",
+      "parser": "html_generic",
+      "enabled": true
+    },
+    {
+      "id": "tianyancha",
+      "name": "天眼查-招标动态",
+      "url": "https://www.tianyancha.com/search?key=%E6%8B%9B%E6%A0%87",
+      "region": "全国",
+      "industry": "通用",
+      "parser": "html_generic",
+      "enabled": true
+    },
+    {
+      "id": "bank-cgb",
+      "name": "广发银行采购公告",
+      "url": "https://www.cgbchina.com.cn/Channel/15726",
+      "region": "华南",
+      "industry": "银行",
+      "parser": "html_bank",
+      "enabled": true
+    },
+    {
+      "id": "bank-cmb",
+      "name": "招商银行采购信息",
+      "url": "https://www.cmbchina.com/cmbinfo/announcement/",
+      "region": "华南",
+      "industry": "银行",
+      "parser": "html_bank",
+      "enabled": true
+    },
+    {
+      "id": "bank-icbc",
+      "name": "工商银行集采",
+      "url": "https://www.icbc.com.cn/page/721397125898913669/",
+      "region": "全国",
+      "industry": "银行",
+      "parser": "html_bank",
+      "enabled": true
+    },
+    {
+      "id": "sec-sse",
+      "name": "上交所技术采购",
+      "url": "https://www.sse.com.cn/services/tradingservice/tech/",
+      "region": "华东",
+      "industry": "证券",
+      "parser": "html_generic",
+      "enabled": true
+    },
+    {
+      "id": "energy-cnooc",
+      "name": "中海油采购",
+      "url": "https://www.cnooc.com.cn/col/col7331/",
+      "region": "全国",
+      "industry": "能源",
+      "parser": "html_generic",
+      "enabled": true
+    },
+    {
+      "id": "gov-bj",
+      "name": "北京市政府采购",
+      "url": "https://www.ccgp-beijing.gov.cn/",
+      "region": "华北",
+      "industry": "政府",
+      "parser": "html_gov",
+      "enabled": true
+    },
+    {
+      "id": "gov-sh",
+      "name": "上海市政府采购",
+      "url": "https://www.ccgp-shanghai.gov.cn/",
+      "region": "华东",
+      "industry": "政府",
+      "parser": "html_gov",
+      "enabled": true
+    }
+  ]
+}

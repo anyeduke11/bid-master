@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Duke · AI 日常工作流设计 | SecNews</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --accent: #6366F1;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --ok: #10B981;
+    --p0: #FEE2E2;
+    --p0-ink: #991B1B;
+    --p1: #FEF3C7;
+    --p1-ink: #92400E;
+    --p2: #DBEAFE;
+    --p2-ink: #1E40AF;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 48px 32px 96px; }
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 40px 44px;
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--p2);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 {
+    font-size: 32px; margin: 14px 0 6px; font-weight: 700; letter-spacing: -.01em;
+  }
+  .hero .sub { color: var(--ink-soft); font-size: 15px; margin-bottom: 22px; }
+  .hero .thesis {
+    background: white; border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    padding: 14px 18px; border-radius: 10px;
+    color: var(--ink); font-size: 14.5px;
+  }
+  .hero .thesis b { color: var(--brand-deep); }
+
+  /* Section */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+  }
+  .section h2 {
+    font-size: 22px; margin: 0 0 4px; font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section h2 .num {
+    background: var(--brand); color: white; width: 28px; height: 28px;
+    border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .section .lede { color: var(--ink-soft); font-size: 14px; margin: 4px 0 20px; }
+
+  /* 五大工作流总览 */
+  .streams { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .stream {
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 14px 12px; background: var(--bg-soft);
+    position: relative;
+  }
+  .stream .ic { font-size: 20px; margin-bottom: 4px; }
+  .stream .name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .stream .desc { color: var(--ink-mute); font-size: 12px; line-height: 1.5; }
+  .stream .ai-role {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line);
+    font-size: 12px; color: var(--brand-deep);
+  }
+  .stream .ai-role b { color: var(--brand-deep); }
+
+  /* 工作流详情 */
+  .flow { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; margin-top: 8px; }
+  .flow-card {
+    border: 1px solid var(--line); border-radius: 12px;
+    background: white; padding: 18px 20px;
+  }
+  .flow-card h4 {
+    margin: 0 0 12px; font-size: 14px; color: var(--brand-deep);
+    letter-spacing: .04em; text-transform: uppercase; font-weight: 700;
+  }
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: grid; grid-template-columns: 28px 1fr; gap: 10px;
+    padding: 10px 12px; background: var(--bg-soft);
+    border: 1px solid var(--line); border-radius: 8px;
+  }
+  .step .n {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: white; border: 1px solid var(--line);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px; color: var(--brand-deep);
+  }
+  .step .t { font-weight: 600; font-size: 14px; }
+  .step .d { font-size: 12.5px; color: var(--ink-soft); }
+  .step .who {
+    display: inline-block; font-size: 11px; padding: 1px 6px;
+    border-radius: 4px; margin-right: 4px; font-weight: 600;
+  }
+  .who-ai { background: var(--p2); color: var(--p2-ink); }
+  .who-h { background: #F3F4F6; color: var(--ink-soft); }
+  .who-b { background: #E0F2FE; color: #075985; }
+
+  /* 表格 */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th {
+    text-align: left; padding: 10px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12.5px;
+    border-bottom: 1px solid var(--line);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code, .code {
+    font-family: "SF Mono", Menlo, monospace; font-size: 12.5px;
+    background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; color: var(--brand-deep);
+  }
+  .pill {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    font-weight: 600; letter-spacing: .02em;
+  }
+  .p-p0 { background: var(--p0); color: var(--p0-ink); }
+  .p-p1 { background: var(--p1); color: var(--p1-ink); }
+  .p-p2 { background: var(--p2); color: var(--p2-ink); }
+  .p-ok { background: #D1FAE5; color: #065F46; }
+  .p-warn { background: #FEF3C7; color: #92400E; }
+
+  /* 串联视图 */
+  .chain {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  }
+  .chain .node {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+    background: linear-gradient(180deg, white, var(--bg-soft));
+  }
+  .chain .node .k {
+    font-size: 11px; color: var(--ink-mute); letter-spacing: .08em;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .chain .node .v { font-weight: 700; font-size: 14px; margin-top: 4px; }
+  .chain .node .d { font-size: 12.5px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
+
+  /* 路线图 */
+  .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .rm {
+    border: 1px solid var(--line); border-radius: 12px; padding: 18px;
+    background: white;
+  }
+  .rm .head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .rm .head .pill { font-size: 12px; }
+  .rm h4 { margin: 0; font-size: 15px; }
+  .rm ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); }
+  .rm li { margin-bottom: 6px; }
+  .rm li b { color: var(--ink); }
+
+  /* 风险 */
+  .risks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .risk {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    background: white; border-left: 3px solid var(--warn);
+  }
+  .risk h5 { margin: 0 0 6px; font-size: 14px; color: var(--ink); }
+  .risk p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+
+  /* footer */
+  .foot { text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px; }
+  .foot code { font-family: "SF Mono", monospace; }
+
+  @media (max-width: 900px) {
+    .streams, .chain, .roadmap { grid-template-columns: 1fr 1fr; }
+    .flow { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .streams, .chain, .roadmap, .risks { grid-template-columns: 1fr; }
+    .wrap { padding: 24px 16px 64px; }
+    .hero { padding: 28px 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="tag">SECNEWS · AI WORKFLOW DESIGN</span>
+    <h1>Duke 的 AI 日常工作流 · 五大流一图打通</h1>
+    <div class="sub">围绕投标 / 交付 / 资讯 / 内容 / Skill 五条主线，把 104 个 Skill 串成可调度的工作流，而非堆工具。</div>
+    <div class="thesis">
+      <b>核心判断：</b>你的瓶颈不是"没有 AI",而是 <b>信号噪声比</b> 还没提上来——107 路资讯、40+ 标讯、多客户并行投标,真正的杠杆是<b>前置过滤 + 模板化 + 跨流复用</b>。
+      本方案让 AI 从"问答"升级为"调度员 + 助理",你只做决策、风险和签发。
+    </div>
+  </div>
+
+  <!-- SECTION 1: 五大工作流总览 -->
+  <div class="section">
+    <h2><span class="num">1</span>五大工作流的 AI 角色定位</h2>
+    <div class="lede">不同工作流,AI 介入的深度不同。整体原则: <b>噪音/重复环节 AI 全量替代,需要判断/签发的环节人主导,跨流衔接 AI 编排</b>。</div>
+
+    <div class="streams">
+      <div class="stream">
+        <div class="ic">📑</div>
+        <div class="name">投标与标书</div>
+        <div class="desc">标讯监测 → 审查 → 报价 → 封标,多客户并行</div>
+        <div class="ai-role"><b>AI 角色</b>:初稿生成员 + 风险审查员<br>人做:决策、报价签发、述标</div>
+      </div>
+      <div class="stream">
+        <div class="ic">🛡️</div>
+        <div class="name">安全测试交付</div>
+        <div class="desc">渗透/评估/重保,含移动端鸿蒙</div>
+        <div class="ai-role"><b>AI 角色</b>:复测核对 + 报告初稿 + 模板填充<br>人做:漏洞验证、客户沟通</div>
+      </div>
+      <div class="stream">
+        <div class="ic">📡</div>
+        <div class="name">监管资讯订阅</div>
+        <div class="desc">107 源采集 → 评分 → 交叉验证 → 分发</div>
+        <div class="ai-role"><b>AI 角色</b>:采集 + 评分 + 去重 + 摘要<br>人做:P0 筛选、原创解读</div>
+      </div>
+      <div class="stream">
+        <div class="ic">✍️</div>
+        <div class="name">内容创作 / IP</div>
+        <div class="desc">选题 → 长文/快讯 → 公众号 → 跨平台</div>
+        <div class="ai-role"><b>AI 角色</b>:选题联想 + 一稿多改 + 排版<br>人做:观点、灵魂段落、口播</div>
+      </div>
+      <div class="stream">
+        <div class="ic">🧩</div>
+        <div class="name">Agent / Skill</div>
+        <div class="desc">自研维护 104 Skill + 知识库</div>
+        <div class="ai-role"><b>AI 角色</b>:协同开发 + 自检 + 文档<br>人做:架构、命名、版本门禁</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: 投标工作流 -->
+  <div class="section">
+    <h2><span class="num">2</span>工作流 A · 投标与标书</h2>
+    <div class="lede">当前痛点:多客户并行(农发行 V1.4 / 东莞 / 银联 3 包 / 平安),纯靠人工盯进度易漏、易错。设计: <b>AI 做"流水线"、你做"调度"</b>。</div>
+
+    <div class="flow">
+      <div class="flow-card">
+        <h4>流水线（每日 09:30 触发）</h4>
+        <div class="steps">
+          <div class="step">
+            <span class="n">1</span>
+            <div>
+              <div class="t">标讯采集 <span class="who who-ai">AI</span></div>
+              <div class="d">bid-news-collection 每日 09:30 拉取 40+ 渠道,落 workbench,反写操作空间 <code>[客户]-[主题]-[YYYYMMDD]</code></div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">2</span>
+            <div>
+              <div class="t">商机分级 <span class="who who-ai">AI</span></div>
+              <div class="d">基于客户画像(11 家在跑客户)打分:中标概率/单价区间/团队占用 → P0/P1/P2 三档</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">3</span>
+            <div>
+              <div class="t">下载招标文件 <span class="who who-h">人</span></div>
+              <div class="d">人点确认(防爬合规),触发 bid-file-review</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">4</span>
+            <div>
+              <div class="t">审查 + 报价并行 <span class="who who-ai">AI</span> <span class="who who-b">协同</span></div>
+              <div class="d">bid-file-review 跑 100+ 项检查表,quote-generation-v3 出 BOM,两份结果 1 个看板</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">5</span>
+            <div>
+              <div class="t">差异点提示 <span class="who who-ai">AI</span></div>
+              <div class="d">对比历史标书(过往 V1.x),高亮"这次必须改"的部分,避免漏修订</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">6</span>
+            <div>
+              <div class="t">标书修订 <span class="who who-h">人</span> <span class="who who-ai">AI</span></div>
+              <div class="d">人写技术方案亮点,AI 改写平淡段落、补全技术细节、生成客户化案例段</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">7</span>
+            <div>
+              <div class="t">交付门禁 <span class="who who-ai">AI</span></div>
+              <div class="d">内嵌 JSON 可解析检查、Word 格式校验、页眉页脚一致性、报价表合计公式——任一失败不出件</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">8</span>
+            <div>
+              <div class="t">封标 + 述标要点 <span class="who who-h">人</span> <span class="who who-ai">AI</span></div>
+              <div class="d">AI 生成 5 分钟述标提纲 + 客户高层可能问的 10 个问题预案</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card">
+        <h4>并行看板视图（每日 09:45 推送）</h4>
+        <table>
+          <thead>
+            <tr><th>客户</th><th>阶段</th><th>截止</th><th>AI 已就绪</th><th>阻塞</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>农发行</td><td><span class="pill p-p1">P1</span> 修订 V1.4</td><td>T-5</td><td>差异点比对 / 客户化段落</td><td>—</td></tr>
+            <tr><td>东莞银行</td><td><span class="pill p-p0">P0</span> 封标</td><td>T-2</td><td>门禁脚本就绪</td><td>报价签字</td></tr>
+            <tr><td>银联国际 #1</td><td><span class="pill p-p2">P2</span> 审查</td><td>T-9</td><td>检查表 100+ 项</td><td>—</td></tr>
+            <tr><td>银联国际 #2</td><td><span class="pill p-p2">P2</span> 报价</td><td>T-9</td><td>BOM v0</td><td>分包边界</td></tr>
+            <tr><td>银联国际 #3</td><td><span class="pill p-p2">P2</span> 审查</td><td>T-9</td><td>检查表 100+ 项</td><td>—</td></tr>
+            <tr><td>平安银行</td><td><span class="pill p-p2">P2</span> 跟踪</td><td>—</td><td>标讯监控中</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:12.5px; color:var(--ink-mute); margin-top:12px;">
+          <b>复盘触发</b>:封标后 48h,AI 自动生成《项目卡》——客户画像 / 关键决策点 / 失误点 → 入 cubox 知识库
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: 安全测试交付 -->
+  <div class="section">
+    <h2><span class="num">3</span>工作流 B · 安全测试交付</h2>
+    <div class="lede">交付型工作,人必须主导验证。AI 价值在 <b>复测核对、报告出稿、跨项目知识复用</b>。</div>
+
+    <div class="flow">
+      <div class="flow-card">
+        <h4>渗透 / 评估流水线</h4>
+        <div class="steps">
+          <div class="step">
+            <span class="n">1</span>
+            <div>
+              <div class="t">项目卡建立 <span class="who who-ai">AI</span></div>
+              <div class="d">输入甲方授权书 + 范围,AI 生成测试矩阵(网络/应用/移动端鸿蒙/接口),入 workbench</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">2</span>
+            <div>
+              <div class="t">历史案例检索 <span class="who who-ai">AI</span></div>
+              <div class="d">cubox 知识库(网安 981 cards)语义检索:同类系统/同类客户/同类漏洞,生成 3 条建议思路</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">3</span>
+            <div>
+              <div class="t">测试执行 <span class="who who-h">人</span></div>
+              <div class="d">人工/工具执行,AI 实时记录截图/请求/响应(可选:对接 defense-review 体检)</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">4</span>
+            <div>
+              <div class="t">漏洞复测核对 <span class="who who-ai">AI</span></div>
+              <div class="d">sensitive-info-scan 扫凭证残留,AI 对照修复建议核验"是否真修了"</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">5</span>
+            <div>
+              <div class="t">报告出稿 <span class="who who-ai">AI</span> <span class="who who-h">人</span></div>
+              <div class="d">AI 按模板填充 60% 内容(漏洞描述/风险/修复),人补 40%(复现步骤/客户化建议/业务影响)</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">6</span>
+            <div>
+              <div class="t">交付 + 归档 <span class="who who-h">人</span> <span class="who who-ai">AI</span></div>
+              <div class="d">Word/PDF 出件 + 内嵌 JSON 校验;AI 自动归档到 <code>[客户]-[项目]-[YYYYMMDD]</code> 操作空间</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card">
+        <h4>AI 必须不做的（人命门）</h4>
+        <ul style="padding-left:18px; color:var(--ink-soft); font-size:13.5px; line-height:1.8;">
+          <li><b>不替代漏洞验证</b>——AI 提的"可能漏洞"必须人工复现</li>
+          <li><b>不直接给客户发最终结论</b>——AI 只出草稿,你签发</li>
+          <li><b>不复用客户敏感数据</b>训练——敏感字段走脱敏管道</li>
+          <li><b>不绕过授权范围</b>——测试矩阵必须基于授权书</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: 资讯订阅 -->
+  <div class="section">
+    <h2><span class="num">4</span>工作流 C · 监管/资讯订阅</h2>
+    <div class="lede">这是你<b>每天最痛也最被低估</b>的环节。107 源最大的浪费是"全量过目",AI 要做的是 <b>漏斗式精读</b>。</div>
+
+    <div class="flow">
+      <div class="flow-card">
+        <h4>四级漏斗（每日 10:00 触发）</h4>
+        <div class="steps">
+          <div class="step">
+            <span class="n">L1</span>
+            <div>
+              <div class="t">采集 <span class="who who-ai">AI</span></div>
+              <div class="d">news-subscription v3.22.3 拉 107 源,落库;容错 + 幂等 ref</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">L2</span>
+            <div>
+              <div class="t">去重 + 评分 <span class="who who-ai">AI</span></div>
+              <div class="d">同事件多源合并(cross_verify);按"金融 + 合规 + 漏洞可利用"加权打分</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">L3</span>
+            <div>
+              <div class="t">筛选 P0/P1 <span class="who who-ai">AI</span></div>
+              <div class="d">P0:监管发文/重大漏洞/客户相关行业;P1:行业重要;P2:其他。每天 <b>≤5 条 P0、≤15 条 P1</b></div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">L4</span>
+            <div>
+              <div class="t">成稿 + 分发 <span class="who who-ai">AI</span> <span class="who who-h">人</span></div>
+              <div class="d">AI 出日报/周报/月报 + 监管快评(regulatory-flash);人只审 P0 段</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card">
+        <h4>分发通道与节奏</h4>
+        <table>
+          <thead><tr><th>时间</th><th>产物</th><th>通道</th><th>人介入</th></tr></thead>
+          <tbody>
+            <tr><td>10:00</td><td>日报(初稿)</td><td>邮件 + 腾讯文档</td><td>5 分钟扫读</td></tr>
+            <tr><td>10:30</td><td>P0 摘要(≤5 条)</td><td>微信(私聊/小群)</td><td>无,直接推</td></tr>
+            <tr><td>16:00</td><td>监管快评(可选)</td><td>公众号 SecNewsAI攻防</td><td>10 分钟加观点</td></tr>
+            <tr><td>周五 17:00</td><td>周报</td><td>腾讯文档 + 邮件</td><td>10 分钟核口径</td></tr>
+            <tr><td>月末</td><td>月报</td><td>腾讯文档</td><td>签字</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: 内容创作 -->
+  <div class="section">
+    <h2><span class="num">5</span>工作流 D · 内容创作与 IP 运营</h2>
+    <div class="lede">你的签名是"用 AI 赋能安全",所以内容本身就是 AI 工作流 <b>最好的展示场</b>。要避免:AI 全写=没灵魂,纯人工=产能受限。设计: <b>AI 出 70% 毛坯 + 你加 30% 灵魂</b>。</div>
+
+    <div class="flow">
+      <div class="flow-card">
+        <h4>一稿多发流水线</h4>
+        <div class="steps">
+          <div class="step">
+            <span class="n">1</span>
+            <div>
+              <div class="t">选题联想 <span class="who who-ai">AI</span></div>
+              <div class="d">基于本周 P0 监管/漏洞 + 行业热点 + 你过往爆款,出 10 个候选选题,带"为什么写"</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">2</span>
+            <div>
+              <div class="t">选 1 深写 <span class="who who-h">人</span></div>
+              <div class="d">你选 1 个最想写的(决定本周灵魂段落主题)</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">3</span>
+            <div>
+              <div class="t">长文出稿 <span class="who who-h">人</span> <span class="who who-ai">AI</span></div>
+              <div class="d">content-longform:你出观点+案例+金句,AI 出论证结构+数据补全+段落衔接</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">4</span>
+            <div>
+              <div class="t">一稿多改 <span class="who who-ai">AI</span></div>
+              <div class="d">同一篇长文 → 公众号版(长)/小红书版(配图文案)/抖音脚本(30s)/视频号口播稿</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">5</span>
+            <div>
+              <div class="t">排版 + 封面 <span class="who who-ai">AI</span></div>
+              <div class="d">gzh-design 排版,wechat-cover 出 3 候选封面,你定一个</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">6</span>
+            <div>
+              <div class="t">发布 + 归档 <span class="who who-h">人</span> <span class="who who-ai">AI</span></div>
+              <div class="d">你发布(保留人的 IP 感),AI 归档到 editorial-calendar,自动复盘阅读/互动数据</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card">
+        <h4>人机分工的"红线"</h4>
+        <table>
+          <thead><tr><th>环节</th><th>AI 做</th><th>人做</th></tr></thead>
+          <tbody>
+            <tr><td>选题</td><td>候选 + 理由</td><td>拍板</td></tr>
+            <tr><td>观点 / 金句</td><td>—</td><td><b>必须人写</b>(IP 灵魂)</td></tr>
+            <tr><td>案例 / 截图</td><td>搜索补充</td><td>核脱敏 + 授权</td></tr>
+            <tr><td>论证结构</td><td>AI 搭</td><td>微调</td></tr>
+            <tr><td>排版 / 封面</td><td>AI 全做</td><td>挑 / 微调</td></tr>
+            <tr><td>跨平台改写</td><td>AI 全做</td><td>口播稿终审</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: Agent / Skill 开发 -->
+  <div class="section">
+    <h2><span class="num">6</span>工作流 E · Agent / Skill 自研</h2>
+    <div class="lede">104 个 Skill 是资产也是负担。AI 帮 <b>收敛 + 自检 + 文档化</b>,人管 <b>架构 + 命名 + 版本</b>。</div>
+
+    <div class="flow">
+      <div class="flow-card">
+        <h4>Skill 生命周期</h4>
+        <div class="steps">
+          <div class="step">
+            <span class="n">1</span>
+            <div>
+              <div class="t">需求捕获 <span class="who who-h">人</span></div>
+              <div class="d">从每日痛点/客户复盘/竞品 提需求(例:本次"AI 日常流设计"也可转 Skill)</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">2</span>
+            <div>
+              <div class="t">草稿生成 <span class="who who-ai">AI</span></div>
+              <div class="d">skill-evaluator 跑一遍,prompt-normalizer 标准化,出 SKILL.md v0</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">3</span>
+            <div>
+              <div class="t">自检 + 评估 <span class="who who-ai">AI</span></div>
+              <div class="d">跑 5 个典型 case,标失败模式,出"差什么"</div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">4</span>
+            <div>
+              <div class="t">命名 + 归档 <span class="who who-h">人</span></div>
+              <div class="d">按命名纪律: <code>[类型]-[客户/域]-[描述]-[版本]-[日期]</code></div>
+            </div>
+          </div>
+          <div class="step">
+            <span class="n">5</span>
+            <div>
+              <div class="t">ZIP 备份 <span class="who who-ai">AI</span></div>
+              <div class="d">带版本号存桌面;super→标记 superseded,不删</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-card">
+        <h4>Skill 健康度看板（每月出）</h4>
+        <table>
+          <thead><tr><th>指标</th><th>健康阈值</th><th>当前</th><th>动作</th></tr></thead>
+          <tbody>
+            <tr><td>近 30 天调用频次</td><td>≥ 3 次</td><td>查 workbench</td><td>0 次 → 候选弃用</td></tr>
+            <tr><td>失败率</td><td>&lt; 5%</td><td>查 run log</td><td>&gt; 10% → 修</td></tr>
+            <tr><td>版本时效</td><td>≤ 6 月</td><td>查 mtime</td><td>超期 → 评估</td></tr>
+            <tr><td>重复度</td><td>无重叠</td><td>skill-evaluator</td><td>重叠 → 合并</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: 跨工作流串联 -->
+  <div class="section">
+    <h2><span class="num">7</span>跨工作流串联 · 让 AI 真的"串"起来</h2>
+    <div class="lede">单工作流提效有限,真正的杠杆在 <b>跨流复用</b>。下面是四个串联点。</div>
+
+    <div class="chain">
+      <div class="node">
+        <div class="k">知识层</div>
+        <div class="v">Cubox 4198+ cards</div>
+        <div class="d">AI 1,308 / 网安 981 体系 → 五大工作流都查同一份底库,避免信息孤岛</div>
+      </div>
+      <div class="node">
+        <div class="k">工作台</div>
+        <div class="v">duke26-workbench</div>
+        <div class="d">任务/运行/成果/报告统一落库,Agent 摄入层 <code>POST /api/ingest</code> 幂等</div>
+      </div>
+      <div class="node">
+        <div class="k">复盘层</div>
+        <div class="v">周报 / 月报 / 项目卡</div>
+        <div class="d">每条工作流结束后,AI 写一句"我学到了什么"→ 入知识库</div>
+      </div>
+      <div class="node">
+        <div class="k">个人助理</div>
+        <div class="v">Mavis / WorkBuddy</div>
+        <div class="d">所有流的"调度员"——你只说目标,AI 拆步骤、调度 Skill、给产出</div>
+      </div>
+    </div>
+
+    <table style="margin-top:18px;">
+      <thead><tr><th>串联点</th><th>从</th><th>到</th><th>自动触发的产物</th></tr></thead>
+      <tbody>
+        <tr><td>标书 → 知识库</td><td>投标</td><td>Cubox</td><td>项目卡(客户画像 / 关键决策 / 失误点)</td></tr>
+        <tr><td>资讯 → 内容</td><td>订阅</td><td>创作</td><td>本周 P0 候选选题(10 条带理由)</td></tr>
+        <tr><td>交付 → 标书</td><td>渗透</td><td>投标</td><td>历史同类项目能力证据,自动插入新标书</td></tr>
+        <tr><td>Skill → 交付</td><td>开发</td><td>渗透/投标</td><td>新工具直接进 workbench 调度</td></tr>
+        <tr><td>复盘 → 所有</td><td>周报/月报</td><td>所有</td><td>下月重点改进 3 条 + 自动化机会 1 条</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 8: 落地路线图 -->
+  <div class="section">
+    <h2><span class="num">8</span>落地路线图 · 先把 30 天用顺</h2>
+    <div class="lede">不要一次全上。<b>P0 先解最痛的,P1 串起提效,P2 长期沉淀</b>。</div>
+
+    <div class="roadmap">
+      <div class="rm">
+        <div class="head"><span class="pill p-p0">P0</span><h4>本周起 · 30 天内</h4></div>
+        <ul>
+          <li>把 <b>投标看板</b> 跑通(每日 09:45 一屏看完 6 个客户)</li>
+          <li>把 <b>资讯 L3 漏斗</b> 调到位(每天 ≤ 5 条 P0、≤ 15 条 P1)</li>
+          <li>把 <b>内容一稿多发</b> 跑通(本周选 1 篇做端到端试跑)</li>
+          <li>修 defense-review 体检 65/100 的 <b>1 P0 + 5 P1</b></li>
+        </ul>
+      </div>
+      <div class="rm">
+        <div class="head"><span class="pill p-p1">P1</span><h4>30–60 天</h4></div>
+        <ul>
+          <li>投标流水线 <b>端到端串联</b>(采集→审查→报价→修订→封标)</li>
+          <li>建立 <b>项目卡</b> 自动落 Cubox</li>
+          <li>内容选题从 <b>资讯漏斗</b> 自动喂入</li>
+          <li>Skill 健康度 <b>看板上线</b>(每月 1 次自检)</li>
+        </ul>
+      </div>
+      <div class="rm">
+        <div class="head"><span class="pill p-p2">P2</span><h4>60–90 天</h4></div>
+        <ul>
+          <li>渗透交付报告 <b>AI 60% 填充</b> 流程稳定</li>
+          <li>Skill <b>瘦身</b> 计划:0 调用 → 弃用 / 重复 → 合并</li>
+          <li>复盘 → 知识库 <b>双向反馈</b> 闭环</li>
+          <li>AI 升级考试 <b>题库助手</b> 接入日常工作</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 9: 风险与门禁 -->
+  <div class="section">
+    <h2><span class="num">9</span>风险与门禁 · AI 不踩的雷</h2>
+    <div class="lede">金融 + 安全,合规和签发永远归人。AI 是放大器,不是责任人。</div>
+
+    <div class="risks">
+      <div class="risk">
+        <h5>1. 客户数据安全</h5>
+        <p>投标/渗透数据<b>不进第三方训练</b>;敏感字段走脱敏管道;本地模型优先(workbench 127.0.0.1)。</p>
+      </div>
+      <div class="risk">
+        <h5>2. 标书签发红线</h5>
+        <p>AI 只出草稿 + 门禁校验;<b>报价、签字、述标发言必须人</b>。门禁不通过不出件。</p>
+      </div>
+      <div class="risk">
+        <h5>3. 内容 IP 灵魂</h5>
+        <p>观点、金句、案例叙事段由你写;AI 不替你立论。否则 211 关注会变 211 路人。</p>
+      </div>
+      <div class="risk">
+        <h5>4. Skill 数量爆炸</h5>
+        <p>104 个已经很多;<b>先瘦身再增新</b>。零调用候选弃用,重复功能合并。</p>
+      </div>
+      <div class="risk">
+        <h5>5. 自动化失效沉默</h5>
+        <p>09:30 / 10:00 自动化一旦静默失败,你会被错过 P0。建议: <b>失败必须显式告警</b> 到微信。</p>
+      </div>
+      <div class="risk">
+        <h5>6. 跨平台合规</h5>
+        <p>小红书 / 抖音有平台规则,AI 改写时<b>不能蹭敏感词</b>、不能搬运竞品原话。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <code>ai-workflow-design-20260810.html</code> · 快照日期 2026-08-10 · 基于 Duke 角色画像 + 日常工作清单设计
+  </div>
+</div>
+</body>
+</html>

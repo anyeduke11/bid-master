@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-label="bid-master — 投标全流程 AI 工作台">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A1220"/>
+      <stop offset="0.55" stop-color="#0F1E3D"/>
+      <stop offset="1" stop-color="#16294F"/>
+    </linearGradient>
+    <linearGradient id="rail" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#334155"/>
+      <stop offset="1" stop-color="#475569"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#1E293B" stroke-width="1" opacity="0.55"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="340" fill="url(#bg)"/>
+  <rect width="1200" height="340" fill="url(#grid)"/>
+
+  <!-- 顶栏：看板同款 LIVE 徽标 -->
+  <rect x="48" y="42" width="10" height="10" rx="2" fill="#34D399"/>
+  <text x="66" y="52" font-family="ui-monospace,'SF Mono',Menlo,monospace" font-size="13" fill="#94A3B8">LIVE · truth.db 唯一事实源 · epoch 驱动</text>
+  <text x="1152" y="52" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#475569">/api/v1/*</text>
+
+  <!-- 主标题 -->
+  <rect x="48" y="78" width="16" height="46" fill="#F59E0B"/>
+  <text x="80" y="116" font-family="ui-monospace,'SF Mono',Menlo,monospace" font-size="52" font-weight="700" fill="#F8FAFC" letter-spacing="1">bid-master</text>
+  <rect x="392" y="82" width="20" height="40" fill="#F59E0B" opacity="0.85"/>
+  <text x="80" y="152" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" font-size="19" fill="#CBD5E1">投标全流程 AI 工作台 —— 模型只做工艺，Python 门禁做裁决</text>
+
+  <!-- S0-S9 阶段横轨 -->
+  <text x="48" y="200" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#64748B">STAGE MACHINE · S0 → S9</text>
+  <line x1="56" y1="224" x2="856" y2="224" stroke="url(#rail)" stroke-width="2"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="13" text-anchor="middle">
+    <g>
+      <rect x="48"  y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="80"  y="228" fill="#94A3B8">S0</text>
+      <rect x="136" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="168" y="228" fill="#94A3B8">S1</text>
+      <rect x="224" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="256" y="228" fill="#94A3B8">S2</text>
+      <rect x="312" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="344" y="228" fill="#94A3B8">S3</text>
+      <rect x="400" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="432" y="228" fill="#94A3B8">S4</text>
+      <rect x="488" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="520" y="228" fill="#94A3B8">S5</text>
+      <rect x="576" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="608" y="228" fill="#94A3B8">S6</text>
+      <rect x="664" y="208" width="64" height="32" rx="5" fill="#F59E0B"/><text x="696" y="229" fill="#0A1220" font-weight="700">S7</text>
+      <rect x="752" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="784" y="228" fill="#94A3B8">S8</text>
+      <rect x="840" y="212" width="64" height="24" rx="5" fill="#1E293B" stroke="#334155"/><text x="872" y="228" fill="#94A3B8">S9</text>
+    </g>
+  </g>
+  <g font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="11" fill="#64748B" text-anchor="middle">
+    <text x="80"  y="254">线索</text><text x="168" y="254">预审</text><text x="256" y="254">决策</text>
+    <text x="344" y="254">解构</text><text x="432" y="254">编制</text><text x="520" y="254">审查</text>
+    <text x="608" y="254">封标</text><text x="696" y="254">开标</text><text x="784" y="254">结果</text>
+    <text x="872" y="254">归档</text>
+  </g>
+  <g fill="#F59E0B" opacity="0.9">
+    <path d="M110 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M198 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M286 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M374 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M462 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M550 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M638 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M726 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+    <path d="M814 218 l6 6 -6 6" stroke="#F59E0B" stroke-width="1.6" fill="none"/>
+  </g>
+  <text x="904" y="228" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#475569">← 推进只走门禁 set_stage</text>
+
+  <!-- 右侧统计 -->
+  <g font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="14">
+    <rect x="960" y="120" width="192" height="44" rx="8" fill="#0F172A" stroke="#334155"/>
+    <text x="1056" y="147" text-anchor="middle" fill="#F8FAFC" font-weight="700">25<tspan fill="#94A3B8" font-weight="400"> 幂等命令</tspan></text>
+    <rect x="960" y="172" width="192" height="44" rx="8" fill="#0F172A" stroke="#334155"/>
+    <text x="1056" y="199" text-anchor="middle" fill="#F8FAFC" font-weight="700">8<tspan fill="#94A3B8" font-weight="400"> 看板视图</tspan></text>
+    <rect x="960" y="224" width="192" height="44" rx="8" fill="#0F172A" stroke="#334155"/>
+    <text x="1056" y="251" text-anchor="middle" fill="#F8FAFC" font-weight="700">110+<tspan fill="#94A3B8" font-weight="400"> 门禁断言</tspan></text>
+  </g>
+
+  <!-- 底栏 -->
+  <line x1="48" y1="290" x2="1152" y2="290" stroke="#1E293B" stroke-width="1"/>
+  <text x="48" y="314" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="13" fill="#64748B">ZCode 多智能体编排 · 确定性门禁机检 · SQLite 真实层 · SSE 实时看板 · L3 红线脱敏内置</text>
+  <text x="1152" y="314" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#475569">v1.0.0</text>
+</svg>

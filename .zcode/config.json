@@ -1,0 +1,13 @@
+{
+  "mcp": {
+    "servers": {
+      "bid-master": {
+        "type": "stdio",
+        "command": "/Users/duke/bid-master/.venv/bin/python3",
+        "args": ["/Users/duke/bid-master/mcp/bid_master_mcp.py"],
+        "cwd": "/Users/duke/bid-master",
+        "timeoutMs": 15000
+      }
+    }
+  }
+}

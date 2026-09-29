@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""bid · bid-master 统一 CLI（DEV-0059）
+
+一条命令替代散落脚本记忆；与 MCP server 共用同一工具实现层（mcp/bid_master_mcp.py），
+行为与看板按钮/ZCode 会话完全一致（同门禁、同审计、同写口）。
+
+用法：
+  bid status                        总览（漏斗/工单/服务健康）
+  bid bids [--stage S4]             标列表
+  bid show <bid_id>                 标详情
+  bid probe <bid_id> <stage>        只读门禁探针（推进会被什么拦）
+  bid advance <bid_id> <stage> [--sign-off 姓名] [--ignore-material 原因]
+  bid settle <bid_id>               材料补齐复验销单
+  bid tickets [bid_id]              工单列表
+  bid lessons                       活跃教训库
+  bid leads [--limit N] [--phase 公示]  商机线索
+  bid capture                       触发标讯抓取（走看板，异步）
+  bid digest [YYYY-MM-DD]           digest 摘要
+  bid cmd <commandId> ['{"k":"v"}'] 看板命令管道直通
+  bid serve [start|stop|restart|status]  服务管理（委托 start.sh）
+  bid gate                          全量门禁（委托 make gate）
+  bid mcp                           MCP 注册信息
+"""
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent
+sys.path.insert(0, str(REPO / "mcp"))
+
+import bid_master_mcp as bm  # noqa: E402
+
+
+def _die(msg: str, rc: int = 1):
+    print(f"⛔ {msg}", file=sys.stderr)
+    sys.exit(rc)
+
+
+def _pp(obj):
+    print(json.dumps(obj, ensure_ascii=False, indent=1, default=str))
+
+
+def _args(argv, flags_with_value: set) -> dict:
+    """极简参数解析：位置参数收集到 _，--flag value 收进 dict。"""
+    out, pos = {}, []
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a.startswith("--"):
+            key = a[2:]
+            if key in flags_with_value:
+                i += 1
+                if i >= len(argv):
+                    _die(f"--{key} 需要值")
+                out[key] = argv[i]
+            else:
+                out[key] = True
+        else:
+            pos.append(a)
+        i += 1
+    out["_"] = pos
+    return out
+
+
+def main() -> int:
+    argv = sys.argv[1:]
+    if not argv or argv[0] in ("-h", "--help", "help"):
+        print(__doc__)
+        return 0
+    cmd, rest = argv[0], argv[1:]
+
+    if cmd == "status":
+        _pp(bm.tool_bid_status({}))
+    elif cmd == "bids":
+        a = _args(rest, {"stage"})
+        _pp(bm.tool_bid_list({"stage": a.get("stage")}))
+    elif cmd == "show":
+        if not rest:
+            _die("用法：bid show <bid_id>")
+        _pp(bm.tool_bid_show({"bid_id": rest[0]}))
+    elif cmd == "probe":
+        if len(rest) < 2:
+            _die("用法：bid probe <bid_id> <stage>")
+        _pp(bm.tool_bid_gate_probe({"bid_id": rest[0], "to_stage": rest[1]}))
+    elif cmd == "advance":
+        a = _args(rest, {"sign-off", "ignore-material"})
+        if len(a["_"]) < 2:
+            _die("用法：bid advance <bid_id> <stage> [--sign-off 姓名] [--ignore-material 原因]")
+        out = bm.tool_bid_advance({"bid_id": a["_"][0], "to_stage": a["_"][1],
+                                   "sign_off": a.get("sign-off", ""),
+                                   "ignore_material": a.get("ignore-material", "")})
+        _pp(out)
+        sys.exit(0 if out.get("rc") == 0 else 2)
+    elif cmd == "settle":
+        if not rest:
+            _die("用法：bid settle <bid_id>")
+        out = bm.tool_bid_settle_material({"bid_id": rest[0]})
+        print(out.get("output", ""))
+        sys.exit(out.get("rc", 1))
+    elif cmd == "tickets":
+        _pp(bm.tool_ticket_list({"bid_id": rest[0] if rest else ""} or {}))
+    elif cmd == "lessons":
+        _pp(bm.tool_lesson_list({}))
+    elif cmd == "leads":
+        a = _args(rest, {"limit", "phase"})
+        _pp(bm.tool_lead_list({"limit": int(a.get("limit", 20)), "phase": a.get("phase")}))
+    elif cmd == "capture":
+        _pp(bm.tool_capture_run({}))
+    elif cmd == "digest":
+        _pp(bm.tool_digest({"date": rest[0] if rest else ""}))
+    elif cmd == "cmd":
+        if not rest:
+            _die("用法：bid cmd <commandId> ['{\"k\":\"v\"}']")
+        params = json.loads(rest[1]) if len(rest) > 1 else {}
+        _pp(bm.tool_kanban_command({"commandId": rest[0], "params": params}))
+    elif cmd == "serve":
+        r = subprocess.run(["bash", str(REPO / "start.sh"), *(rest or ["status"])],
+                           shell=False)
+        sys.exit(r.returncode)
+    elif cmd == "gate":
+        r = subprocess.run(["make", "gate"], cwd=str(REPO), shell=False)
+        sys.exit(r.returncode)
+    elif cmd == "mcp":
+        print(f"""bid-master MCP server（stdio）
+  入口:  {REPO / 'mcp' / 'bid_master_mcp.py'}
+  注册:  {REPO / '.zcode' / 'config.json'} → mcp.servers.bid-master
+  生效:  重启 ZCode 会话后自动连接（Settings → MCP 可查状态）
+  工具:  {len(bm.TOOLS)} 个（{', '.join(n for n, *_ in bm.TOOLS)}）""")
+    else:
+        _die(f"未知子命令：{cmd}（bid help 看用法）", 3)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except ValueError as e:
+        _die(str(e))
+    except RuntimeError as e:
+        _die(str(e))
+    except KeyboardInterrupt:
+        sys.exit(130)

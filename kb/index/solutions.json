@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "domain": "solutions",
+    "version": 1,
+    "desc": "方案素材(高复用,做切片)",
+    "item_fields": [
+      "id",
+      "title",
+      "scene",
+      "slices",
+      "file",
+      "fingerprint",
+      "sensitivity",
+      "updated_at"
+    ],
+    "updated_at": null,
+    "rule": "只存元数据与文件指针；证件号/证书编号/成本价等 L3 信息不落索引（设计 §14）"
+  },
+  "items": []
+}

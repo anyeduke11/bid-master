@@ -1,0 +1,15 @@
+{
+ "name": "main-agent",
+ "model": "custom:builtin%3Abigmodel-individual-coding-plan:GLM-5.3",
+ "readonly": false,
+ "trigger": "工单 new-bid-analysis（人工复制启动）",
+ "skill": "/Users/duke/bid-master/skills/bid-master/SKILL.md",
+ "produces": [
+  "stage0",
+  "hits_recon",
+  "completeness",
+  "spec"
+ ],
+ "note": "语义主链路，单上下文铁律",
+ "md": false
+}

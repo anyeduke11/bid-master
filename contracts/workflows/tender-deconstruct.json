@@ -1,0 +1,65 @@
+{
+  "name": "tender-deconstruct",
+  "file": ".zcode/workflows/tender-deconstruct.dwf.ts",
+  "title": "招标解构流水线（S2→S4 段 · 从零流程前段）",
+  "version": 1,
+  "created": "2026-09-12",
+  "dev_ref": "DEV-0038",
+  "args": {
+    "bidId": "string·必填（已在 S2 建档且 source/tender.txt 就绪）"
+  },
+  "actors": [
+    {
+      "actor_pattern": "评估员-商机评估",
+      "agent_contract": "contracts/agents/main-agent.json",
+      "skill": "skills/bid-master/SKILL.md（阶段0 工艺）",
+      "model_tier": "main",
+      "tools": "default（写 stage0.json/md）",
+      "produces": "stage0",
+      "gate": "S2→S3 lessons 门禁（stage0.json 的 lessons_applied 教训 ID 逐个对照 lessons 表，set_stage 机检）"
+    },
+    {
+      "actor_pattern": "解构-{响应矩阵|废标清单|应答骨架|命中台账}",
+      "agent_contract": "contracts/agents/main-agent.json",
+      "skill": "skills/bid-master/SKILL.md（阶段1 工艺）",
+      "model_tier": "main",
+      "tools": "default",
+      "produces": "response_matrix / 废标清单 md / 应答骨架 md / hits_recon",
+      "gate": "S3→S4 hits_recon 对账覆盖率 100%（set_stage 机检，拦截退回命中台账工位）"
+    },
+    {
+      "actor_pattern": "价格分析师",
+      "agent_contract": "contracts/agents/main-agent.json",
+      "skill": "skills/bid-master/SKILL.md（阶段2 工艺 · L-6）",
+      "model_tier": "main",
+      "tools": "default",
+      "produces": "price",
+      "gate": "L3 红线：不落盘我方成本价/底价，只做招标文件公式推演"
+    },
+    {
+      "actor_pattern": "装配-规格单",
+      "agent_contract": null,
+      "skill": "lessons L-1（requirement 逐字）",
+      "model_tier": "main",
+      "tools": "default",
+      "produces": "spec",
+      "gate": "spec 契约校验（register_artifact）+ 完整性核验闭环"
+    },
+    {
+      "actor_pattern": "核验-完整性",
+      "agent_contract": null,
+      "skill": "独立换人复核（非装配自检）",
+      "model_tier": "lite",
+      "tools": "readonly",
+      "produces": "completeness",
+      "gate": "completeness PASS 才放行（FAIL 带逐项 checks 退回装配工位，最多 2 轮）"
+    }
+  ],
+  "data_flow": "source/tender.txt → 阶段0 评估 → S2→S3 门禁 → 并行解构×4 → 价格分析 → 规格单装配 → 独立完整性核验 → S3→S4 门禁 → S4（接 tech-proposal-pipeline）",
+  "boundary": [
+    "商机评估是风险提示不是参与决策——投不投 owner 拍板",
+    "S4→S5 生产段归 tech-proposal-pipeline，S5→S6 签核归人工",
+    "L3 红线不落盘；引文 [P#] + 单段内逐字（L-1/L-3）；全部产物 register_artifact 登记",
+    "txt 表格线性化损失为已知限制（.doc 来源）"
+  ]
+}

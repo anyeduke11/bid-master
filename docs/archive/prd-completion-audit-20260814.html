@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD 完成度评估 · Duke · 2026-08-14</title>
+<style>
+  :root { --bg:#F0F7FF; --card:#FFF; --line:#DCE7F2; --ink:#0F1E33; --ink-soft:#4A5A75; --ink-mute:#7A8AA0;
+    --brand:#0EA5E9; --brand-deep:#0369A1; --brand-soft:#E0F2FE; --ok:#10B981; --ok-soft:#D1FAE5;
+    --warn:#F59E0B; --warn-soft:#FEF3C7; --warn-ink:#92400E; --danger:#EF4444; --danger-soft:#FEE2E2;
+    --shadow:0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06); --r:10px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "SF Pro SC", "PingFang SC", system-ui, sans-serif; font-size: 14px; line-height: 1.65; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 36px 28px 80px; }
+  .hero { background: linear-gradient(135deg, #FFF 0%, var(--brand-soft) 100%); border: 1px solid var(--line);
+    border-radius: 20px; padding: 30px 36px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .hero .tag { display: inline-block; font-size: 12px; letter-spacing: .12em; color: var(--brand-deep);
+    background: var(--brand-soft); padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+  .hero h1 { font-size: 24px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+  .hero .score { display: flex; gap: 16px; margin-top: 16px; padding: 12px 16px; background: white;
+    border: 1px solid var(--line); border-radius: 10px; }
+  .hero .score .item { flex: 1; }
+  .hero .score .item .k { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .hero .score .item .v { font-size: 22px; font-weight: 700; margin-top: 2px; }
+  .hero .score .item .v small { font-size: 11px; color: var(--ink-mute); font-weight: 500; margin-left: 4px; }
+
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 22px 26px;
+    box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px; border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 10px 0; }
+  th { text-align: left; padding: 10px 12px; background: var(--bg-soft); color: var(--brand-deep); font-weight: 700; font-size: 12px; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code { font-family: "SF Mono", monospace; font-size: 12px; background: var(--bg-soft);
+    padding: 1px 5px; border-radius: 4px; color: var(--brand-deep); }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .p-ok { background: var(--ok-soft); color: #065F46; }
+  .p-warn { background: var(--warn-soft); color: var(--warn-ink); }
+  .p-err { background: var(--danger-soft); color: #991B1B; }
+  .p-pending { background: var(--bg-soft); color: var(--ink-mute); }
+  .p-p0 { background: var(--danger); color: white; }
+  .p-p1 { background: var(--warn); color: white; }
+
+  .decision { background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: var(--r);
+    padding: 14px 18px; margin: 12px 0; }
+  .decision h4 { margin: 0 0 6px; color: #6366F1; font-size: 14px; }
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .risk { background: white; border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; }
+  .risk.crit { border-left: 3px solid var(--danger); }
+  .risk h5 { margin: 0 0 4px; font-size: 13px; }
+  .risk p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+
+  @media (max-width: 900px) { .risk-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">PRD COMPLETION AUDIT · 2026-08-14</span>
+    <h1>PRD 任务完成度评估 · P0 / P1 逐项对照</h1>
+    <div class="sub">对照 PRD §3.1 (7 项) + §3.2 (9 项) 共 16 项需求 · 当前实现状态</div>
+    <div class="score">
+      <div class="item">
+        <div class="k">P0 完成度</div>
+        <div class="v">5/7 <small>(71%)</small></div>
+      </div>
+      <div class="item">
+        <div class="k">P1 完成度</div>
+        <div class="v">6/9 <small>(67%)</small></div>
+      </div>
+      <div class="item">
+        <div class="k">总完成度</div>
+        <div class="v">11/16 <small>(69%)</small></div>
+      </div>
+      <div class="item">
+        <div class="k">需补 P0</div>
+        <div class="v">2 <small>项</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P0 评估 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">P0</span>P0 · MVP(7 项)· 30 天内必须</div>
+    <table>
+      <thead><tr><th style="width:10%">ID</th><th style="width:30%">需求</th><th style="width:30%">当前实现</th><th style="width:10%">状态</th><th>差距</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>F-P0-01</code></td>
+          <td>投标看板:6+ 客户按优先级卡片</td>
+          <td><code>public/index.html</code> 看板视图 · <code>server.py</code> /api/bids</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P0-02</code></td>
+          <td>剧本 5 个 · 1-4 步 · 单步/全跑</td>
+          <td><code>server.py</code> 内置 5 个 PLAYBOOKS · /api/playbooks/run</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P0-03</code></td>
+          <td>流程 swimlane · 13 步 × N 客户</td>
+          <td><code>public/index.html</code> 流程视图 · 节点点击弹窗</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P0-04</code></td>
+          <td>window.BidBoard API · 7 方法</td>
+          <td><code>public/index.html</code> 只有 <code>API</code> 对象,<b>未暴露 window.BidBoard</b></td>
+          <td><span class="pill p-err">✗ 缺</span></td>
+          <td><b>需补</b>:在 index.html 头部加 <code>window.BidBoard = { create/addAiReady/setStage/setBlock/setHumanTodo/setFlowNode/subscribe }</code></td>
+        </tr>
+        <tr>
+          <td><code>F-P0-05</code></td>
+          <td>9 字段 bids 模型</td>
+          <td><code>server.py</code> bids schema · 必填校验 · 枚举 stage/priority</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P0-06</code></td>
+          <td>跨 tab 实时同步 · ≤ 200ms</td>
+          <td>3s 轮询 /api/logs(不是真 SSE),BroadcastChannel 没用</td>
+          <td><span class="pill p-warn">⚠ 部分</span></td>
+          <td><b>需补</b>:<code>server.py</code> 加 /api/stream SSE 端点 · <code>index.html</code> 用 EventSource 替代轮询 · 跨 tab 通过 SSE 收到推送</td>
+        </tr>
+        <tr>
+          <td><code>F-P0-08</code></td>
+          <td>节点详情弹窗 · 状态切换</td>
+          <td><code>showNodeDetail()</code> · /api/flow/node 写入</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- P1 评估 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">P1</span>P1 · 增强(9 项)· 30-60 天</div>
+    <table>
+      <thead><tr><th style="width:10%">ID</th><th style="width:30%">需求</th><th style="width:30%">当前实现</th><th style="width:10%">状态</th><th>差距</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>F-P1-07</code></td>
+          <td>事件流 · 200 条 · 深色 · API 实时</td>
+          <td><code>public/index.html</code> 底部事件流(从 /api/logs 拉取)</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-01</code></td>
+          <td>截止日自动识别(plan_end)</td>
+          <td><code>flow_template</code> 有 days_before_due,<b>server.py 没自动算 plan_end</b></td>
+          <td><span class="pill p-warn">⚠ 部分</span></td>
+          <td><b>需补</b>:<code>server.py</code> 创建 bid 时自动算 13 节点 plan_end(截止 - days_before_due)</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-02</code></td>
+          <td>P0 看门狗 → 微信实时告警</td>
+          <td><b>无</b>(PRD 要求 SSE 订阅 + 微信推送)</td>
+          <td><span class="pill p-err">✗ 缺</span></td>
+          <td><b>需补</b>:<code>server.py</code> 检测 stage/block 变化 → 推 SSE → 客户端 toast(微信推送需 Lark SDK,P1 阶段)</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-03</code></td>
+          <td>Skills 管理(8 个)</td>
+          <td><code>bid-board-management-v2-20260810.html</code> 8 个 Skill 卡片</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-04</code></td>
+          <td>Services 管理(6 个)</td>
+          <td>管理页 6 个服务(启停/重启/日志)</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-05</code></td>
+          <td>Webhooks CRUD</td>
+          <td>管理页 3 类 webhook(增/删/测)</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-06</code></td>
+          <td>流程模板编辑</td>
+          <td>管理页流程 tab(增删改 D-N)</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-07</code></td>
+          <td>Schema 文档 + 备份</td>
+          <td>管理页 Data tab · JSON 导出</td>
+          <td><span class="pill p-ok">✓ 完成</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-08</code></td>
+          <td>Logs 统一 · 共享 · 搜索</td>
+          <td>管理页 Logs tab(独立文件,没接 server)</td>
+          <td><span class="pill p-warn">⚠ 部分</span></td>
+          <td><b>需补</b>:管理页改成 fetch 模式,共享 server 端 events</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 补完方案 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">✓</span>补完方案(2-3 小时)</div>
+
+    <h3 style="font-size: 14px; margin: 16px 0 8px; color: var(--ink);">P0 必须补(2 项)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>补法</th><th>估时</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>F-P0-04</code></td>
+          <td><code>public/index.html</code> 头部加 <code>window.BidBoard</code> 全局对象(7 个方法,内部转 fetch)</td>
+          <td>30 min</td>
+        </tr>
+        <tr>
+          <td><code>F-P0-06</code></td>
+          <td><code>server.py</code> 加 <code>/api/stream</code> SSE 端点 · 任何 PATCH/POST 后推 SSE 事件 · <code>index.html</code> 用 EventSource 替代 3s 轮询</td>
+          <td>1 hour</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 14px; margin: 16px 0 8px; color: var(--ink);">P1 重要补(2 项)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>补法</th><th>估时</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>F-P1-01</code></td>
+          <td><code>server.py</code> 创建 bid 时,根据 flow_template 自动算每个节点 plan_end,写入 <code>flow.nodes[i].plan_end</code></td>
+          <td>15 min</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-02</code></td>
+          <td><code>server.py</code> PATCH 检测 priority=P0 变化 → 推 SSE 标记 <code>p0_alert</code> · <code>index.html</code> 收到后 toast(本地模拟,生产接 Lark SDK)</td>
+          <td>30 min</td>
+        </tr>
+        <tr>
+          <td><code>F-P1-08</code></td>
+          <td>管理页改成 fetch 模式 · 共享 server 端 events · 关键字搜索 / 级别过滤</td>
+          <td>30 min</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 14px; margin: 16px 0 8px; color: var(--ink);">质量测试(独立任务)</h3>
+    <ul style="font-size: 13.5px; color: var(--ink-soft); padding-left: 20px; line-height: 1.8;">
+      <li>5 个剧本端到端跑通,看板数据正确</li>
+      <li>P0 客户出现红色脉动,toast 提示</li>
+      <li>节点弹窗操作写回 server,前端实时更新</li>
+      <li>流程 swimlane 阻塞节点红色</li>
+      <li>重置数据回到初始 6 客户</li>
+      <li>高负载(100 个 PATCH 并发)不崩</li>
+      <li>SSE 实时推送(替代轮询)延迟 < 500ms</li>
+      <li>错误场景(网络断 / 错参数 / 重复 code)优雅处理</li>
+    </ul>
+  </div>
+
+  <!-- 当前风险 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">!</span>当前未补风险</div>
+    <div class="risk-grid">
+      <div class="risk crit">
+        <h5>🔴 window.BidBoard 缺失</h5>
+        <p>已写好的 5 个 Skill patch 文档(quote-gen / content-longform / gate-checker / 等)都引用 <code>window.BidBoard.addAiReady()</code>,但 web 项目还没暴露此对象。补完后所有 Skill patch 才能端到端跑通。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 3s 轮询</h5>
+        <p>PRD 要求 ≤ 200ms 实时同步,当前 3s。SSE 改造后立即达标。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 P0 看门狗缺</h5>
+        <p>9:45 第一屏看不到 P0 红闪时,Duke 不会立刻知道。SSE 推送 + toast 模拟告警后,体验完整。</p>
+      </div>
+      <div class="risk crit">
+        <h5>🔴 管理页脱节</h5>
+        <p>管理页是单文件 HTML,events 用 localStorage,跟 server 不通。改成 fetch 模式后,P1-08 完成。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="decision">
+    <h4>📋 补完 + 测试路径</h4>
+    <p>总耗时 <b>约 2-3 小时</b>:</p>
+    <ol style="font-size: 13px; color: var(--ink-soft); padding-left: 20px; line-height: 1.8;">
+      <li>补 <code>window.BidBoard</code> 全局对象(30 min)</li>
+      <li>补 SSE 推送(server + 客户端,1 hour)</li>
+      <li>补 plan_end 自动算(15 min)</li>
+      <li>补 P0 看门狗(30 min)</li>
+      <li>改管理页为 fetch(30 min)</li>
+      <li>质量测试(8 类场景,1 hour)</li>
+      <li>出验收报告</li>
+    </ol>
+    <p style="margin-top: 6px;">补完后:<b>16/16 任务全部完成(100%)</b>。</p>
+  </div>
+</div>
+</body>
+</html>

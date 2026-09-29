@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>v4 验收 · Duke · 2026-08-14</title>
+<style>
+  :root { --bg:#F0F7FF; --card:#FFF; --line:#DCE7F2; --ink:#0F1E33; --ink-soft:#4A5A75; --ink-mute:#7A8AA0;
+    --brand:#0EA5E9; --brand-deep:#0369A1; --brand-soft:#E0F2FE; --ok:#10B981; --ok-soft:#D1FAE5;
+    --warn:#F59E0B; --warn-soft:#FEF3C7; --warn-ink:#92400E; --danger:#EF4444; --danger-soft:#FEE2E2;
+    --purple:#8B5CF6; --purple-soft:#EDE9FE; --shadow:0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06); --r:10px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "SF Pro SC", "PingFang SC", system-ui, sans-serif; font-size: 14px; line-height: 1.65; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 36px 28px 80px; }
+  .hero { background: linear-gradient(135deg, #FFF 0%, var(--purple-soft) 100%); border: 1px solid var(--line);
+    border-radius: 20px; padding: 30px 36px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .hero .tag { display: inline-block; font-size: 12px; letter-spacing: .12em; color: var(--purple);
+    background: var(--purple-soft); padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+  .hero h1 { font-size: 26px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+  .hero .score { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 16px; }
+  .hero .score .item { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+  .hero .score .item .k { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .hero .score .item .v { font-size: 22px; font-weight: 700; margin-top: 2px; }
+  .hero .score .item .v small { font-size: 11px; color: var(--ink-mute); font-weight: 500; margin-left: 4px; }
+
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 22px 26px;
+    box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--purple); color: white; width: 26px; height: 26px; border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 10px 0; }
+  th { text-align: left; padding: 10px 12px; background: var(--bg-soft); color: var(--brand-deep); font-weight: 700; font-size: 12px; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code { font-family: "SF Mono", monospace; font-size: 12px; background: var(--bg-soft);
+    padding: 1px 5px; border-radius: 4px; color: var(--brand-deep); }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .p-ok { background: var(--ok-soft); color: #065F46; }
+  .p-warn { background: var(--warn-soft); color: var(--warn-ink); }
+  .p-err { background: var(--danger-soft); color: #991B1B; }
+  .p-p1 { background: var(--purple-soft); color: var(--purple); }
+
+  code.block { display: block; background: var(--bg-soft); padding: 10px 14px; border-radius: 6px;
+    margin: 8px 0; font-size: 12px; overflow-x: auto; line-height: 1.5; }
+
+  @media (max-width: 900px) { .hero .score { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">V4 ACCEPTANCE · 2026-08-14</span>
+    <h1>投标看板 v4 验收报告</h1>
+    <div class="sub">借鉴 bid-news-kanban v0.3 架构 · 命令化 + 幂等 + 审计 + 事务 · 11 个命令注册 · 31/31 质量测试无回归</div>
+    <div class="score">
+      <div class="item">
+        <div class="k">命令注册</div>
+        <div class="v">11 <small>个</small></div>
+      </div>
+      <div class="item">
+        <div class="k">审计</div>
+        <div class="v">8 <small>条 command_execution</small></div>
+      </div>
+      <div class="item">
+        <div class="k">Lead 池</div>
+        <div class="v">2 <small>条(1 升级)</small></div>
+      </div>
+      <div class="item">
+        <div class="k">质量测试</div>
+        <div class="v">31/31 <small>v3 全兼容</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. 核心改动 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">1</span>核心改动 · 借鉴 v0.3 架构</div>
+    <table>
+      <thead><tr><th style="width:30%">v0.3 原则</th><th style="width:45%">v4 实现</th><th style="width:25%">状态</th></tr></thead>
+      <tbody>
+        <tr><td>Agent 不能直接写库</td><td>11 个命令注册,所有写必经 <code>POST /api/commands</code> · <code>COMMAND_REGISTRY</code> dict</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>幂等键 + 载荷哈希</td><td><code>Idempotency-Key</code> + <code>Payload-Hash</code> headers · 同 key+同 hash 返 <code>_replay=true</code> · 同 key+不同 hash 返 409</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>事务化</td><td><code>command_execution</code> + <code>activity_log</code> 事务内写入 · 失败回滚 · WAL 模式 + busy_timeout=15s 避免锁</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>可追溯审计</td><td><code>command_execution</code> 表(执行 ID + 命令名 + 参数 + 结果 + 状态 + 时间)· 8 条已完成</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>报告 ≠ 事实</td><td>AI 摘要存 <code>ai_summaries</code> 数组(JSON)· <code>summary_type="ai_reference"</code> · 必填 <code>author + evidence_refs</code></td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>推荐不能自动变客户</td><td><code>collection.sync</code> → <code>lead</code> 表 → 人工 <code>lead.qualify</code> → <code>lead.promote</code> → bid · 三步独立,每步可审计</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>状态机</td><td><code>bid.lifecycle</code> 命令 + <code>lifecycle_history</code> 字段(每次状态转换记录 ts/from/to/reason/loss_reason)</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>LTC 单表表达</td><td><code>ltc_stage</code> 字段 (lead/opportunity/quotation/contract/delivery)· 不拆表</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>本地模式(无 token)</td><td>信任本地调用,不强制认证,简化 Duke 个人使用</td><td><span class="pill p-ok">✓</span></td></tr>
+        <tr><td>v3 向后兼容</td><td>所有 v3 API 继续工作(<code>PATCH /api/bids/{code}/stage</code> 等)· 31/31 质量测试 0 回归</td><td><span class="pill p-ok">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. 11 个命令 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">2</span>11 个已注册命令</div>
+    <code class="block">
+$ curl http://127.0.0.1:8080/api/commands/list
+[
+  {"commandId":"bid.update_field",     "scope":"platform",   "idempotent":false, "desc":"改 bid 字段"},
+  {"commandId":"bid.add_ai_ready",     "scope":"platform",   "idempotent":true,  "desc":"追加 AI 完成项"},
+  {"commandId":"bid.add_human_todo",   "scope":"platform",   "idempotent":true,  "desc":"追加人工 todo"},
+  {"commandId":"bid.lifecycle",        "scope":"lifecycle",  "idempotent":false, "desc":"状态机推进"},
+  {"commandId":"bid.attach_summary",   "scope":"summary",    "idempotent":true,  "desc":"Mavis 写 AI 摘要(必须 author + evidence)"},
+  {"commandId":"bid.flow_node",        "scope":"platform",   "idempotent":false, "desc":"改流程节点"},
+  {"commandId":"bid.create",           "scope":"platform",   "idempotent":true,  "desc":"新建 bid"},
+  {"commandId":"collection.sync",      "scope":"collection", "idempotent":true,  "desc":"外部 Agent 同步 lead 数据"},
+  {"commandId":"lead.qualify",         "scope":"platform",   "idempotent":false, "desc":"人工确认 lead 评分"},
+  {"commandId":"lead.promote",         "scope":"platform",   "idempotent":true,  "desc":"lead 升级为 bid(必须人工 confirm)"},
+  {"commandId":"playbook.run",         "scope":"platform",   "idempotent":true,  "desc":"跑剧本"}
+]</code>
+  </div>
+
+  <!-- 3. 端到端演示 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">3</span>端到端演示 · 完整 LTC 链路</div>
+    <code class="block">
+# 1. 外部 Agent(我,Mavis)同步商机
+POST /api/commands {"commandId":"collection.sync", "params":{"run_id":"run_chain_001", "items":[
+  {"lead_id":"lead_chain_001", "title":"某证券2026零信任", "buyer":"某头部券商",
+   "industry":"证券", "region":"华东", "amount":680, "deadline":"2026-09-25",
+   "score":80, "recommend":"P0", "reason":"证券+零信任关键词"}
+]}}
+→ {ok:true, run_id:"run_chain_001", applied:1, rejected:0}
+
+# 2. 人工审核(Duke 改 score 和 reason)
+POST /api/commands {"commandId":"lead.qualify", "params":{
+  "lead_id":"lead_chain_001", "score":85, "recommend":"P0", "reason":"证券大B,等保+零信任"
+}}
+→ {ok:true, lead_id:"lead_chain_001", score:85, recommend:"P0"}
+
+# 3. 人工确认升级(必须给 new_code,Duke 决策)
+POST /api/commands {"commandId":"lead.promote", "params":{
+  "lead_id":"lead_chain_001", "new_code":"v4-chain-001"
+}}
+→ {ok:true, new_bid:"v4-chain-001", lead_id:"lead_chain_001"}
+
+# 4. 验证:lead.lifecycle=promoted, new bid 字段齐全
+GET /api/bids/v4-chain-001
+  client: 某头部券商 · ltc_stage: opportunity · industry: 证券
+  region: 华东 · est_amount: 680万 · tier: 未分级
+  human_todo: ['首次接触客户', '确认决策人']
+
+# 5. 审计(command_execution 表 3 条新记录)
+SELECT commandId, status, created_at FROM command_execution ORDER BY id DESC LIMIT 3;
+  lead.promote    | completed | 2026-08-14 15:16:08
+  lead.qualify    | completed | 2026-08-14 15:16:08
+  collection.sync | completed | 2026-08-14 15:16:08</code>
+  </div>
+
+  <!-- 4. 幂等测试 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">4</span>幂等保证 · 重放 vs 冲突</div>
+    <code class="block">
+# 第一次(新命令)
+POST /api/commands
+  Headers: Idempotency-Key: clean-test-2, Payload-Hash: hash-X
+  Body: {"commandId":"bid.add_ai_ready", "params":{"code":"nfh2026","item":"X"}}
+→ {ok:true, execution_id:"cmd_xxx", _replay:false, result:{ok:true, added:true}}
+
+# 第二次(同 key + 同 hash → 重放)
+POST /api/commands  同 key + 同 hash + 同 body
+→ {ok:true, execution_id:"cmd_xxx"(同), _replay:true, result:{ok:true, added:true}}
+
+# 第三次(同 key + 不同 hash → 409 冲突)
+POST /api/commands  同 key + Payload-Hash: hash-Y(不同)
+→ HTTP 409 {"err":"IDEMPOTENCY_PAYLOAD_MISMATCH", "stored_hash":"hash-X", "your_hash":"hash-Y"}</code>
+  </div>
+
+  <!-- 5. 修复的 4 个 bug -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span>实施过程修复的 bug</div>
+    <table>
+      <thead><tr><th style="width:10%">#</th><th style="width:40%">Bug</th><th style="width:30%">修法</th><th style="width:20%">影响</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>_auto_archive_check</code> 启动时 name 'not defined'(顺序问题)</td><td>放到 COMMAND_REGISTRY 之前,或在 _pb_collect_step 之后</td><td>启动警告</td></tr>
+        <tr><td>2</td><td>SQL 拼 Python 表达式 <code>'partially_applied' if rejected else 'applied'</code> 报 "near if" syntax error</td><td>Python 侧先算 status,SQL 只用 ?</td><td>collection.sync 完全坏</td></tr>
+        <tr><td>3</td><td><code>_cmd_lead_promote</code> 的 SELECT * 字段索引偏移 1(忘了主键 id)</td><td>enum 加 <code>id</code> 在 lead_id 之前</td><td>lead.promote 数据错乱</td></tr>
+        <tr><td>4</td><td><code>_create_bid</code> 内部 <code>_log_event</code> → <code>_db_save_event</code> 又开新连接,跟外层命令事务死锁</td><td>加 <code>_in_command</code> 标记,命令中跳过这些 v3 落盘,统一走 <code>_db_save_*_in_conn</code></td><td>lead.promote 完全卡住</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 6. v3 vs v4 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>v3 → v4 关键变化</div>
+    <table>
+      <thead><tr><th style="width:30%">维度</th><th style="width:35%">v3</th><th style="width:35%">v4</th></tr></thead>
+      <tbody>
+        <tr><td>写接口</td><td>任意 PATCH/POST</td><td>统一 <code>POST /api/commands</code> (11 个注册命令)</td></tr>
+        <tr><td>幂等</td><td>无</td><td>Idempotency-Key + Payload-Hash (返 _replay / 409)</td></tr>
+        <tr><td>审计</td><td>事件日志(简单)</td><td>command_execution + activity_log + domain_event</td></tr>
+        <tr><td>事务</td><td>分开写(可能不一致)</td><td>单事务(WAL + busy_timeout=15s)</td></tr>
+        <tr><td>Agent 边界</td><td>Mavis 直接 PATCH</td><td>Mavis 必须用 <code>bid.attach_summary</code> + evidence</td></tr>
+        <tr><td>业务流</td><td>5 阶段(L1-L5)</td><td>7 阶段 LTC + lead 表(独立)</td></tr>
+        <tr><td>数据</td><td>1 张 bids + 4 张 v3 表</td><td>1 张 bids + ltc_stage 字段 + 4 张 v4 表(command_execution / activity_log / collection_run / lead)</td></tr>
+        <tr><td>向后兼容</td><td>—</td><td>所有 v3 API 继续工作,0 回归</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. 后续 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>后续路线(P2 / P3)</div>
+    <ul style="line-height: 1.9; padding-left: 20px;">
+      <li><b>前端命令面板 UI</b>:所有写按钮(改 stage / 暂停 / 关闭 / 跑剧本)都走命令面板,显示命令名 + 参数 + 原因 + 证据</li>
+      <li><b>执行历史 tab</b>:每个 bid 卡片下拉"📜 执行历史",显示所有命令执行记录</li>
+      <li><b>DataQualityTask</b>:外部数据冲突时自动入复核任务</li>
+      <li><b>Token + scope</b>:可选 Bearer Token,Duke 一个人用不到,但生产模式可启用</li>
+      <li><b>CLI 工具</b>:虽然价值低,但 ~30 分钟可做,跟 Agent 调用同一套 API</li>
+    </ul>
+  </div>
+
+  <p style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 30px;">
+    v4 验收完成 · 服务运行中 · 11 命令注册 · 8 条审计 · 31/31 质量测试无回归
+  </p>
+
+</div>
+</body>
+</html>

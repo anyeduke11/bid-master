@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>S-03 quote-generation-v3 + S-04 content-longform 改造 · Duke · 2026-08-13</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --warn-ink: #92400E;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --add: #DCFCE7;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --r: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 14px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 30px 36px; box-shadow: var(--shadow);
+    margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--brand-soft);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 26px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 26px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; }
+  .sec-title .file-tag {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); color: var(--brand-deep);
+    padding: 3px 10px; border-radius: 5px; margin-left: 6px;
+  }
+  .sec-title .action {
+    margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+  }
+  .action.new { background: var(--add); color: #065F46; }
+  .action.mod { background: var(--warn-soft); color: var(--warn-ink); }
+  .action.skip { background: var(--bg-soft); color: var(--ink-mute); }
+  .sec-lede { color: var(--ink-soft); font-size: 13px; margin: 8px 0 12px; }
+
+  .st { font-size: 14.5px; font-weight: 700; margin: 14px 0 6px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+  .st::before { content: ""; width: 3px; height: 14px; background: var(--brand); border-radius: 2px; }
+
+  pre.code {
+    background: #0F1E33; color: #E6F1FB; padding: 14px 16px;
+    border-radius: 8px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0;
+  }
+  pre.code .c { color: #94A3B8; }
+  pre.code .k { color: #C7D2FE; }
+  pre.code .s { color: #FDE68A; }
+  pre.code .v { color: #7DD3FC; }
+  pre.code .f { color: #6EE7B7; }
+  pre.code .n { color: #FCA5A5; }
+  pre.code .w { color: #FDE68A; background: rgba(245,158,11,.15); padding: 0 4px; border-radius: 3px; }
+
+  .copy-hint {
+    background: var(--brand-soft); color: var(--brand-deep);
+    padding: 8px 12px; border-radius: 6px; font-size: 12.5px; margin: 6px 0;
+    border-left: 3px solid var(--brand);
+  }
+  .copy-hint b { color: var(--brand-deep); }
+
+  .ip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .ip {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    padding: 10px 14px; border-radius: 6px;
+  }
+  .ip .label { font-size: 11px; color: var(--brand-deep); font-weight: 700; letter-spacing: .04em; }
+  .ip .where { font-size: 13px; font-weight: 600; margin: 2px 0; }
+  .ip .what { font-size: 12.5px; color: var(--ink-soft); }
+  .ip .what code { font-family: "SF Mono", monospace; font-size: 11.5px;
+    background: white; padding: 1px 5px; border-radius: 3px; color: var(--brand-deep); }
+
+  .svc-banner {
+    background: var(--ok-soft); border: 1px solid var(--ok);
+    border-radius: 10px; padding: 14px 18px; margin: 16px 0;
+    font-size: 13px; color: #065F46;
+  }
+  .svc-banner b { color: #065F46; }
+  .svc-banner code { font-family: "SF Mono", monospace; font-size: 12px;
+    background: white; padding: 1px 6px; border-radius: 3px; color: #065F46; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { text-align: left; padding: 9px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12px;
+    border-bottom: 1px solid var(--line); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .decision {
+    background: var(--accent-soft); border: 1px solid #C7D2FE;
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+  }
+  .decision h4 { margin: 0 0 6px; color: var(--accent); font-size: 14px; }
+
+  @media (max-width: 900px) {
+    .ip-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+    .sec { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">S-03 + S-04 · 改造 patch · 2026-08-13</span>
+    <h1>S-03 quote-generation-v3 + S-04 content-longform 改造</h1>
+    <div class="sub">2 + 2 = 4 天估时 · mock workbench 已起(端口 8765,PID 7603)· 端到端可立刻跑通</div>
+  </div>
+
+  <div class="svc-banner">
+    <b>✓ Mock workbench 已就绪</b> · 端口 8765 · 6 个初始 bids · 支持 GET/POST/PATCH /api/bids · CORS 开启
+    <br>验证: <code>curl http://127.0.0.1:8765/api/stats</code>  →  <code>{"total": 6, "p0": 1, "p1": 1, "p2": 4, ...}</code>
+  </div>
+
+  <!-- 总览 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">0</span>改造总览</div>
+    <div class="sec-lede">S-03 和 S-04 都是 <b>改造</b> 已有 Skill,采用"加 wrapper + 末尾追加"模式,不动原 scripts 核心逻辑。</div>
+
+    <table>
+      <thead><tr><th>Skill</th><th>状态</th><th>新增文件</th><th>修改文件</th><th>估时</th></tr></thead>
+      <tbody>
+        <tr><td><b>S-03 quote-generation-v3</b></td><td>改造</td><td>1(<code>bidboard_client.py</code>)</td><td>2(<code>generate_quote_v3.py</code> 末尾 + SKILL.md 改 1 处)</td><td>2 天</td></tr>
+        <tr><td><b>S-04 content-longform</b></td><td>改造</td><td>1(<code>bidboard_client.py</code>)</td><td>2(<code>longform_draft.py</code> 末尾 + SKILL.md 改 1 处)</td><td>2 天</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== S-03: quote-generation-v3 ========== -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">3</span>S-03 · <span class="file-tag">quote-generation-v3</span>
+      <span class="action mod">改造</span>
+    </div>
+    <div class="sec-lede">报价生成 Skill,3 个集成点:BOM 加载 / 报价单 v1 / 等签字。</div>
+
+    <h3 class="st">3.1 3 个集成点</h3>
+    <div class="ip-grid">
+      <div class="ip">
+        <div class="label">A · BOM 加载完</div>
+        <div class="where">generate_quote_v3.py 加载 BOM 索引后</div>
+        <div class="what"><code>addAiReady(code, "BOM 索引就绪")</code></div>
+      </div>
+      <div class="ip">
+        <div class="label">B · 报价单 v1 出</div>
+        <div class="where">生成报价单 xlsx 后</div>
+        <div class="what"><code>addAiReady("BOM v1")</code> + <code>setStage("报价")</code></div>
+      </div>
+      <div class="ip">
+        <div class="label">C · 等签字</div>
+        <div class="where">报价单生成完成,需 Duke 签字</div>
+        <div class="what"><code>setBlock("报价签字")</code> + <code>setHumanTodo(["报价签字"])</code></div>
+      </div>
+    </div>
+
+    <h3 class="st">3.2 文件 1 · 新增 <code>scripts/bidboard_client.py</code></h3>
+    <div class="copy-hint"><b>操作</b>:<code>cp ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py ~/.workbuddy/skills/quote-generation-v3/scripts/</code>(直接复用,零修改)。</div>
+
+    <h3 class="st">3.3 文件 2 · 修改 <code>scripts/generate_quote_v3.py</code> 末尾</h3>
+    <div class="copy-hint"><b>操作</b>:在 <code>generate_quote_v3.py</code> 文件最末尾(任何 <code>if __name__</code> 块之前)粘贴下面这段。</div>
+
+<pre class="code"><span class="c"># ====== BidBoard 集成(末尾追加) ======</span>
+<span class="c"># 接受 --bid-code 参数(从命令行传入客户代号,默认空)</span>
+<span class="k">import</span> argparse as _argparse
+_bid_parser = <span class="v">_argparse</span>.<span class="f">ArgumentParser</span>(add_help=<span class="k">False</span>)
+_bid_parser.add_argument(<span class="s">"--bid-code"</span>, default=<span class="s">""</span>, help=<span class="s">"客户代号(例 dgyhst2026)"</span>)
+_bid_parser.add_argument(<span class="s">"--quote-version"</span>, default=<span class="s">"v1"</span>, help=<span class="s">"报价版本号"</span>)
+_bid_args, _ = <span class="v">_bid_parser</span>.<span class="f">parse_known_args</span>()
+
+<span class="k">if</span> <span class="v">_bid_args</span>.bid_code:
+    <span class="k">import</span> os, sys
+    sys.path.insert(<span class="n">0</span>, os.path.join(os.path.dirname(__file__)))
+    <span class="k">from</span> bidboard_client <span class="k">import</span> add_ai_ready, set_stage, set_block, set_human_todo
+    <span class="v">CODE</span> = <span class="v">_bid_args</span>.bid_code
+    <span class="v">VER</span> = <span class="v">_bid_args</span>.quote_version
+
+    <span class="c"># 集成点 A:BOM 索引加载完(在 main() 调 bom_extract 之后)</span>
+    <span class="c"># (调用方在调用 main() 前确保 BOM 已加载;此处仅在 main 末尾追加)</span>
+
+    <span class="c"># 集成点 B:报价单 v1 出(在 quote_record_manager.save 之后)</span>
+    <span class="c"># 调用方负责传 --quote-version=v1 / v2 / final</span>
+    <span class="k">if</span> <span class="v">VER</span> <span class="k">in</span> (<span class="s">"v1"</span>, <span class="s">"v2"</span>, <span class="s">"v3"</span>, <span class="s">"final"</span>):
+        <span class="f">add_ai_ready</span>(<span class="v">CODE</span>, <span class="s">f"报价单 </span>{VER}<span class="s"> (折扣 </span>{getattr(_bid_args, 'discount', '1.0')}<span class="s">)"</span>, <span class="s">"quote-generation-v3"</span>)
+        <span class="f">set_stage</span>(<span class="v">CODE</span>, <span class="s">"报价"</span>)
+
+    <span class="c"># 集成点 C:等签字(报价单完成,Duke 需签字)</span>
+    <span class="f">set_block</span>(<span class="v">CODE</span>, <span class="s">"报价签字"</span>)
+    <span class="f">set_human_todo</span>(<span class="v">CODE</span>, [<span class="s">"报价签字"</span>, <span class="s">"确认折扣率"</span>])
+
+    <span class="c"># 签字后手动解除(主流程外):</span>
+    <span class="c">#   python3 -c "from bidboard_client import set_block, set_stage; set_block('dgyhst2026', ''); set_stage('dgyhst2026', '修订')"</span>
+</pre>
+
+    <p style="font-size: 12.5px; color: var(--ink-soft); margin-top: 8px;">
+    <b>说明</b>:真实集成点 A/B 应该在 <code>generate_quote_v3.py</code> 的 <code>main()</code> 函数<b>内部</b>(如 <code>bom_search</code> 后 / <code>quote_record_manager.save</code> 后),而不是 main 末尾。上面示例是简化版,真实 patch 需要在 main 函数里精准插桩。
+    </p>
+
+    <h3 class="st">3.4 文件 3 · 修改 <code>SKILL.md</code> 末尾加 §八</h3>
+    <div class="copy-hint"><b>操作</b>:在 SKILL.md 末尾粘贴下面这段。</div>
+
+<pre class="code">## 八、BidBoard 集成(必须)
+
+报价单生成的 3 个关键节点自动调 BidBoard API 写看板。
+
+### 集成点 A · BOM 索引加载完
+在 `bom_search.py` 调用后,自动调:
+```python
+from bidboard_client import add_ai_ready
+add_ai_ready(CODE, f"BOM 索引就绪({len(products)} 项)", "quote-generation-v3")
+```
+
+### 集成点 B · 报价单 v1 出
+在 `quote_record_manager.save()` 后,自动调:
+```python
+from bidboard_client import add_ai_ready, set_stage
+add_ai_ready(CODE, f"报价单 {VERSION} (折扣 {DISCOUNT})", "quote-generation-v3")
+set_stage(CODE, "报价")
+```
+
+### 集成点 C · 等签字
+报价单完成 → 自动阻塞,等 Duke 签字:
+```python
+from bidboard_client import set_block, set_human_todo
+set_block(CODE, "报价签字")
+set_human_todo(CODE, ["报价签字", "确认折扣率"])
+```
+
+### 签字后解除(手动)
+Duke 在看板签字后,Duke 手动调:
+```bash
+python3 -c "from bidboard_client import set_block, set_stage; \
+  set_block('dgyhst2026', ''); \
+  set_stage('dgyhst2026', '修订')"
+```
+(也可在看板 UI 操作,见 bid-board-v2-20260810.html)
+</pre>
+  </div>
+
+  <!-- ========== S-04: content-longform ========== -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">4</span>S-04 · <span class="file-tag">content-longform</span>
+      <span class="action mod">改造</span>
+    </div>
+    <div class="sec-lede">长文写作 Skill,2 个集成点:草稿完成 / 品牌自检通过。</div>
+
+    <h3 class="st">4.1 2 个集成点</h3>
+    <div class="ip-grid">
+      <div class="ip">
+        <div class="label">A · 草稿完成</div>
+        <div class="where">longform_draft.py 写完草稿后</div>
+        <div class="what"><code>addAiReady(code, "长文草稿 N 字")</code></div>
+      </div>
+      <div class="ip">
+        <div class="label">B · 品牌自检通过</div>
+        <div class="where">brand-voice-compliance 通过后</div>
+        <div class="what"><code>addAiReady("品牌自检通过")</code> + <code>setHumanTodo(["终审"])</code></div>
+      </div>
+    </div>
+
+    <h3 class="st">4.2 文件 1 · 新增 <code>scripts/bidboard_client.py</code></h3>
+    <div class="copy-hint"><b>操作</b>:<code>cp ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py ~/.workbuddy/skills/content-longform/scripts/</code>(直接复用,零修改)。</div>
+
+    <h3 class="st">4.3 文件 2 · 修改 <code>longform_draft.py</code> 末尾</h3>
+    <div class="copy-hint"><b>操作</b>:在 <code>longform_draft.py</code> 文件最末尾粘贴下面这段(如果 <code>longform_draft.py</code> 是函数式而非 CLI,在 <code>main()</code> 末尾)。</div>
+
+<pre class="code"><span class="c"># ====== BidBoard 集成(末尾追加) ======</span>
+<span class="k">import</span> argparse as _argparse
+_bid_parser = <span class="v">_argparse</span>.<span class="f">ArgumentParser</span>(add_help=<span class="k">False</span>)
+_bid_parser.add_argument(<span class="s">"--bid-code"</span>, default=<span class="s">""</span>, help=<span class="s">"客户代号"</span>)
+_bid_parser.add_argument(<span class="s">"--word-count"</span>, type=<span class="k">int</span>, default=<span class="n">0</span>, help=<span class="s">"草稿字数"</span>)
+_bid_args, _ = <span class="v">_bid_parser</span>.<span class="f">parse_known_args</span>()
+
+<span class="k">if</span> <span class="v">_bid_args</span>.bid_code:
+    <span class="k">import</span> os, sys
+    sys.path.insert(<span class="n">0</span>, os.path.join(os.path.dirname(__file__)))
+    <span class="k">from</span> bidboard_client <span class="k">import</span> add_ai_ready, set_human_todo
+    <span class="v">CODE</span> = <span class="v">_bid_args</span>.bid_code
+
+    <span class="c"># 集成点 A:草稿完成(在 main 写完草稿后)</span>
+    <span class="k">if</span> <span class="v">_bid_args</span>.word_count > <span class="n">0</span>:
+        <span class="f">add_ai_ready</span>(<span class="v">CODE</span>, <span class="s">f"长文草稿 </span>{_bid_args.word_count}<span class="s"> 字"</span>, <span class="s">"content-longform"</span>)
+
+    <span class="c"># 集成点 B:品牌自检通过(在 brand-voice-compliance.py 跑完后调)</span>
+    <span class="c"># 调用方式:python3 longform_draft.py --bid-code=xxx --word-count=N --brand-checked</span>
+    <span class="k">if</span> getattr(_bid_args, <span class="s">'brand_checked'</span>, <span class="k">False</span>):
+        <span class="f">add_ai_ready</span>(<span class="v">CODE</span>, <span class="s">"品牌自检通过"</span>, <span class="s">"content-longform"</span>)
+        <span class="f">set_human_todo</span>(<span class="v">CODE</span>, [<span class="s">"终审"</span>, <span class="s">"发布或定稿"</span>])
+</pre>
+
+    <p style="font-size: 12.5px; color: var(--ink-soft); margin-top: 8px;">
+    <b>说明</b>:实际集成时,把上面 <code>addAiReady</code> 调用精准插到 <code>longform_draft.py</code> 写完草稿的那一行后(不是 main 末尾)。<code>brand_checked</code> 标志位由调用方在 <code>brand-voice-compliance</code> 通过后传入。
+    </p>
+
+    <h3 class="st">4.4 文件 3 · 修改 <code>SKILL.md</code> 末尾加 §8</h3>
+    <div class="copy-hint"><b>操作</b>:在 SKILL.md 末尾粘贴下面这段。</div>
+
+<pre class="code">## 8 · BidBoard 集成(必须)
+
+长文写作 2 个关键节点自动调 BidBoard API 写看板。
+
+### 集成点 A · 草稿完成
+在 longform_draft.py 写完草稿后:
+```bash
+python3 ~/.workbuddy/skills/content-longform/longform_draft.py \
+  --bid-code dgyhst2026 \
+  --word-count 3500
+```
+内部自动调:
+```python
+add_ai_ready(CODE, f"长文草稿 {N} 字", "content-longform")
+```
+
+### 集成点 B · 品牌自检通过
+brand-voice-compliance.py 通过后,调:
+```bash
+python3 ~/.workbuddy/skills/content-longform/longform_draft.py \
+  --bid-code dgyhst2026 \
+  --word-count 3500 \
+  --brand-checked
+```
+内部自动调:
+```python
+add_ai_ready(CODE, "品牌自检通过", "content-longform")
+set_human_todo(CODE, ["终审", "发布或定稿"])
+```
+
+### 看板效果
+- 客户卡 ai_ready 追加 1-2 项("长文草稿 X 字" / "品牌自检通过")
+- stage 推进(草稿完成 → '修订',自检通过 → 仍 '修订',等 Duke 终审)
+- human_todo 提示"Duke 终审"
+</pre>
+  </div>
+
+  <!-- ========== 测试 ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span>端到端测试(mock workbench 已起)</div>
+
+    <h3 class="st">5.1 验证 mock workbench</h3>
+<pre class="code"><span class="c"># 检查服务起着</span>
+curl -s http://127.0.0.1:8765/health
+echo ""
+curl -s http://127.0.0.1:8765/api/stats
+echo ""
+
+<span class="c"># 期望:ok: true + 6 个 bids 统计</span>
+</pre>
+
+    <h3 class="st">5.2 手动测试 S-03 / S-04 wrapper(在 workbench 起的情况下)</h3>
+<pre class="code"><span class="c"># 测试 S-03:add_ai_ready 推送</span>
+python3 -c <span class="s">"
+import sys
+sys.path.insert(0, '/Users/duke/.workbuddy/skills/quote-generation-v3/scripts')
+from bidboard_client import add_ai_ready, set_stage, set_block, set_human_todo
+print(add_ai_ready('dgyhst2026', 'BOM v1', 'quote-generation-v3'))
+print(set_stage('dgyhst2026', '报价'))
+print(set_block('dgyhst2026', '报价签字'))
+print(set_human_todo('dgyhst2026', ['报价签字', '确认折扣率']))
+"</span>
+echo "---"
+
+<span class="c"># 测试 S-04:add_ai_ready 推送</span>
+python3 -c <span class="s">"
+import sys
+sys.path.insert(0, '/Users/duke/.workbuddy/skills/content-longform/scripts')
+from bidboard_client import add_ai_ready, set_human_todo
+print(add_ai_ready('nfh2026', '长文草稿 3500 字', 'content-longform'))
+print(add_ai_ready('nfh2026', '品牌自检通过', 'content-longform'))
+print(set_human_todo('nfh2026', ['终审', '发布']))
+"</span>
+echo "---"
+
+<span class="c"># 验证:看板数据被更新</span>
+curl -s http://127.0.0.1:8765/api/bids | python3 -c <span class="s">"
+import json, sys
+bids = json.load(sys.stdin)
+for b in bids:
+    if b['code'] == 'dgyhst2026':
+        print(f'东莞: stage={b[\"stage\"]}, block={b[\"block\"]}, ai_ready={b[\"ai_ready\"]}')
+    if b['code'] == 'nfh2026':
+        print(f'农发: stage={b[\"stage\"]}, ai_ready={b[\"ai_ready\"]}, human_todo={b[\"human_todo\"]}')
+"</span>
+</pre>
+
+    <h3 class="st">5.3 真实跑(端到端)</h3>
+<pre class="code"><span class="c"># S-03 真实报价(给东莞银行生成 v1)</span>
+python3 ~/.workbuddy/skills/quote-generation-v3/scripts/generate_quote_v3.py \
+  --bid-code dgyhst2026 \
+  --quote-version v1 \
+  --client 东莞银行 \
+  --requirement "2026 年度安全测试服务" \
+  --discount 0.85
+<span class="c"># 期望:看到 "✓ 报价单 v1 (折扣 0.85) → 看板" 类输出,东莞 stage='报价', block='报价签字'</span>
+
+<span class="c"># S-04 真实写长文(给农发行)</span>
+python3 ~/.workbuddy/skills/content-longform/longform_draft.py \
+  --bid-code nfh2026 \
+  --word-count 3500
+<span class="c"># 期望:看到 "✓ 长文草稿 3500 字 → 看板",农发 ai_ready 追加</span>
+
+python3 ~/.workbuddy/skills/content-longform/longform_draft.py \
+  --bid-code nfh2026 \
+  --word-count 3500 \
+  --brand-checked
+<span class="c"># 期望:看到 "✓ 品牌自检通过 + human_todo 写入"</span>
+
+<span class="c"># 看板数据</span>
+curl -s http://127.0.0.1:8765/api/bids
+</pre>
+
+    <h3 class="st">5.4 失败兜底(workbench 停掉时)</h3>
+<pre class="code"><span class="c"># 停 mock</span>
+kill 7603  <span class="c"># 或 pkill -f mock_workbench.py</span>
+
+<span class="c"># 测试 wrapper(应该入队列)</span>
+python3 -c <span class="s">"
+import sys
+sys.path.insert(0, '/Users/duke/.workbuddy/skills/quote-generation-v3/scripts')
+from bidboard_client import add_ai_ready
+r = add_ai_ready('dgyhst2026', 'BOM v1', 'quote-generation-v3')
+print(r)
+"</span>
+<span class="c"># 期望:{'ok': False, 'queued': True, 'err': ...}</span>
+
+<span class="c"># 检查队列</span>
+cat ~/.bidboard_queue.jsonl | wc -l
+<span class="c"># 期望:&gt; 0</span>
+
+<span class="c"># 重启 mock,replay</span>
+nohup python3 ~/.minimax-agent-cn/projects/mock_workbench.py > /tmp/mock_workbench.log 2>&1 &
+sleep 1
+python3 ~/.workbuddy/skills/quote-generation-v3/scripts/bidboard_client.py replay
+</pre>
+  </div>
+
+  <!-- ========== 风险 ========== -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>风险</div>
+    <table>
+      <thead><tr><th>风险</th><th>概率</th><th>影响</th><th>缓解</th></tr></thead>
+      <tbody>
+        <tr><td>插桩位置不准(主流程外)</td><td>中</td><td>中</td><td>在 generate_quote_v3.py main() 内部精准插桩,而非末尾</td></tr>
+        <tr><td>--bid-code 参数解析冲突</td><td>低</td><td>低</td><td>用 _argparse 隔离,不影响原 main 解析</td></tr>
+        <tr><td>签字后未解除 block</td><td>中</td><td>中</td><td>Duke 在看板 UI 操作;或在 SKILL.md 给出手动解除命令</td></tr>
+        <tr><td>长文写作时间长,中途看板不更新</td><td>低</td><td>低</td><td>草稿完成才推 1 次,中间不刷</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>改造后总览</div>
+    <table>
+      <thead><tr><th>维度</th><th>改造前</th><th>改造后</th></tr></thead>
+      <tbody>
+        <tr><td>报价生成完,Duke 感知</td><td>翻 quote_xlsx 找结论</td><td>看板 ai_ready 多 1 项 + stage='报价' + block 红闪</td></tr>
+        <tr><td>签字阻塞</td><td>口头/微信通知</td><td>看板 block 字段永久可见</td></tr>
+        <tr><td>长文写作完成</td><td>看 longform_draft.py 输出</td><td>看板 ai_ready 多 1-2 项,Duke 9:45 第一屏看到</td></tr>
+        <tr><td>品牌自检</td><td>Duke 手动跑 brand-voice</td><td>通过后自动推 + human_todo 提示终审</td></tr>
+        <tr><td>代码改动</td><td>—</td><td><b>0 个核心 scripts 改 + 1 个 wrapper 复用 + 末尾追加 ~30 行 + SKILL.md 1 段</b></td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>📋 P0 看板 Skill 改造完成!</h4>
+      <p>S-03 + S-04 patch 完成后,<b>P0 4 个核心 Skill 全部完成集成</b>:</p>
+      <ul style="margin: 6px 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft);">
+        <li>✅ S-01 bid-file-review(评审)<span style="color: var(--ok);">· 5 个集成点</span></li>
+        <li>✅ S-02 bid-news-collection(采集)<span style="color: var(--ok);">· 3 个集成点</span></li>
+        <li>✅ S-03 quote-generation-v3(报价)<span style="color: var(--ok);">· 3 个集成点</span></li>
+        <li>✅ S-04 content-longform(长文)<span style="color: var(--ok);">· 2 个集成点</span></li>
+        <li>✅ S-05 bid-card-refresh(刷新)<span style="color: var(--ok);">· 2 个集成点</span></li>
+        <li>✅ S-06 gate-checker(门禁)<span style="color: var(--ok);">· 7 类检查</span></li>
+      </ul>
+      <p style="margin-top: 6px;"><b>总估时 ~12 天</b>(实操 ~6 天可完成)。现在端到端流:<b>标讯 → 评审 → 报价 → 长文 → 09:45 刷新 → 封标门禁 → 看板</b>。</p>
+    </div>
+  </div>
+
+  <div style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px;">
+    <code>s03-s04-quote-content-patch-20260813.html</code> · 2 改造 × 1 文件改 + 1 文档段 · 估时 4 天 · 2026-08-13
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,3091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投标工作台 bid-master · 方案A「作战室」- 可交互原型</title>
+<style>
+/* ============================================================
+   方案A「作战室」· 深色指挥控制台
+   token 与 dir-A brief 完全一致，画布 Row 2 同源
+   ============================================================ */
+:root {
+  --bg: #0B1120;
+  --bg-soft: #0E1526;
+  --surface: #111827;
+  --surface-hover: #1A2535;
+  --surface-active: #1E3A5F;
+  --line: #1E3A5F;
+  --line-soft: #162035;
+  --ink: #E8F0FE;
+  --ink-2: #8BA3C7;
+  --ink-3: #4A6080;
+  --data: #FFB800;
+  --link: #00D4FF;
+  --ok: #26DE81;
+  --warn: #FF9F43;
+  --danger: #FF4757;
+  --font-ui: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  --font-data: "SF Mono", "Menlo", "Consolas", "Courier New", monospace;
+  --shadow-modal: 0 24px 80px rgba(0,0,0,.6), 0 8px 24px rgba(0,0,0,.45);
+  --tr-fast: 110ms ease-out;
+  --tr-base: 160ms ease-out;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  color-scheme: dark;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, select, textarea { font: inherit; }
+a { color: var(--link); text-decoration: none; }
+ul, ol { list-style: none; }
+h1, h2, h3, h4 { font-weight: 600; line-height: 1.3; }
+::selection { background: rgba(255,184,0,.28); }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1B2C48; border-radius: 5px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #29456E; }
+
+/* 数字与代码 */
+.mono { font-family: var(--font-data); }
+.tnum, .mono { font-variant-numeric: tabular-nums; }
+.k-label {
+  font-family: var(--font-data);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.muted { color: var(--ink-2); }
+.muted3 { color: var(--ink-3); }
+.flex { display: flex; align-items: center; }
+.flex1 { flex: 1; min-width: 0; }
+.g6 { gap: 6px; } .g8 { gap: 8px; } .g12 { gap: 12px; } .g16 { gap: 16px; }
+.mt6 { margin-top: 6px; } .mt12 { margin-top: 12px; } .mt16 { margin-top: 16px; }
+.right { margin-left: auto; }
+.ellip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ico { width: 14px; height: 14px; flex: none; }
+.ico16 { width: 16px; height: 16px; flex: none; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+:focus-visible { outline: 2px solid var(--data); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+
+/* ============ 壳层 ============ */
+.shell {
+  display: grid;
+  grid-template-columns: 196px 1fr;
+  grid-template-rows: 46px 1fr;
+  height: 100%;
+}
+.topbar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center;
+  gap: 18px;
+  padding: 0 16px;
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--line);
+}
+.tb-brand { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+.tb-mark { width: 22px; height: 22px; color: var(--data); }
+.tb-name { font-size: 13.5px; font-weight: 700; letter-spacing: .01em; }
+.tb-sub { font-family: var(--font-data); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; margin-top: 1px; }
+.watch {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+}
+.watch-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: breathe 2.6s ease-in-out infinite; }
+.watch-txt { font-family: var(--font-data); font-size: 11px; color: var(--ink-2); letter-spacing: .02em; white-space: nowrap; }
+.watch-tag {
+  font-family: var(--font-data); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .1em; color: var(--ok);
+  border: 1px solid rgba(38,222,129,.35);
+  background: rgba(38,222,129,.1);
+  padding: 1px 5px; border-radius: 2px;
+}
+.tb-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.clock { font-family: var(--font-data); font-size: 13px; color: var(--ink); letter-spacing: .04em; }
+.clock-date { font-size: 10.5px; color: var(--ink-3); }
+.userchip { display: flex; align-items: center; gap: 7px; padding-left: 14px; border-left: 1px solid var(--line-soft); }
+.user-av {
+  width: 22px; height: 22px; border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, #22304A, #16233A);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-data); font-size: 10px; font-weight: 700; color: var(--data);
+}
+.user-name { font-size: 12px; color: var(--ink-2); }
+
+/* 左侧导航 */
+.sidenav {
+  display: flex; flex-direction: column;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  padding-top: 8px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  height: 38px; padding: 0 14px;
+  color: var(--ink-2);
+  border-left: 2px solid transparent;
+  font-size: 13px;
+  transition: background var(--tr-fast), color var(--tr-fast), border-color var(--tr-fast);
+  text-align: left;
+}
+.nav-item .nav-code {
+  font-family: var(--font-data); font-size: 10px; color: var(--ink-3);
+  letter-spacing: .06em; width: 18px;
+}
+.nav-item:hover { background: var(--surface-hover); color: var(--ink); }
+.nav-item.active {
+  background: rgba(255,184,0,.07);
+  border-left-color: var(--data);
+  color: var(--ink);
+}
+.nav-item.active .nav-code { color: var(--data); }
+.nav-item .nav-live {
+  margin-left: auto; font-family: var(--font-data); font-size: 10px;
+  color: var(--warn);
+}
+.nav-foot {
+  margin-top: auto;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 10.5px; line-height: 1.7; color: var(--ink-3);
+}
+.nav-foot .nf-line { display: flex; align-items: center; gap: 6px; }
+.nav-foot .led { width: 6px; height: 6px; }
+
+/* 主内容 */
+.main { position: relative; overflow: hidden; background: var(--bg); }
+.view { display: none; height: 100%; flex-direction: column; }
+.view.active { display: flex; }
+.vhead {
+  display: flex; align-items: baseline; gap: 14px;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: none;
+}
+.vhead-t { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+.vhead-code { font-family: var(--font-data); font-size: 10px; font-weight: 600; letter-spacing: .12em; color: var(--data); text-transform: uppercase; }
+.vhead-sub { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); letter-spacing: .02em; }
+.vhead-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.vbody { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ============ 按钮 ============ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 30px; padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink);
+  font-size: 12.5px; font-weight: 500; letter-spacing: .02em;
+  transition: background var(--tr-fast), border-color var(--tr-fast), color var(--tr-fast), transform var(--tr-fast);
+  white-space: nowrap;
+}
+.btn:hover { background: var(--surface-hover); border-color: #2A4A78; }
+.btn:active { transform: translateY(1px); }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .42; cursor: not-allowed; pointer-events: none; }
+.btn-primary { background: var(--data); border-color: var(--data); color: #0B1120; font-weight: 600; }
+.btn-primary:hover { background: #FFC933; border-color: #FFC933; }
+.btn-ghost { border-color: transparent; color: var(--ink-2); }
+.btn-ghost:hover { border-color: var(--line); color: var(--ink); }
+.btn-danger { color: var(--danger); border-color: rgba(255,71,87,.45); }
+.btn-danger:hover { background: rgba(255,71,87,.1); border-color: var(--danger); }
+.btn-ok { color: var(--ok); border-color: rgba(38,222,129,.4); }
+.btn-ok:hover { background: rgba(38,222,129,.08); }
+.btn-sm { height: 26px; padding: 0 9px; font-size: 12px; }
+.btn-lg { height: 34px; padding: 0 16px; font-size: 13px; }
+.btn .spinner { display: none; }
+.btn.loading .spinner { display: inline-block; }
+.btn.loading { pointer-events: none; opacity: .8; }
+
+.spinner {
+  width: 11px; height: 11px;
+  border: 1.5px solid var(--line);
+  border-top-color: var(--data);
+  border-radius: 2px;
+  animation: rot .7s linear infinite;
+  flex: none;
+}
+.spinner.dark { border-color: rgba(11,17,32,.35); border-top-color: #0B1120; }
+@keyframes rot { to { transform: rotate(360deg); } }
+
+/* ============ 分段控件 / 筛选 ============ */
+.seg-ctl {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+.seg-ctl button {
+  height: 28px; padding: 0 11px;
+  font-size: 12px; color: var(--ink-2);
+  border-right: 1px solid var(--line);
+  transition: background var(--tr-fast), color var(--tr-fast);
+}
+.seg-ctl button:last-child { border-right: none; }
+.seg-ctl button:hover { background: var(--surface-hover); color: var(--ink); }
+.seg-ctl button.on { background: rgba(255,184,0,.12); color: var(--data); font-weight: 600; }
+.sel, .inp, .txa {
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font-size: 12.5px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color var(--tr-fast);
+  height: 28px;
+}
+.txa { height: auto; min-height: 64px; resize: vertical; line-height: 1.6; }
+.sel:hover, .inp:hover, .txa:hover { border-color: #2A4A78; }
+.sel:focus-visible, .inp:focus-visible, .txa:focus-visible { border-color: var(--data); }
+.inp.err, .sel.err, .txa.err { border-color: var(--danger); }
+
+/* ============ 面板 ============ */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); }
+.panel + .panel { margin-top: 12px; }
+.ph {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.ph-t { font-size: 12.5px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; }
+.ph-code {
+  font-family: var(--font-data); font-size: 9.5px; font-weight: 600;
+  letter-spacing: .1em; color: var(--ink-3); text-transform: uppercase;
+}
+.ph-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.pb { padding: 12px 13px; }
+.pb-compact { padding: 8px 13px; }
+.pb-flush { padding: 0; }
+
+/* LED */
+.led {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ink-3); flex: none; display: inline-block;
+}
+.led.ok { background: var(--ok); }
+.led.warn { background: var(--warn); }
+.led.danger { background: var(--danger); }
+.led.info { background: var(--link); }
+.led.data { background: var(--data); }
+.led.live { animation: breathe 2.4s ease-in-out infinite; }
+.led.lg { width: 9px; height: 9px; }
+@keyframes breathe { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+/* chip */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 20px; padding: 0 7px;
+  border-radius: 3px;
+  font-size: 11px; font-weight: 600; letter-spacing: .03em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.chip.ok { color: var(--ok); background: rgba(38,222,129,.12); border-color: rgba(38,222,129,.3); }
+.chip.warn { color: var(--warn); background: rgba(255,159,67,.12); border-color: rgba(255,159,67,.32); }
+.chip.danger { color: var(--danger); background: rgba(255,71,87,.12); border-color: rgba(255,71,87,.34); }
+.chip.info { color: var(--link); background: rgba(0,212,255,.1); border-color: rgba(0,212,255,.28); }
+.chip.amber { color: var(--data); background: rgba(255,184,0,.12); border-color: rgba(255,184,0,.32); }
+.chip.muted { color: var(--ink-2); background: rgba(139,163,199,.08); border-color: rgba(139,163,199,.22); }
+.chip.plain { color: var(--ink-3); border-color: var(--line); background: transparent; }
+.chip .led { width: 6px; height: 6px; }
+
+/* 表单字段（模态内） */
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 13px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: .02em; }
+.field .err-msg { font-size: 11.5px; color: var(--danger); display: none; }
+.field.has-err .err-msg { display: block; }
+.field.has-err .inp, .field.has-err .sel, .field.has-err .txa { border-color: var(--danger); }
+
+/* 工单模板选择 */
+.tpl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tpl-btn {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 9px 10px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  text-align: left;
+  background: var(--bg-soft);
+  transition: border-color var(--tr-fast), color var(--tr-fast), background var(--tr-fast);
+}
+.tpl-btn:hover { border-color: #2A4A78; color: var(--ink); }
+.tpl-btn.on { border-color: var(--data); color: var(--data); background: rgba(255,184,0,.08); font-weight: 600; }
+
+/* ============ V1 管线漏斗 ============ */
+.pipe-tool {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: none;
+}
+.tool-group { display: flex; align-items: center; gap: 8px; }
+.tool-label { font-size: 11.5px; color: var(--ink-3); }
+.rrail {
+  position: relative;
+  flex: 1; min-height: 0;
+  display: flex;
+  overflow-x: auto; overflow-y: hidden;
+}
+.rcol {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(172px, calc((100vw - 250px) / 10), 236px);
+  display: flex; flex-direction: column;
+  border-right: 1px solid var(--line-soft);
+  min-height: 0;
+}
+.rcol:last-child { border-right: none; }
+.rcol-head {
+  flex: none;
+  padding: 10px 12px 9px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-soft);
+}
+.rcol-top { display: flex; align-items: center; gap: 8px; }
+.rc-stage { font-family: var(--font-data); font-size: 12px; font-weight: 700; color: var(--data); letter-spacing: .04em; }
+.rc-name { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.rc-dot { margin-left: auto; }
+.rcol-stats { display: flex; align-items: baseline; gap: 10px; margin-top: 4px; }
+.rc-count { font-family: var(--font-data); font-size: 11px; color: var(--ink-2); }
+.rc-sum { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+.rc-sum b, .rc-count b { font-weight: 600; color: var(--ink-2); }
+.rcol-body {
+  flex: 1; min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.rcol-empty {
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  padding: 18px 10px;
+  text-align: center;
+  margin-top: 4px;
+}
+.rcol-empty .re-t { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-3); letter-spacing: .06em; }
+.rcol-empty .re-s { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+
+/* 任务卡 */
+.tcard {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 10px 11px 9px;
+  cursor: pointer;
+  transition: transform var(--tr-fast), border-color var(--tr-fast), background var(--tr-fast);
+}
+.tcard:hover { transform: translateY(-2px); border-color: #2E4E7E; background: var(--surface-hover); }
+.tcard:active { transform: translateY(-1px); }
+.tcard.blocked { border-color: rgba(255,71,87,.55); }
+.tcard.blocked:hover { border-color: var(--danger); }
+.tcard.archived { opacity: .62; }
+.tc-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tc-id { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-2); letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-shrink: 1; }
+.tc-prio {
+  margin-left: auto;
+  font-family: var(--font-data); font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 2px; letter-spacing: .05em;
+}
+.tc-title {
+  font-size: 12.5px; font-weight: 600; margin-top: 6px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tc-client { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+.tc-data { margin-top: 7px; display: flex; flex-direction: column; gap: 3px; }
+.tc-line { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-data); font-size: 11px; }
+.tc-line .tl-k { color: var(--ink-3); font-family: var(--font-ui); font-size: 11px; }
+.tc-line .tl-v { color: var(--ink-2); }
+.tc-line .tl-amt { color: var(--data); font-weight: 600; }
+.tc-flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.tc-flags .chip { height: 18px; padding: 0 6px; font-size: 10.5px; }
+
+/* 卡点徽标与 popover */
+.block-tag { cursor: pointer; }
+.block-tag:hover { filter: brightness(1.15); }
+.pop-wrap { position: relative; display: inline-flex; }
+.gpop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: -4px;
+  width: 246px;
+  z-index: 60;
+  background: #131E33;
+  border: 1px solid #2A4A78;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-modal);
+  padding: 10px 12px;
+  display: none;
+}
+.gpop.open, .pop-wrap:hover .gpop { display: block; }
+.gpop-t { font-size: 11.5px; font-weight: 600; color: var(--warn); display: flex; align-items: center; gap: 6px; }
+.gpop ul { margin-top: 6px; }
+.gpop li {
+  font-size: 11.5px; color: var(--ink-2); line-height: 1.55;
+  padding: 4px 0 4px 11px; position: relative;
+}
+.gpop li::before {
+  content: ""; position: absolute; left: 0; top: 10px;
+  width: 4px; height: 4px; background: var(--danger);
+}
+.gpop .gpop-foot { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line-soft); font-size: 11px; color: var(--ink-3); }
+
+/* 闸口标记（管线列间） */
+.gate-mark {
+  position: absolute;
+  right: -5px; top: 36px;
+  width: 9px; height: 9px;
+  z-index: 5;
+  cursor: pointer;
+  background: transparent;
+}
+.gate-mark::before {
+  content: ""; display: block; width: 9px; height: 9px;
+  background: var(--bg-soft);
+  border: 1px solid var(--ink-3);
+  transform: rotate(45deg);
+  transition: border-color var(--tr-fast), background var(--tr-fast);
+}
+.gate-mark.pass::before { background: var(--data); border-color: var(--data); }
+.gate-mark.block::before { background: var(--danger); border-color: var(--danger); }
+.gate-mark.wait::before { background: var(--bg-soft); border-color: var(--data); }
+.gate-mark:hover::before { border-color: var(--ink); }
+.gate-mark .gm-badge {
+  position: absolute; left: 8px; top: -7px;
+  font-family: var(--font-data); font-size: 9px; font-weight: 700;
+  color: var(--danger); background: rgba(255,71,87,.12);
+  border: 1px solid rgba(255,71,87,.4); border-radius: 2px;
+  padding: 0 3px;
+}
+
+/* 已归档条 */
+.arch-strip {
+  flex: none;
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 20px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-soft);
+}
+.arch-label { display: flex; align-items: center; gap: 8px; flex: none; }
+.arch-label .al-t { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.arch-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color var(--tr-fast), background var(--tr-fast);
+  max-width: 560px;
+}
+.arch-card:hover { border-color: #2E4E7E; background: var(--surface-hover); }
+.arch-card .ac-id { font-family: var(--font-data); font-size: 11px; color: var(--ink-2); }
+.arch-card .ac-t { font-size: 12.5px; font-weight: 600; }
+.arch-card .ac-m { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+
+/* ============ V2 单标深潜 ============ */
+.deep-head {
+  flex: none;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-soft);
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.dh-left { min-width: 0; }
+.dh-id-row { display: flex; align-items: center; gap: 9px; }
+.dh-id { font-family: var(--font-data); font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: .01em; }
+.dh-title { font-size: 13.5px; color: var(--ink-2); margin-top: 2px; }
+.dh-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dh-meta .mrow { display: flex; align-items: baseline; gap: 5px; font-size: 11.5px; color: var(--ink-3); }
+.dh-meta .mrow b { font-family: var(--font-data); font-weight: 600; color: var(--ink-2); }
+.dh-meta .mrow b.amt { color: var(--data); font-size: 13px; }
+.dh-switch { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+.deep-grid {
+  flex: 1; min-height: 0;
+  display: grid;
+  grid-template-columns: 292px minmax(380px, 1fr) 338px;
+  gap: 12px;
+  padding: 12px 20px 16px;
+  overflow: hidden;
+}
+@media (max-width: 1730px) {
+  .deep-grid { grid-template-columns: 264px minmax(340px, 1fr) 310px; }
+}
+.deep-col { min-height: 0; overflow-y: auto; padding-right: 2px; }
+
+/* 阶段标尺（垂直放大版） */
+.rail-v { position: relative; padding-left: 20px; }
+.rail-v::before {
+  content: ""; position: absolute; left: 5px; top: 14px; bottom: 14px;
+  width: 1px; background: var(--line);
+}
+.rv-row { position: relative; display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
+.rv-row .rv-node {
+  position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
+  width: 11px; height: 11px;
+  border: 1px solid var(--ink-3);
+  background: var(--surface);
+  border-radius: 2px;
+}
+.rv-row.past .rv-node { background: var(--data); border-color: var(--data); }
+.rv-row.cur .rv-node { background: var(--bg); border-color: var(--data); border-width: 2px; }
+.rv-row.cur .rv-node::after {
+  content: ""; position: absolute; inset: 2px; background: var(--data);
+  animation: breathe 2.4s ease-in-out infinite;
+}
+.rv-row.ahead .rv-node { border-style: dashed; }
+.rv-code { font-family: var(--font-data); font-size: 11px; width: 22px; color: var(--ink-3); }
+.rv-row.past .rv-code { color: var(--data); }
+.rv-row.cur .rv-code { color: var(--data); font-weight: 700; }
+.rv-name { font-size: 12px; color: var(--ink-2); }
+.rv-row.cur .rv-name { color: var(--ink); font-weight: 600; }
+.rv-row.ahead .rv-name { color: var(--ink-3); }
+.rv-badge { margin-left: auto; }
+.rv-row:hover { background: var(--surface-hover); border-radius: var(--r-sm); }
+.rv-row.sel { background: rgba(255,184,0,.06); border-radius: var(--r-sm); }
+/* 闸口行 */
+.rv-gate { position: relative; display: flex; align-items: center; gap: 8px; padding: 2px 0 2px 0; cursor: pointer; }
+.rv-gate .rg-sq {
+  position: absolute; left: -18.5px; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; background: var(--bg);
+  border: 1px solid var(--ink-3);
+}
+.rv-gate.pass .rg-sq { background: var(--data); border-color: var(--data); }
+.rv-gate.block .rg-sq { background: var(--danger); border-color: var(--danger); }
+.rv-gate.wait .rg-sq { border-color: var(--data); }
+.rv-gate-label { font-family: var(--font-data); font-size: 9.5px; letter-spacing: .08em; color: var(--ink-3); }
+.rv-gate.block .rv-gate-label { color: var(--danger); }
+.rv-gate:hover .rv-gate-label { color: var(--ink-2); }
+.rv-gate.sel .rv-gate-label { color: var(--data); }
+.rv-row.sel .rv-name { color: var(--ink); font-weight: 600; }
+
+/* 门禁详情 */
+.gate-detail .gd-head { display: flex; align-items: center; gap: 8px; }
+.gd-verdict { margin-left: auto; }
+.gd-item {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px solid var(--line-soft);
+}
+.gd-item:last-child { border-bottom: none; }
+.gd-st { margin-top: 1px; }
+.gd-st .ico { width: 15px; height: 15px; }
+.gd-st.ok { color: var(--ok); }
+.gd-st.fail { color: var(--danger); }
+.gd-st.wait { color: var(--ink-3); }
+.gd-item .gd-t { font-size: 12.5px; font-weight: 600; }
+.gd-item .gd-d { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; line-height: 1.55; }
+.gd-foot { margin-top: 9px; font-size: 11px; color: var(--ink-3); line-height: 1.6; }
+
+/* 遥测条 */
+.tele-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tele {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: 9px 11px;
+}
+.tele .t-l { font-family: var(--font-data); font-size: 9.5px; font-weight: 600; letter-spacing: .09em; color: var(--ink-3); text-transform: uppercase; }
+.tele .t-v { font-family: var(--font-data); font-size: 19px; font-weight: 700; color: var(--data); margin-top: 3px; line-height: 1.1; }
+.tele .t-v.ok { color: var(--ok); }
+.tele .t-v.danger { color: var(--danger); }
+.tele .t-v.link { color: var(--link); }
+.tele .t-s { font-size: 10.5px; color: var(--ink-3); margin-top: 2px; }
+
+/* 缺陷面板 */
+.def-round { margin-bottom: 12px; }
+.def-round:last-child { margin-bottom: 0; }
+.def-round-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.def-round-t { font-family: var(--font-data); font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--ink-2); }
+.def-item {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 8px 9px;
+  border: 1px solid var(--line-soft);
+  border-left-width: 2px;
+  border-radius: var(--r-sm);
+  background: var(--bg-soft);
+  margin-bottom: 6px;
+}
+.def-item.lv-block { border-left-color: var(--danger); }
+.def-item.lv-general { border-left-color: var(--warn); }
+.def-item.lv-info { border-left-color: var(--ink-3); }
+.def-item .di-main { flex: 1; min-width: 0; }
+.def-item .di-t { font-size: 12.5px; font-weight: 600; }
+.def-item .di-loc { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.def-item .di-actions { flex: none; display: flex; align-items: center; gap: 6px; }
+
+/* 产物表 */
+.art-tbl { width: 100%; border-collapse: collapse; }
+.art-tbl th {
+  font-family: var(--font-data); font-size: 9.5px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-3);
+  text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line);
+}
+.art-tbl td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); font-size: 12px; vertical-align: middle; }
+.art-tbl tr:last-child td { border-bottom: none; }
+.art-tbl .fname { font-family: var(--font-data); font-size: 11.5px; color: var(--ink); }
+.art-tbl .prod { color: var(--ink-2); font-size: 11.5px; }
+.art-tbl .tid { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+
+/* 素材反查 */
+.slice-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 0; border-bottom: 1px solid var(--line-soft);
+}
+.slice-item:last-child { border-bottom: none; }
+.slice-item .si-t { font-size: 12.5px; }
+.slice-item .si-m { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+.slice-gap {
+  margin-top: 9px; padding: 9px 10px;
+  border: 1px dashed rgba(255,159,67,.5);
+  border-radius: var(--r-sm);
+  background: rgba(255,159,67,.05);
+}
+.slice-gap .sg-t { font-size: 12px; font-weight: 600; color: var(--warn); }
+.slice-gap .sg-s { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+
+/* AI 摘要 */
+.ai-sum { border-left: 2px solid var(--link); }
+.ai-sum .as-body { font-size: 12.5px; color: var(--ink-2); line-height: 1.7; }
+.ai-sum .as-meta { margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap; }
+.ai-sum .as-meta span { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-3); }
+
+/* 倒计时时间线 */
+.tl2 { position: relative; padding-left: 16px; }
+.tl2::before { content: ""; position: absolute; left: 4px; top: 8px; bottom: 8px; width: 1px; background: var(--line); }
+.tl2-item { position: relative; display: flex; align-items: baseline; gap: 8px; padding: 6px 0; }
+.tl2-dot {
+  position: absolute; left: -16px; top: 50%; transform: translateY(-50%);
+  width: 9px; height: 9px; border-radius: 50%;
+  border: 1px solid var(--ink-3); background: var(--surface);
+}
+.tl2-item.done .tl2-dot { background: var(--ink-3); border-color: var(--ink-3); }
+.tl2-item.next .tl2-dot { border-color: var(--data); background: var(--bg); }
+.tl2-item.urgent .tl2-dot { border-color: var(--danger); background: rgba(255,71,87,.25); }
+.tl2-name { font-size: 12px; color: var(--ink-2); }
+.tl2-item.next .tl2-name, .tl2-item.urgent .tl2-name { color: var(--ink); font-weight: 600; }
+.tl2-date { margin-left: auto; font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+.tl2-days { font-family: var(--font-data); font-size: 11px; font-weight: 600; color: var(--ink-2); min-width: 52px; text-align: right; }
+.tl2-days.warn { color: var(--warn); }
+.tl2-days.danger { color: var(--danger); }
+.tl2-days.done { color: var(--ink-3); font-weight: 400; }
+
+/* 操作台 */
+.ops .op-btns { display: flex; flex-direction: column; gap: 8px; }
+.ops .ops-note { margin-top: 10px; font-size: 11px; color: var(--ink-3); line-height: 1.6; }
+.todo-list li {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid var(--line-soft);
+  font-size: 12px; color: var(--ink-2);
+}
+.todo-list li:last-child { border-bottom: none; }
+.todo-list .tl-time { margin-left: auto; font-family: var(--font-data); font-size: 10.5px; color: var(--ink-3); flex: none; }
+
+/* ============ V3 今日必办 ============ */
+.today-tool {
+  display: flex; align-items: center; gap: 20px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: none;
+}
+.t-stat { display: flex; align-items: baseline; gap: 7px; }
+.t-stat .ts-v { font-family: var(--font-data); font-size: 20px; font-weight: 700; }
+.t-stat .ts-v.danger { color: var(--danger); }
+.t-stat .ts-v.warn { color: var(--warn); }
+.t-stat .ts-v.info { color: var(--ink-2); }
+.t-stat .ts-k { font-size: 11.5px; color: var(--ink-3); }
+.today-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 20px 20px; }
+.alert-group { margin-bottom: 18px; }
+.ag-head { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.ag-t { font-size: 12.5px; font-weight: 600; }
+.ag-n { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+.alert-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-bottom: 8px;
+  transition: border-color var(--tr-fast), opacity var(--tr-base);
+}
+.alert-row:hover { border-color: #2A4A78; }
+.alert-row .ar-led { margin-top: 5px; }
+.alert-row .ar-main { flex: 1; min-width: 0; }
+.alert-row .ar-title { font-size: 13px; font-weight: 600; }
+.alert-row .ar-meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 5px;
+}
+.alert-row .ar-meta span { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+.alert-row .ar-act { flex: none; display: flex; align-items: center; gap: 8px; }
+.alert-row .ar-act .btn { height: 26px; }
+.alert-row.done { opacity: .56; border-color: var(--line-soft); }
+.alert-row.done .ar-title { text-decoration: line-through; text-decoration-color: rgba(139,163,199,.4); }
+.alert-row.done .ar-done-tag { font-family: var(--font-data); font-size: 11px; color: var(--ok); }
+.done-foot { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.no-filter-msg { padding: 40px 0; text-align: center; }
+
+/* ============ V4 资产台账 ============ */
+.assets-tool {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: none;
+  flex-wrap: wrap;
+}
+.atabs { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+.atab {
+  height: 28px; padding: 0 13px; font-size: 12.5px; color: var(--ink-2);
+  border-right: 1px solid var(--line);
+  transition: background var(--tr-fast), color var(--tr-fast);
+  display: flex; align-items: center; gap: 6px;
+}
+.atab:last-child { border-right: none; }
+.atab:hover { background: var(--surface-hover); color: var(--ink); }
+.atab.on { background: rgba(255,184,0,.12); color: var(--data); font-weight: 600; }
+.atab .atab-n { font-family: var(--font-data); font-size: 10px; color: var(--ink-3); }
+.atab.on .atab-n { color: var(--data); }
+.assets-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 20px 20px; }
+.tbl-wrap { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+.tbl { width: 100%; border-collapse: collapse; }
+.tbl th {
+  font-family: var(--font-data); font-size: 9.5px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-3);
+  text-align: left; padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-soft);
+  white-space: nowrap;
+}
+.tbl td { padding: 9px 12px; border-bottom: 1px solid var(--line-soft); font-size: 12.5px; vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tbody tr { cursor: pointer; transition: background var(--tr-fast); }
+.tbl tbody tr:hover { background: var(--surface-hover); }
+.tbl .num { font-family: var(--font-data); font-variant-numeric: tabular-nums; font-size: 12px; }
+.tbl .cell-sub { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+.tbl .expiry-warn { color: var(--warn); font-weight: 600; }
+.tbl .expiry-ok { color: var(--ink-2); }
+.tbl .occ { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ledger-strip {
+  display: flex; align-items: center; gap: 10px;
+  margin: 12px 0; padding: 8px 12px;
+  border: 1px dashed rgba(255,159,67,.45);
+  border-radius: var(--r-sm);
+  background: rgba(255,159,67,.04);
+  font-size: 12px; color: var(--ink-2);
+}
+.ledger-strip .ls-t { color: var(--warn); font-weight: 600; }
+
+/* 抽屉 */
+.drawer-mask {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(5,10,20,.55);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--tr-base);
+}
+.drawer-mask.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 400px; max-width: 92vw;
+  z-index: 201;
+  background: #101A2E;
+  border-left: 1px solid #2A4A78;
+  box-shadow: var(--shadow-modal);
+  transform: translateX(16px); opacity: 0; pointer-events: none;
+  transition: transform var(--tr-base), opacity var(--tr-base);
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+.dw-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.dw-title { font-size: 14px; font-weight: 700; }
+.dw-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+.dw-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
+.dw-row:last-child { border-bottom: none; }
+.dw-k { width: 84px; flex: none; font-size: 11.5px; color: var(--ink-3); }
+.dw-v { font-size: 12.5px; color: var(--ink); min-width: 0; word-break: break-all; }
+.dw-v.mono { font-size: 11.5px; color: var(--ink-2); }
+.dw-note {
+  margin-top: 14px; padding: 10px 12px;
+  border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+  background: var(--bg-soft);
+  font-size: 11.5px; color: var(--ink-3); line-height: 1.7;
+}
+
+/* ============ V5 商机 ============ */
+.leads-wrap { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 268px; gap: 12px; padding: 12px 20px 16px; overflow: hidden; }
+.leads-main { min-height: 0; overflow-y: auto; padding-right: 2px; }
+.leads-side { min-height: 0; overflow-y: auto; }
+.lead-tabs { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+.ltab {
+  height: 28px; padding: 0 13px; font-size: 12.5px; color: var(--ink-2);
+  border-right: 1px solid var(--line);
+  display: flex; align-items: center; gap: 6px;
+  transition: background var(--tr-fast), color var(--tr-fast);
+}
+.ltab:last-child { border-right: none; }
+.ltab:hover { background: var(--surface-hover); color: var(--ink); }
+.ltab.on { background: rgba(255,184,0,.12); color: var(--data); font-weight: 600; }
+.ltab .ltab-n { font-family: var(--font-data); font-size: 10px; color: var(--ink-3); }
+.ltab.on .ltab-n { color: var(--data); }
+.lane { margin-bottom: 16px; }
+.lane-head { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.lane-t { font-size: 12.5px; font-weight: 600; }
+.lane-note { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-3); }
+.lead-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  transition: border-color var(--tr-fast);
+}
+.lead-card:hover { border-color: #2A4A78; }
+.lead-card.auto { border-color: rgba(255,184,0,.5); }
+.lc-top { display: flex; align-items: center; gap: 12px; }
+.lc-score { font-family: var(--font-data); font-size: 21px; font-weight: 700; color: var(--data); line-height: 1; min-width: 42px; }
+.lc-score.mid { color: var(--link); }
+.lc-score.low { color: var(--ink-3); }
+.lc-main { flex: 1; min-width: 0; }
+.lc-t { font-size: 13px; font-weight: 600; }
+.lc-sub { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lc-actions { flex: none; display: flex; align-items: center; gap: 8px; }
+.ev-box {
+  margin-top: 10px; padding: 9px 11px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  display: none;
+}
+.ev-box.open { display: block; }
+.ev-quote { font-size: 12px; color: var(--ink-2); line-height: 1.7; border-left: 2px solid var(--link); padding-left: 10px; }
+.ev-src { margin-top: 7px; font-family: var(--font-data); font-size: 10.5px; color: var(--ink-3); }
+.lc-ev-toggle { margin-top: 8px; }
+.leads-side .panel { margin-top: 0; margin-bottom: 12px; }
+.lstat { display: flex; align-items: baseline; gap: 8px; padding: 5px 0; }
+.lstat .ls-v { font-family: var(--font-data); font-size: 17px; font-weight: 700; }
+.lstat .ls-k { font-size: 11.5px; color: var(--ink-3); }
+.side-note { font-size: 11.5px; color: var(--ink-3); line-height: 1.7; }
+
+/* ============ V6 简报 ============ */
+.dig-wrap { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 272px; gap: 12px; padding: 12px 20px 16px; overflow: hidden; }
+.dig-main { min-height: 0; overflow-y: auto; padding-right: 2px; }
+.dig-side { min-height: 0; overflow-y: auto; }
+.dig-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.dig-day-ctl button { min-width: 74px; }
+.dig-read { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+.dig-read:last-child { border-bottom: none; }
+.dr-num { font-family: var(--font-data); font-size: 15px; font-weight: 700; color: var(--data); width: 26px; flex: none; }
+.dr-t { font-size: 13px; line-height: 1.65; }
+.dr-sub { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; font-family: var(--font-data); }
+.dig-section { margin-top: 15px; }
+.dig-section h4 { font-size: 12.5px; color: var(--ink); display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.dig-section h4::before { content: ""; width: 3px; height: 12px; background: var(--data); border-radius: 1px; }
+.dig-p { font-size: 12.5px; color: var(--ink-2); line-height: 1.75; }
+.dig-p + .dig-p { margin-top: 6px; }
+.dig-p .mono { color: var(--ink); font-size: 11.5px; }
+.gen-state { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--ink-2); }
+
+/* ============ V7 系统 ============ */
+.sys-tool {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: none;
+}
+.stabs { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+.stab {
+  height: 28px; padding: 0 12px; font-size: 12.5px; color: var(--ink-2);
+  border-right: 1px solid var(--line);
+  transition: background var(--tr-fast), color var(--tr-fast);
+}
+.stab:last-child { border-right: none; }
+.stab:hover { background: var(--surface-hover); color: var(--ink); }
+.stab.on { background: rgba(255,184,0,.12); color: var(--data); font-weight: 600; }
+.sys-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 20px 20px; }
+.sys-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.sys-grid .panel { margin-top: 0; }
+.sys-grid .span2 { grid-column: 1 / -1; }
+
+/* 日志终端 */
+.logterm {
+  background: #050A14;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  height: 340px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  font-family: var(--font-data);
+  font-size: 11.5px;
+  line-height: 1.85;
+}
+.log-row { display: flex; gap: 10px; white-space: nowrap; }
+.log-row .lg-time { color: var(--ink-3); flex: none; }
+.log-row .lg-lvl { flex: none; width: 42px; font-weight: 700; }
+.log-row .lg-lvl.info { color: var(--link); }
+.log-row .lg-lvl.warn { color: var(--warn); }
+.log-row .lg-lvl.error { color: var(--danger); }
+.log-row .lg-mod { flex: none; width: 76px; color: var(--ink-2); }
+.log-row .lg-msg { color: #B9CCE4; white-space: normal; }
+.log-row.err .lg-msg { color: var(--danger); }
+.log-row.wrn .lg-msg { color: #EBC08B; }
+.logterm .term-empty { color: var(--ink-3); font-style: normal; }
+.trig-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.trig-row .btn { height: 28px; }
+
+/* 工单队列 */
+.qrow { border-bottom: 1px solid var(--line-soft); }
+.qrow:last-child { border-bottom: none; }
+.qrow-head { display: flex; align-items: center; gap: 10px; padding: 10px 13px; cursor: pointer; transition: background var(--tr-fast); }
+.qrow-head:hover { background: var(--surface-hover); }
+.qrow-id { font-family: var(--font-data); font-size: 11.5px; color: var(--ink); font-weight: 600; }
+.qrow-t { font-size: 12.5px; }
+.qrow-bid { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+.qrow-right { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+.qrow-body { display: none; padding: 0 13px 12px; }
+.qrow.open .qrow-body { display: block; }
+.qflow { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.qflow-step { display: flex; align-items: center; gap: 6px; font-family: var(--font-data); font-size: 10.5px; color: var(--ink-3); }
+.qflow-step.on { color: var(--data); font-weight: 700; }
+.qflow-step.done { color: var(--ok); }
+.qflow-arrow { color: var(--ink-3); font-size: 11px; }
+.qtext {
+  background: var(--bg-soft); border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-family: var(--font-data); font-size: 11px; line-height: 1.8; color: #B9CCE4;
+  white-space: pre-wrap; word-break: break-all;
+  max-height: 220px; overflow-y: auto;
+}
+.qfoot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+
+/* 配置 */
+.cfg-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+.cfg-row:last-of-type { border-bottom: none; }
+.cfg-k { width: 132px; flex: none; font-size: 12.5px; color: var(--ink); }
+.cfg-k .cfg-sub { display: block; font-size: 10.5px; color: var(--ink-3); margin-top: 1px; }
+.cfg-v { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cfg-hint { font-size: 11px; color: var(--ink-3); }
+.switch { position: relative; width: 36px; height: 20px; flex: none; cursor: pointer; display: inline-block; }
+.switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.switch .track { position: absolute; inset: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; transition: background var(--tr-fast), border-color var(--tr-fast); }
+.switch .knob { position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; background: var(--ink-3); border-radius: 2px; transition: transform var(--tr-fast), background var(--tr-fast); }
+.switch input:checked + .track { background: rgba(255,184,0,.18); border-color: var(--data); }
+.switch input:checked + .track + .knob { transform: translateX(16px); background: var(--data); }
+.switch input:disabled ~ .track { opacity: .5; }
+.switch input:focus-visible + .track { outline: 2px solid var(--data); outline-offset: 2px; }
+.cfg-num { width: 92px; }
+.cfg-time { width: 74px; text-align: center; }
+.cfg-save-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.cfg-dirty { font-family: var(--font-data); font-size: 11px; color: var(--warn); }
+
+/* 提案 */
+.prop-card { display: flex; align-items: center; gap: 12px; }
+.prop-main { flex: 1; min-width: 0; }
+.prop-id { font-family: var(--font-data); font-size: 11px; color: var(--ink-3); }
+.prop-t { font-size: 13px; font-weight: 600; margin-top: 2px; }
+.prop-sub { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
+.diff-box {
+  background: var(--bg-soft); border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+  padding: 10px 12px; font-family: var(--font-data); font-size: 11.5px; line-height: 1.9;
+  color: #B9CCE4; white-space: pre-wrap;
+}
+.diff-box .diff-add { color: var(--ok); }
+.diff-box .diff-del { color: var(--danger); }
+
+/* ============ 模态 ============ */
+.overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(5,10,20,.7);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--tr-base);
+}
+.overlay.open { opacity: 1; pointer-events: auto; }
+.modal {
+  width: 560px; max-width: 100%;
+  max-height: calc(100vh - 60px);
+  background: #121C30;
+  border: 1px solid #2A4A78;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-modal);
+  display: flex; flex-direction: column;
+  transform: translateY(8px) scale(.99);
+  transition: transform var(--tr-base);
+  outline: none;
+}
+.overlay.open .modal { transform: none; }
+.modal.sm { width: 440px; }
+.modal.lg { width: 720px; }
+.modal.wide { width: 860px; }
+.modal-h {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.modal-h .mh-code { font-family: var(--font-data); font-size: 10px; font-weight: 700; letter-spacing: .1em; color: var(--data); }
+.modal-h .mh-t { font-size: 14.5px; font-weight: 700; }
+.modal-h .mh-x { margin-left: auto; }
+.modal-b { padding: 16px; overflow-y: auto; flex: 1; min-height: 0; }
+.modal-f {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 16px;
+  border-top: 1px solid var(--line);
+  flex: none;
+}
+.modal-f .mf-note { font-size: 11.5px; color: var(--ink-3); margin-right: auto; }
+
+/* ============ Toast ============ */
+.toast-root {
+  position: fixed; right: 18px; bottom: 18px; z-index: 400;
+  display: flex; flex-direction: column; gap: 8px;
+  width: 340px; max-width: calc(100vw - 36px);
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex; align-items: flex-start; gap: 9px;
+  background: #14203A;
+  border: 1px solid #2A4A78;
+  border-left: 3px solid var(--data);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-modal);
+  animation: toast-in .18s ease-out;
+}
+.toast.ok { border-left-color: var(--ok); }
+.toast.warn { border-left-color: var(--warn); }
+.toast.danger { border-left-color: var(--danger); }
+.toast.info { border-left-color: var(--link); }
+.toast .t-main { flex: 1; min-width: 0; }
+.toast .t-t { font-size: 12.5px; font-weight: 600; }
+.toast .t-s { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; line-height: 1.6; }
+.toast .t-x { color: var(--ink-3); margin-top: 1px; }
+.toast .t-x:hover { color: var(--ink); }
+@keyframes toast-in { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ============ 骨架屏 ============ */
+.skel {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  transition: opacity .25s ease-out;
+}
+.skel.off { opacity: 0; pointer-events: none; }
+.sk-top { height: 46px; background: var(--bg-soft); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; padding: 0 16px; }
+.sk-main { flex: 1; display: grid; grid-template-columns: 196px 1fr; }
+.sk-nav { background: var(--bg-soft); border-right: 1px solid var(--line); padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.sk-canvas { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.sk-block { background: #16223A; border-radius: var(--r-sm); animation: skpulse 1.3s ease-in-out infinite; }
+@keyframes skpulse { 0%,100% { opacity: .55; } 50% { opacity: .95; } }
+.sk-row { display: flex; gap: 12px; }
+.sk-line { height: 13px; }
+.sk-card { height: 120px; flex: 1; }
+
+/* ============ 空态 ============ */
+.empty {
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  padding: 42px 20px;
+  text-align: center;
+}
+.empty .e-ico { color: var(--ink-3); margin-bottom: 10px; }
+.empty .e-t { font-family: var(--font-data); font-size: 13px; font-weight: 600; color: var(--ink-2); letter-spacing: .04em; }
+.empty .e-s { font-size: 12px; color: var(--ink-3); margin-top: 6px; line-height: 1.7; }
+.empty .e-a { margin-top: 14px; }
+.empty.celebrate { border-color: rgba(38,222,129,.4); }
+.empty.celebrate .e-ico { color: var(--ok); }
+.empty.celebrate .e-t { color: var(--ok); }
+
+/* 工具杂项 */
+.sep-v { width: 1px; height: 18px; background: var(--line); flex: none; }
+.hint-line { font-size: 11.5px; color: var(--ink-3); }
+.warn-text { color: var(--warn); }
+.danger-text { color: var(--danger); }
+.ok-text { color: var(--ok); }
+.link-text { color: var(--link); }
+.fill { flex: 1; min-width: 0; }
+.scroll-y { overflow-y: auto; }
+
+/* ============ 响应式 ============ */
+@media (max-width: 1180px) {
+  .deep-grid { grid-template-columns: minmax(200px, 240px) minmax(250px, 1fr) minmax(230px, 270px); gap: 10px; padding: 10px 14px 14px; }
+  .ph-right .hint-line { display: none; }
+  .leads-wrap, .dig-wrap { grid-template-columns: minmax(0,1fr) 240px; padding: 10px 14px 14px; }
+  .tele-strip { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1023px) {
+  body { overflow: auto; }
+  .shell { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; height: auto; min-height: 100%; }
+  .topbar { flex-wrap: wrap; height: auto; min-height: 46px; padding: 8px 12px; row-gap: 6px; }
+  .watch { order: 3; }
+  .sidenav {
+    grid-row: 2;
+    flex-direction: row; overflow-x: auto; overflow-y: hidden;
+    border-right: none; border-bottom: 1px solid var(--line);
+    padding: 0 6px;
+  }
+  .nav-item { border-left: none; border-bottom: 2px solid transparent; height: 42px; flex: none; }
+  .nav-item.active { border-left-color: transparent; border-bottom-color: var(--data); }
+  .nav-foot { display: none; }
+  .main { overflow: visible; }
+  .view { height: auto; }
+  .vbody { overflow: visible; }
+  .deep-grid { display: flex; flex-direction: column; overflow: visible; }
+  .deep-col { overflow: visible; }
+  .deep-wrap { overflow: visible; }
+  .rrail { min-height: 460px; }
+  .leads-wrap, .dig-wrap { display: flex; flex-direction: column; overflow: visible; }
+  .leads-main, .leads-side, .dig-main, .dig-side { overflow: visible; }
+  .sys-grid { grid-template-columns: 1fr; }
+  .today-body, .assets-body, .sys-body { overflow: visible; }
+  .logterm { height: 260px; }
+}
+@media (max-width: 767px) {
+  .watch-txt { display: none; }
+  .clock-date { display: none; }
+  .userchip { display: none; }
+  .vhead-sub { display: none; }
+  .vhead { flex-wrap: wrap; gap: 8px; }
+  .vhead-right { margin-left: 0; width: 100%; }
+  .pipe-tool { padding: 8px 12px; }
+  .rcol { width: 190px; }
+  .arch-strip { flex-direction: column; align-items: flex-start; }
+  .tbl-wrap { overflow-x: auto; }
+  .tbl { min-width: 640px; }
+  .modal { width: calc(100vw - 28px) !important; }
+  .toast-root { right: 10px; left: 10px; width: auto; }
+  .deep-grid { padding: 10px 12px; }
+  .sys-tool, .assets-tool { padding: 8px 12px; }
+  .today-body, .sys-body { padding: 10px 12px 16px; }
+  .deep-head { padding: 10px 12px; }
+  .drawer { width: 92vw; }
+  .tele-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============ 动效降级 ============ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true" focusable="false">
+  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M12 2.6 20.4 7.1v9.8L12 21.4 3.6 16.9V7.1L12 2.6Z" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="9.3" y="9.3" width="5.4" height="5.4" fill="currentColor"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M5.5 15H4.6A1.6 1.6 0 0 1 3 13.4V4.6A1.6 1.6 0 0 1 4.6 3h8.8A1.6 1.6 0 0 1 15 4.6v.9" stroke="currentColor" stroke-width="1.7" fill="none"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M4.5 12h14M13 6.5l5.5 5.5L13 17.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.6 4.6L19 7.4" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M19.5 4.5v4h-4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.6v12.8L18.6 12 8 5.6Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13H7v-17Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M14 3.5v4h4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="M6.5 9.5 12 15l5.5-5.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wait" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.2" stroke="currentColor" stroke-width="1.7" fill="none" stroke-dasharray="2.6 3.1"/></symbol>
+  <symbol id="i-x-sq" viewBox="0 0 24 24"><rect x="4.8" y="4.8" width="14.4" height="14.4" rx="1.6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M9.4 9.4l5.2 5.2M14.6 9.4l-5.2 5.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-radar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="12" cy="12" r="4.6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M12 12l6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 2.8v5.7c0 4.4-3.1 7.6-7.5 9.5-4.4-1.9-7.5-5.1-7.5-9.5V5.8L12 3Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div class="skel" id="skel" aria-hidden="true">
+  <div class="sk-top">
+    <div class="sk-block" style="width:150px;height:18px"></div>
+    <div class="sk-block" style="width:220px;height:16px"></div>
+    <div class="sk-block right" style="width:120px;height:16px"></div>
+  </div>
+  <div class="sk-main">
+    <div class="sk-nav">
+      <div class="sk-block" style="height:30px"></div>
+      <div class="sk-block" style="height:30px"></div>
+      <div class="sk-block" style="height:30px"></div>
+      <div class="sk-block" style="height:30px"></div>
+      <div class="sk-block" style="height:30px"></div>
+      <div class="sk-block" style="height:30px"></div>
+      <div class="sk-block" style="height:30px"></div>
+    </div>
+    <div class="sk-canvas">
+      <div class="sk-block sk-line" style="width:240px"></div>
+      <div class="sk-row">
+        <div class="sk-block sk-card"></div>
+        <div class="sk-block sk-card"></div>
+        <div class="sk-block sk-card"></div>
+      </div>
+      <div class="sk-block" style="height:220px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="tb-brand">
+      <svg class="tb-mark" aria-hidden="true"><use href="#i-mark"/></svg>
+      <div>
+        <div class="tb-name">投标工作台</div>
+        <div class="tb-sub">BID-MASTER · 作战室</div>
+      </div>
+    </div>
+    <div class="watch" title="数据面 watcher · 5s 轮询 · 只认 status=final 产物">
+      <span class="watch-dot" aria-hidden="true"></span>
+      <span class="watch-tag">WATCH</span>
+      <span class="watch-txt">数据面已同步 · <span id="sync-time" class="mono">09:12:00</span></span>
+    </div>
+    <div class="tb-right">
+      <div>
+        <div class="clock mono" id="clock">2026-09-11 09:12:00</div>
+        <div class="clock-date">演示时钟 · 数据基准 2026-09-11</div>
+      </div>
+      <div class="userchip">
+        <div class="user-av" aria-hidden="true">DK</div>
+        <div class="user-name">Duke · 值班</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="sidenav" id="sidenav" aria-label="主导航">
+    <button class="nav-item" data-a="nav" data-v="pipeline"><span class="nav-code">01</span><span class="nav-label">管线</span></button>
+    <button class="nav-item" data-a="nav" data-v="deep"><span class="nav-code">02</span><span class="nav-label">深潜</span></button>
+    <button class="nav-item" data-a="nav" data-v="today"><span class="nav-code">03</span><span class="nav-label">今日必办</span><span class="nav-live" id="nav-alerts">6</span></button>
+    <button class="nav-item" data-a="nav" data-v="assets"><span class="nav-code">04</span><span class="nav-label">资产</span></button>
+    <button class="nav-item" data-a="nav" data-v="leads"><span class="nav-code">05</span><span class="nav-label">商机</span></button>
+    <button class="nav-item" data-a="nav" data-v="digest"><span class="nav-code">06</span><span class="nav-label">简报</span></button>
+    <button class="nav-item" data-a="nav" data-v="system"><span class="nav-code">07</span><span class="nav-label">系统</span></button>
+    <div class="nav-foot">
+      <div class="nf-line"><span class="led ok" aria-hidden="true"></span>演示数据 · 数据基准 2026-09-11</div>
+      <div class="nf-line"><span class="led info" aria-hidden="true"></span>看板为投影 · 唯一事实源在数据面</div>
+      <div class="nf-line" style="margin-top:6px">快捷键 1-7 切换视图 · Esc 关闭弹层</div>
+    </div>
+  </nav>
+
+  <main class="main" id="main">
+    <div id="view-root" style="height:100%"></div>
+  </main>
+</div>
+
+<div id="modal-root"></div>
+
+<div class="drawer-mask" id="drawer-mask" data-a="drawer-close"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="详情抽屉"></aside>
+
+<div class="toast-root" id="toast-root" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   方案A「作战室」· 演示运行时
+   单一 STATE + 按视图渲染；全部数据来自共享规范 §4 数据集
+   ============================================================ */
+"use strict";
+const DEMO_NOW = new Date('2026-09-11T09:12:00+08:00');
+const BOOT_MS = Date.now();
+function demoNow() { return new Date(DEMO_NOW.getTime() + (Date.now() - BOOT_MS)); }
+
+const STAGE_NAMES = ['线索', '预审', '决策', '解构', '编制', '审查', '封标', '开标', '结果', '归档'];
+
+/* ---------- 标的（8 条） ---------- */
+const BIDS = [
+  {
+    id: '2026-GOLD-jishu', client: '某证券通信机构', proj: '安全技术支持服务采购',
+    stage: 3, pri: 'P0', amt: 280, stay: 3, draft: [7, 12], source: 'primary',
+    flags: ['素材缺口'], blocked: false, blockedList: [],
+    gate: { from: 3, to: 4, verdict: 'pass', items: [
+      { t: 'hits 关键词对账 100%', d: '收录 42 / 排除 17，全理由覆盖', st: 'ok' },
+      { t: '阶段产物齐全', d: 'phase0 / spec / draft ch01-ch07 已登记', st: 'ok' }] },
+    events: [
+      { name: '公告发布', done: true },
+      { name: '答疑截止', date: '2026-09-16' },
+      { name: '保证金截止', date: '2026-09-25' },
+      { name: '递交 / 封标', date: '2026-10-09 09:30' },
+      { name: '开标', date: '2026-10-09 14:00' }],
+    tele: [
+      { l: 'DRAFT', v: '7/12', s: '章节已扩写' },
+      { l: 'LOCATOR', v: '98.6%', s: '抽查 60 条', c: 'link' },
+      { l: 'CITE 违规', v: '0', s: '机检通过', c: 'ok' },
+      { l: '阻断缺陷', v: '0', s: 'r1 收敛', c: 'ok' }],
+    defectRounds: [
+      { n: 'r1', chips: [['阻断', 0, 'danger'], ['一般', 5, 'warn'], ['提示', 0, 'muted']], d: '已修复 3 · 待处理 2' }],
+    defectItems: [],
+    defectNote: 'r1 无阻断级缺陷；缺陷明细以 audit-r1.json 为准。',
+    artifacts: [
+      { f: 'phase0.json', p: '主 Agent', st: 'final', tid: '-' },
+      { f: 'spec.json（规格单）', p: '-', st: 'final', tid: '-' },
+      { f: 'draft ch01-ch07', p: 'bid-writer', st: 'final', tid: '-' },
+      { f: 'audit-r1.json', p: 'bid-auditor', st: 'final', tid: '-' },
+      { f: 'locate-r1.json', p: 'bid-locator', st: 'final', tid: '-' }],
+    slices: [
+      { n: '重保协防方案 v3', m: '切片 ×8 · 本章引用 4 章' },
+      { n: '数据分类分级方法论 v2', m: '切片 ×12 · 引用 2 章' }],
+    sliceGap: { t: '评分点 3.2 应急响应能力', s: '无素材指针 · 建议登记缺口' },
+    ai: { body: '阶段 0 完成：42 项资质条件收敛为 6 项硬门槛…', author: '主 Agent', ev: 'kb/index/certs.json#CERT-004' },
+    todos: []
+  },
+  {
+    id: '2026-nfh-v14', client: '农发行', proj: '数据安全评估与技术服务（修订）',
+    stage: 5, pri: 'P0', amt: 320, stay: null, draft: null, source: 'primary',
+    flags: ['阻断缺陷'], blocked: true,
+    blockedList: [
+      'auditor 阻断级未清零：1 条未关闭（商务偏离表未逐条响应 · 第 7 条服务响应偏离）',
+      '人工签核（L3）未发起：前置条件未满足'],
+    gate: { from: 5, to: 6, verdict: 'block', items: [
+      { t: 'auditor 阻断级 = 0', d: '1 条未关闭：商务偏离表未逐条响应 · 第 7 条服务响应偏离', st: 'fail' },
+      { t: 'locator 命中率 ≥ 95%', d: '当前 98.6%，抽查通过', st: 'ok' },
+      { t: '人工签核（L3）', d: '待签核 · 前置条件未满足', st: 'wait' }] },
+    events: [
+      { name: '封标', date: '2026-09-25' },
+      { name: '开标', date: '2026-09-26 10:00' }],
+    tele: [
+      { l: 'LOCATOR', v: '98.6%', s: '命中率达标', c: 'link' },
+      { l: '阻断缺陷', v: '1', s: '未关闭 · 修复中', c: 'danger' },
+      { l: '一般 / 提示', v: '2 / 4', s: 'r2 复核', c: 'warn' },
+      { l: '签核', v: '待签核', s: 'L3 未发起' }],
+    defectRounds: [
+      { n: 'r1', chips: [['阻断', 1, 'danger'], ['一般', 5, 'warn'], ['提示', 0, 'muted']], d: '' },
+      { n: 'r2 复核', chips: [['阻断', 1, 'danger'], ['一般', 2, 'warn'], ['提示', 4, 'muted']], d: '' }],
+    defectItems: [
+      { lv: 'lv-block', lvName: '阻断', t: '商务偏离表未逐条响应', loc: '商务偏离表 · 第 7 条 服务响应偏离', st: '修复中' }],
+    defectNote: 'r2 复核：阻断 1（修复中）+ 一般 2 + 提示 4。',
+    artifacts: [
+      { f: 'draft（修订稿）', p: 'bid-writer', st: 'final', tid: '-' },
+      { f: 'audit-r2.json', p: 'bid-auditor', st: 'final', tid: 'T-20260909-02' }],
+    slices: [],
+    slicesNote: '本章素材引用明细未登记。',
+    ai: null,
+    todos: []
+  },
+  {
+    id: '2026-szse-zhongbao', client: '某证券交易所', proj: '网络安全重保协防服务采购',
+    stage: 2, pri: 'P1', amt: 156, stay: null, draft: null, source: 'primary',
+    flags: ['卡点'], blocked: true,
+    blockedList: ['S2→S3 门禁未过：阶段 0 产物缺 lessons_applied 字段（未引用有效教训）'],
+    gate: { from: 2, to: 3, verdict: 'block', items: [
+      { t: '阶段 0 产物含 lessons_applied', d: '字段缺失 · 需引用有效教训后重放', st: 'fail' },
+      { t: '阶段 0 产物存在', d: 'phase0.json 已登记', st: 'ok' }] },
+    events: [{ name: '决策截止', date: '2026-09-18' }],
+    tele: [],
+    defectRounds: [],
+    defectItems: [],
+    defectNote: 'auditor 未运行（S2 决策阶段，编制未开始）。',
+    artifacts: [
+      { f: 'phase0.json', p: '主 Agent', st: 'final', tid: '-', note: '缺 lessons_applied 字段' }],
+    slices: [],
+    slicesNote: '素材引用在编制阶段登记。',
+    ai: null,
+    todos: []
+  },
+  {
+    id: '2026-dgbank-attack', client: '东莞银行', proj: '网络攻防演习保障项目',
+    stage: 2, pri: 'P1', amt: 98, stay: null, draft: null, source: 'secondary',
+    flags: ['二手源'], blocked: false, blockedList: [],
+    gate: null,
+    events: [{ name: '决策截止', date: '2026-09-22' }],
+    tele: [], defectRounds: [], defectItems: [],
+    defectNote: 'auditor 未运行（决策阶段）。',
+    artifacts: [], slices: [], slicesNote: '素材引用在编制阶段登记。',
+    ai: null, todos: []
+  },
+  {
+    id: '2026-pengcheng-bank', client: '鹏城银行', proj: '数据安全治理咨询',
+    stage: 4, pri: 'P1', amt: 120, stay: null, draft: [8, 12], source: 'primary',
+    flags: [], blocked: false, blockedList: [],
+    gate: null,
+    events: [{ name: '封标', date: '2026-10-20' }],
+    tele: [{ l: 'DRAFT', v: '8/12', s: '章节已扩写' }],
+    defectRounds: [], defectItems: [],
+    defectNote: 'auditor 未运行（审查在 S5 阶段启动）。',
+    artifacts: [], slices: [], slicesNote: '素材引用在编制阶段登记。',
+    ai: null, todos: []
+  },
+  {
+    id: '2026-pengcheng-sec', client: '鹏城证券', proj: 'SOC 安全运营中心建设',
+    stage: 7, pri: 'P1', amt: 210, stay: null, draft: null, source: 'primary',
+    flags: [], blocked: false, blockedList: [],
+    gate: null,
+    events: [
+      { name: '保证金截止', date: '2026-09-12' },
+      { name: '开标', date: '2026-09-15 14:30' }],
+    tele: [], defectRounds: [], defectItems: [],
+    defectNote: '开标阶段无活动缺陷。',
+    artifacts: [], slices: [], slicesNote: '素材引用在编制阶段登记。',
+    ai: null, todos: []
+  },
+  {
+    id: '2026-nanshan-sec', client: '南山证券', proj: '红队攻防服务采购',
+    stage: 1, pri: 'P2', amt: 75, stay: null, draft: null, source: 'primary',
+    flags: [], blocked: false, blockedList: [],
+    gate: null,
+    events: [{ name: '报名截止', date: '2026-09-19' }],
+    tele: [], defectRounds: [], defectItems: [],
+    defectNote: '预审阶段尚未启动编制。',
+    artifacts: [], slices: [], slicesNote: '素材引用在编制阶段登记。',
+    ai: null, todos: []
+  },
+  {
+    id: '2026-baybank-bcp', client: '湾区银行', proj: '业务连续性 BCP 演练保障',
+    stage: 9, pri: 'P2', amt: 64, stay: null, draft: null, source: 'primary',
+    flags: [], blocked: false, blockedList: [],
+    gate: { from: 8, to: 9, verdict: 'pass', items: [
+      { t: 'apply_archive 幂等应用', d: '归档提案 confirmed', st: 'ok' },
+      { t: 'lessons 采纳确认', d: 'auditor r2 收敛', st: 'ok' }] },
+    events: [{ name: '归档', date: '2026-08-28', done: true }],
+    tele: [], defectRounds: [], defectItems: [],
+    defectNote: '归档收尾：auditor r2 收敛，无活动缺陷。',
+    artifacts: [
+      { f: 'archive 提案（confirmed）', p: 'bid-archivist', st: 'confirmed', tid: 'T-20260906-03' }],
+    slices: [], slicesNote: '素材引用在编制阶段登记。',
+    ai: null, todos: []
+  }
+];
+
+/* ---------- 今日必办（6 条） ---------- */
+const ALERTS = [
+  { sev: 'danger', type: '阻断', title: '农发行 S5→S6 签核阻塞：阻断级缺陷 1 条未关闭',
+    rel: '2026-nfh-v14', relName: '农发行 · 数据安全评估与技术服务（修订）',
+    time: '封标 T-14 天 · 建议动作：生成修复工单后复核', goto: { v: 'deep', id: '2026-nfh-v14' }, st: 'open' },
+  { sev: 'warn', type: '临期', title: '某证券通信机构答疑截止 09-16（剩 5 天）：答疑澄清函待提交',
+    rel: '2026-GOLD-jishu', relName: '某证券通信机构 · 安全技术支持服务采购',
+    time: '09-16 截止 · 建议动作：提交澄清函', goto: { v: 'deep', id: '2026-GOLD-jishu' }, st: 'open' },
+  { sev: 'warn', type: '临期', title: '鹏城证券保证金凭证待归档（09-12 截止，剩 1 天）',
+    rel: '2026-pengcheng-sec', relName: '鹏城证券 · SOC 安全运营中心建设',
+    time: '09-12 截止 · 建议动作：凭证归档至数据面', goto: { v: 'deep', id: '2026-pengcheng-sec' }, st: 'open' },
+  { sev: 'info', type: '提醒', title: '人员冲突：王工 09-20 某证券通信机构现场 与 09-21 某证券交易所现场冲突',
+    rel: '王工', relName: '人员 · 项目经理',
+    time: '跨标冲突 · 建议动作：调整排期或换人', goto: { v: 'assets', domain: 'people' }, st: 'open' },
+  { sev: 'info', type: '提醒', title: '证照临期：ISO/IEC 27001 证书 47 天后到期（10-28）',
+    rel: 'ISO/IEC 27001', relName: '证照 · 信息安全管理体系认证',
+    time: '10-28 到期 · 建议动作：启动复评换证', goto: { v: 'assets', domain: 'certs' }, st: 'open' },
+  { sev: 'info', type: '提醒', title: '素材缺口：某证券通信机构评分点 3.2 无素材指针',
+    rel: '2026-GOLD-jishu', relName: '某证券通信机构 · 安全技术支持服务采购',
+    time: '编制阻塞项 · 建议动作：登记缺口补素材', goto: { v: 'deep', id: '2026-GOLD-jishu' }, st: 'open' }
+];
+
+/* ---------- 资产台账 ---------- */
+const CERTS = [
+  { name: 'ISO/IEC 27001 信息安全管理体系认证', level: '体系认证', until: '2026-10-28', occ: ['某证券通信机构', '农发行'], warn: true },
+  { name: 'ISO 20000 IT 服务管理体系认证', level: '体系认证', until: '2027-03-15', occ: ['某证券通信机构'] },
+  { name: 'CCRC 信息安全服务资质', level: '安全工程类一级', until: '2027-06-30', occ: [] },
+  { name: '信息安全服务资质', level: '风险评估一级', until: '2027-01-12', occ: [] },
+  { name: 'CMMI 成熟度三级', level: '三级', until: '2027-09-01', occ: [] },
+  { name: 'ITSS 信息技术服务标准二级', level: '二级', until: '2026-12-05', occ: [] },
+  { name: '高新技术企业证书', level: '-', until: '2028-04-18', occ: [] },
+  { name: '软件企业认定', level: '-', until: '2027-05-20', occ: [] },
+  { name: '涉密信息系统集成资质', level: '乙级', until: '2026-11-30', occ: [] },
+  { name: '信息系统建设和服务能力评估（CS3）', level: 'CS3', until: '2027-08-14', occ: [] },
+  { name: 'ISO 9001 质量管理体系认证', level: '体系认证', until: '2028-01-10', occ: [] },
+  { name: '知识产权管理体系认证', level: '体系认证', until: '2027-11-02', occ: [] }
+];
+const PEOPLE = [
+  { name: '王工', role: '项目经理', certs: 'CISP / PMP', occ: ['某证券通信机构', '某证券交易所'], conflict: true, st: '在投' },
+  { name: '李工', role: '渗透测试工程师', certs: 'CISP-EPT / OSCP', occ: ['鹏城证券'], st: '在投' },
+  { name: '赵工', role: '安全咨询顾问', certs: 'CISA / CISSP', occ: ['鹏城银行'], st: '在投' },
+  { name: '陈工', role: '等保测评师', certs: '等保测评师（中级）', occ: [], st: '空闲' },
+  { name: '周工', role: '项目助理', certs: '无认证', occ: ['南山证券'], st: '在投' }
+];
+const CASES = [
+  { client: '某证券通信机构', industry: '证券通信', year: 2026, scene: '安全技术支持', slices: 3 },
+  { client: '某证券交易所', industry: '证券', year: 2025, scene: '重保协防', slices: 2 },
+  { client: '鹏城银行', industry: '银行', year: 2024, scene: '数据安全治理', slices: 4 },
+  { client: '湾区银行', industry: '银行', year: 2025, scene: 'BCP 演练', slices: 2 }
+];
+const SOLS = [
+  { name: '重保协防方案 v3', scene: '重保 / 协防', slices: 8, ref: '2026-GOLD-jishu · 引用 4 章' },
+  { name: '数据分类分级方法论 v2', scene: '数据安全治理', slices: 12, ref: '2026-GOLD-jishu · 引用 2 章' },
+  { name: '攻防演练复盘模板', scene: '攻防演练', slices: 5, ref: '未引用' }
+];
+
+/* ---------- 商机（lead 池） ---------- */
+const LEADS = [
+  { id: 'L-2411', client: '国银金租', proj: '数据安全评估服务', score: 88, rec: '纳入', amt: 85,
+    auto: true, st: 'pending', src: '中国金融采购网',
+    quote: '……现对数据安全评估服务进行公开招标，预算金额 85 万元……' },
+  { id: 'L-2409', client: '招商局金融', proj: '安全运营外包', score: 86, rec: '纳入', st: 'pending' },
+  { id: 'L-2407', client: '鹏城银行', proj: '密码应用安全性评估', score: 79, rec: '观察', st: 'pending', note: '金额缺失' },
+  { id: 'L-2406', client: '东莞农商行', proj: '等保测评', score: 72, rec: '观察', st: 'pending' },
+  { id: 'L-2404', client: '中部某城商行', proj: '信创安全改造', score: 68, rec: '观察', st: 'pending', note: '地域待确认' },
+  { id: 'L-2312', client: '某教育机构', proj: '网站安全监测', score: 41, rec: '排除', st: 'rejected', reject: '画像不符：非金融行业' }
+];
+
+/* ---------- 工单队列 ---------- */
+const TICKETS = [
+  { id: 'T-20260910-01', tpl: '新标分析', bid: '2026-GOLD-jishu', st: 'gen', created: '09-10', text: '' },
+  { id: 'T-20260909-02', tpl: '审计 round-2', bid: '2026-nfh-v14', st: 'run', created: '09-09',
+    artifact: 'audit-r2.json 带 ticket_id', text: '' },
+  { id: 'T-20260906-03', tpl: '归档收割', bid: '2026-baybank-bcp', st: 'done', created: '09-06', closed: '08-28 完成', text: '' }
+];
+
+/* ---------- 运行日志 ---------- */
+const LOGS = [
+  { t: '09-10 16:42', lvl: 'info', mod: 'ticket', msg: 'T-20260909-02 产物对账通过（audit-r2.json · ticket_id 回填）' },
+  { t: '09-10 18:02', lvl: 'info', mod: 'gate', msg: 'S5→S6 校验被拦 · 阻断 1 → set_stage.log' },
+  { t: '09-11 08:30', lvl: 'info', mod: 'consistency', msg: '6 项检查完成 · 2 告警 → alerts.json' },
+  { t: '09-11 09:00', lvl: 'info', mod: 'digest', msg: 'digest_stats 生成 · 语义增强完成' },
+  { t: '09-11 09:12', lvl: 'warn', mod: 'watcher', msg: '数据面 1 项产物 invalid-json（保留指纹待查）' },
+  { t: '09-11 10:00', lvl: 'info', mod: 'capture', msg: '抓取 14 渠道 · 新增线索 4 条' },
+  { t: '09-11 10:05', lvl: 'info', mod: 'scout', msg: '打分完成 · 2 纳入 / 2 观察' }
+];
+
+/* ---------- 智能体名册 / Skill 与基线 ---------- */
+const AGENTS = [
+  { n: '主 Agent', model: 'GLM-5.3', perm: '全权', last: '09-10 18:40', rate: '-' },
+  { n: 'bid-scout', model: 'Flash', perm: '只读 + 暂存', last: '09-11 10:05', rate: '98.5%' },
+  { n: 'bid-writer', model: '主档', perm: '读写 draft', last: '09-10 16:42', rate: '-' },
+  { n: 'bid-locator', model: 'Flash', perm: '只读', last: '09-10 17:10', rate: '-' },
+  { n: 'bid-auditor', model: 'Flash', perm: '只读', last: '09-10 18:02', rate: '-' },
+  { n: 'bid-archivist', model: 'Flash', perm: '建议权', last: '09-06', rate: '-' }
+];
+const SKILLS = [
+  { n: 'bid-write', v: 'v0', st: '已落', d: '逐章扩写 + 自检清单' },
+  { n: 'bid-locate', v: 'v0', st: '已落', d: 'P0 条目二次定位抽查（只读）' },
+  { n: 'bid-audit', v: 'v0', st: '已落', d: '对抗审查 · 六类检查表' },
+  { n: 'bid-archive', v: 'v0', st: '已落', d: '归档提案（supersession / 脱敏）' },
+  { n: 'bid-scout', v: 'v0', st: '已落', d: '标讯初筛打分契约版' }
+];
+const GOLDEN = [
+  { k: '金标准 · 某证券通信机构 · 星标项', v: '18', s: 'confirmed' },
+  { k: '金标准 · 评分点', v: '9', s: '已登记' },
+  { k: '注入集检出', v: '9/10', s: '回归基线' },
+  { k: '审计规则库', v: '48', s: '条 · rules/audit' },
+  { k: 'regress 基线', v: '6 指标全绿', s: '最近运行通过' }
+];
+
+/* ---------- 配置 / 提案 ---------- */
+const CFG = { capture: ['10:00', '16:00'], score: 80, leadDays: 60, tishi: true };
+const PROPOSAL = {
+  id: 'P-20260910-01',
+  title: 'bid-audit SKILL v0→v1：补充 cite 机检接线说明',
+  target: 'skills/bid-audit/SKILL.md',
+  type: '内容级（skill 工艺）',
+  submitted: '09-10',
+  status: 'pending'
+};
+
+/* ---------- 页面状态 ---------- */
+const ST = {
+  view: 'pipeline',
+  selBid: '2026-GOLD-jishu',
+  selGate: null,
+  pipePri: '全部', pipeClient: '全部', pipeSort: 'deadline',
+  assetDomain: 'certs', assetFilter: '全部',
+  leadsTab: 'pending',
+  digDay: 'today', digRegenAt: null,
+  sysTab: 'roster', logFilter: '全部',
+  tickets: TICKETS.slice(),
+  seq: 0
+};
+try { const sv = localStorage.getItem('bidmaster-A-view'); if (sv) ST.view = sv; } catch (e) { /* noop */ }
+
+/* ============ 工具 ============ */
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const icon = (id, cls) => '<svg class="ico ' + (cls || '') + '" aria-hidden="true"><use href="#' + id + '"/></svg>';
+const pad2 = (n) => String(n).padStart(2, '0');
+const hhmm = (d) => pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+const hhmmss = (d) => pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+const fmtAmt = (n) => '¥' + n + '万';
+const parseWhen = (s) => {
+  if (!s) return null;
+  const m = String(s).match(/^(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}))?$/);
+  if (!m) return null;
+  return new Date(m[2] ? m[1] + 'T' + m[2] + ':00+08:00' : m[1] + 'T00:00:00+08:00');
+};
+const daysTo = (s) => { const t = parseWhen(s); return t ? Math.round((t - demoNow()) / 86400000) : null; };
+const bidById = (id) => BIDS.find((b) => b.id === id);
+const dayCls = (d) => (d == null ? '' : d <= 7 ? 'danger' : d <= 14 ? 'warn' : '');
+const nextEvent = (b) => {
+  let best = null;
+  b.events.forEach((e) => {
+    if (e.done || !e.date) return;
+    const dd = daysTo(e.date);
+    if (dd == null || dd < 0) return;
+    if (!best || dd < best.dd) best = { name: e.name, date: e.date, dd };
+  });
+  return best;
+};
+
+/* ============ Toast ============ */
+function toast(title, sub, kind) {
+  const root = $('#toast-root');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (kind || 'ok');
+  el.innerHTML = '<div class="t-main"><div class="t-t">' + esc(title) + '</div>' +
+    (sub ? '<div class="t-s">' + esc(sub) + '</div>' : '') + '</div>' +
+    '<button class="t-x" aria-label="关闭通知">' + icon('i-close') + '</button>';
+  root.appendChild(el);
+  let timer = setTimeout(dismiss, 4200);
+  function dismiss() { clearTimeout(timer); el.style.transition = 'opacity .18s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }
+  el.querySelector('.t-x').addEventListener('click', dismiss);
+  el.addEventListener('mouseenter', () => clearTimeout(timer));
+  el.addEventListener('mouseleave', () => { timer = setTimeout(dismiss, 1600); });
+}
+
+/* ============ 日志 ============ */
+function pushLog(lvl, mod, msg) {
+  const d = demoNow();
+  LOGS.push({ t: '09-11 ' + hhmm(d), lvl, mod, msg });
+  if (ST.view === 'system' && ST.sysTab === 'log') renderView(true);
+}
+
+/* ============ 时钟 ============ */
+function tickClock() {
+  const d = demoNow();
+  $('#clock').textContent = '2026-09-11 ' + hhmmss(d);
+  $('#sync-time').textContent = hhmmss(d);
+}
+setInterval(tickClock, 1000);
+
+/* ============ 视图框架 ============ */
+function setView(v) {
+  ST.view = v;
+  try { localStorage.setItem('bidmaster-A-view', v); } catch (e) { /* noop */ }
+  $$('.nav-item').forEach((el) => el.classList.toggle('active', el.dataset.v === v));
+  renderView();
+  const main = $('#main');
+  if (main) main.scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+function updateNav() {
+  const open = ALERTS.filter((a) => a.st === 'open').length;
+  const el = $('#nav-alerts');
+  if (el) { el.textContent = open; el.style.display = open ? '' : 'none'; }
+  $$('.nav-item').forEach((el) => el.classList.toggle('active', el.dataset.v === ST.view));
+}
+function renderView(keepScroll) {
+  const root = $('#view-root');
+  const scrollTops = {};
+  if (keepScroll) {
+    $$('.deep-col, .leads-main, .leads-side, .dig-main, .dig-side, .today-body, .assets-body, .sys-body, .rcol-body').forEach((el, i) => { scrollTops[i] = el.scrollTop; });
+  }
+  let html = '';
+  if (ST.view === 'pipeline') html = vPipeline();
+  else if (ST.view === 'deep') html = vDeep();
+  else if (ST.view === 'today') html = vToday();
+  else if (ST.view === 'assets') html = vAssets();
+  else if (ST.view === 'leads') html = vLeads();
+  else if (ST.view === 'digest') html = vDigest();
+  else html = vSystem();
+  root.innerHTML = html;
+  updateNav();
+  if (keepScroll) {
+    $$('.deep-col, .leads-main, .leads-side, .dig-main, .dig-side, .today-body, .assets-body, .sys-body, .rcol-body').forEach((el, i) => { if (scrollTops[i] != null) el.scrollTop = scrollTops[i]; });
+  }
+  const lt = $('#logterm');
+  if (lt) lt.scrollTop = lt.scrollHeight;
+}
+
+/* ============ V1 管线漏斗 ============ */
+function filteredBids() {
+  return BIDS.filter((b) => (ST.pipePri === '全部' || b.pri === ST.pipePri) &&
+    (ST.pipeClient === '全部' || b.client === ST.pipeClient));
+}
+function sortBids(arr) {
+  const cp = { P0: 0, P1: 1, P2: 2 };
+  return arr.slice().sort((a, b) => {
+    if (ST.pipeSort === 'priority') {
+      if (cp[a.pri] !== cp[b.pri]) return cp[a.pri] - cp[b.pri];
+    }
+    const na = nextEvent(a), nb = nextEvent(b);
+    const da = na ? na.dd : 9999, db = nb ? nb.dd : 9999;
+    return da - db || cp[a.pri] - cp[b.pri];
+  });
+}
+function prioStyle(p) {
+  if (p === 'P0') return 'color:#FF4757;background:rgba(255,71,87,.12);border:1px solid rgba(255,71,87,.34)';
+  if (p === 'P1') return 'color:#FFB800;background:rgba(255,184,0,.12);border:1px solid rgba(255,184,0,.34)';
+  return 'color:#00D4FF;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3)';
+}
+function cardHTML(b) {
+  const nb = nextEvent(b);
+  const blocked = b.blocked;
+  const arch = b.stage >= 9;
+  const dcls = dayCls(nb ? nb.dd : null);
+  let flags = '';
+  b.flags.forEach((f) => {
+    const k = f === '二手源' ? 'info' : f === '素材缺口' ? 'warn' : 'danger';
+    flags += '<span class="chip ' + k + '">' + esc(f) + '</span>';
+  });
+  let stay = '<span class="tl-v">-</span>';
+  if (b.stay != null) stay = '<span class="tl-v">' + b.stay + ' 天</span>';
+  let due = '<span class="tl-v">-</span>';
+  if (arch) due = '<span class="tl-v" style="color:#4A6080">已归档</span>';
+  else if (nb) due = '<span class="tl-v ' + (dcls === 'danger' ? 'danger-text' : dcls === 'warn' ? 'warn-text' : '') + '">剩 ' + nb.dd + ' 天</span>';
+  const pop = blocked ? '<div class="pop-wrap"><span class="chip danger block-tag" data-a="blk-pop" role="button" tabindex="0">卡点</span>' +
+    '<div class="gpop" data-a="noop"><div class="gpop-t">' + icon('i-x-sq') + '门禁未过 · 卡点清单</div><ul>' +
+    b.blockedList.map((x) => '<li>' + esc(x) + '</li>').join('') +
+    '</ul><div class="gpop-foot">在深潜视图可查看门禁校验全文并生成修复工单</div></div></div>' : '';
+  return '<div class="tcard' + (blocked ? ' blocked' : '') + (arch ? ' archived' : '') + '" data-a="open-bid" data-id="' + b.id + '" role="button" tabindex="0" aria-label="打开 ' + esc(b.client) + ' ' + esc(b.proj) + ' 深潜">' +
+    '<div class="tc-top"><span class="led ' + (blocked ? 'danger' : arch ? '' : 'info') + '" aria-hidden="true"></span>' +
+    '<span class="tc-id">' + b.id + '</span>' + pop +
+    '<span class="tc-prio" style="' + prioStyle(b.pri) + '">' + b.pri + '</span></div>' +
+    '<div class="tc-title">' + esc(b.proj) + '</div>' +
+    '<div class="tc-client">' + esc(b.client) + '</div>' +
+    '<div class="tc-data">' +
+    '<div class="tc-line"><span class="tl-k">金额</span><span class="tl-amt">' + fmtAmt(b.amt) + '</span></div>' +
+    '<div class="tc-line"><span class="tl-k">' + (arch ? '归档' : nb ? esc(nb.name) : '节点') + '</span>' + due + '</div>' +
+    '<div class="tc-line"><span class="tl-k">停留</span>' + stay + '</div>' +
+    '</div>' + (flags ? '<div class="tc-flags">' + flags + '</div>' : '') + '</div>';
+}
+function gateMarkHTML(i) {
+  const here = BIDS.filter((b) => b.stage === i && i < 9);
+  const blockedB = here.filter((b) => b.blocked && b.gate && b.gate.from === i);
+  const readyB = here.filter((b) => b.gate && b.gate.from === i && b.gate.verdict === 'pass');
+  let cls = '', badge = '', title = '闸口 S' + i + ' → S' + (i + 1);
+  if (blockedB.length) { cls = 'block'; badge = '<span class="gm-badge">' + blockedB.length + '</span>'; title += ' · 被拦 ' + blockedB.length; }
+  else if (readyB.length) { cls = 'pass'; title += ' · 校验就绪（可放行）'; }
+  else if (here.length) { cls = 'wait'; title += ' · 待校验'; }
+  else { title += ' · 无活动标的'; }
+  return '<button class="gate-mark ' + cls + '" data-a="gate-pop" data-i="' + i + '" aria-label="' + esc(title) + '" title="' + esc(title) + '">' + badge + '</button>';
+}
+function gatePopHTML(i) {
+  const here = BIDS.filter((b) => b.stage === i && i < 9);
+  const def = gateDef(i, i + 1);
+  let lis = '';
+  here.forEach((b) => {
+    let st = '待校验', cls = 'chip muted';
+    if (b.blocked && b.gate && b.gate.from === i) { st = '被拦'; cls = 'chip danger'; }
+    else if (b.gate && b.gate.from === i && b.gate.verdict === 'pass') { st = '可放行'; cls = 'chip ok'; }
+    else if (b.stage > i) { st = '已通过'; cls = 'chip ok'; }
+    lis += '<li style="display:flex;align-items:center;gap:8px;padding-left:0">' +
+      '<span style="font-size:11.5px;color:var(--ink-2)" class="mono">' + b.id + '</span>' +
+      '<span class="' + cls + '" style="margin-left:auto">' + st + '</span></li>';
+  });
+  if (!lis) lis = '<li style="padding-left:0;color:var(--ink-3)">该段暂无活动标的</li>';
+  const defTxt = def ? gatewayDefLine(def) : '该闸口检查项由 rules/ 契约定义。';
+  return '<div class="gpop" data-a="noop" style="display:block"><div class="gpop-t" style="color:var(--data)">闸口 · S' + i + ' → S' + (i + 1) + '</div>' +
+    '<ul>' + lis + '</ul>' +
+    '<div class="gpop-foot">' + esc(defTxt) + '</div>' +
+    '<div class="gpop-foot" style="border-top:none;padding-top:2px">门禁内嵌于状态推进（set-stage）</div></div>';
+}
+function gateDef(from, to) {
+  const k = from + '-' + to;
+  const defs = {
+    '2-3': '检查项：阶段 0 产物含 lessons_applied；阶段产物存在。',
+    '3-4': '检查项：hits 关键词对账 100%；阶段产物齐全。',
+    '4-5': '检查项：完整性核验 PASS；规格单评分点全覆盖；评分点-素材匹配率达标。',
+    '5-6': '检查项：auditor 阻断级 = 0；locator 命中率 ≥ 95%；人工签核（L3）。',
+    '8-9': '检查项：apply_archive 幂等应用；lessons 采纳确认。'
+  };
+  return defs[k] || null;
+}
+function gatewayDefLine(s) { return s; }
+function vPipeline() {
+  const total = BIDS.filter((b) => b.stage < 9);
+  const sum = total.reduce((a, b) => a + b.amt, 0);
+  const f = filteredBids();
+  let cols = '';
+  for (let i = 0; i <= 9; i++) {
+    const raw = BIDS.filter((b) => b.stage === i);
+    const shown = sortBids(f.filter((b) => b.stage === i));
+    const csum = shown.reduce((a, b) => a + b.amt, 0);
+    let body = '';
+    if (shown.length) body = shown.map(cardHTML).join('');
+    else if (raw.length && !shown.length) body = '<div class="rcol-empty"><div class="re-t">无匹配标的</div><div class="re-s">已按当前筛选隐藏</div></div>';
+    else if (i === 0) body = '<div class="rcol-empty"><div class="re-t">TRACK START</div><div class="re-s">轨道起点 · 等待新线索入库</div></div>';
+    else body = '<div class="rcol-empty"><div class="re-t">EMPTY SLOT</div><div class="re-s">本阶段暂无标的</div></div>';
+    cols += '<div class="rcol' + (i === 9 ? ' is-arch' : '') + '">' +
+      '<div class="rcol-head"><div class="rcol-top"><span class="rc-stage">S' + i + '</span><span class="rc-name">' + STAGE_NAMES[i] + '</span>' +
+      '<span class="rc-dot"><span class="led ' + (shown.some((b) => b.blocked) ? 'danger' : shown.length ? 'data' : '') + '" aria-hidden="true"></span></span></div>' +
+      '<div class="rcol-stats"><span class="rc-count"><b>' + shown.length + '</b> 标的</span><span class="rc-sum">合计 <b>' + fmtAmt(csum) + '</b></span></div>' +
+      '</div><div class="rcol-body">' + body + '</div>' + (i < 9 ? gateMarkHTML(i) : '') + '</div>';
+  }
+  const cliOpts = ['全部'].concat(BIDS.map((b) => b.client).filter((v, idx, arr) => arr.indexOf(v) === idx))
+    .map((c) => '<option' + (c === ST.pipeClient ? ' selected' : '') + '>' + esc(c) + '</option>').join('');
+  const priBtns = ['全部', 'P0', 'P1', 'P2'].map((p) =>
+    '<button data-a="pipe-pri" data-p="' + p + '" class="' + (ST.pipePri === p ? 'on' : '') + '">' + p + '</button>').join('');
+  return '<div class="view active"><div class="vhead"><h2 class="vhead-t">管线漏斗</h2>' +
+    '<span class="vhead-code">PIPELINE / S0-S9</span>' +
+    '<span class="vhead-sub">投影自数据面 · 门禁内嵌于阶段推进</span>' +
+    '<div class="vhead-right"><span class="hint-line">在投 <b class="mono" style="color:var(--ink)">' + total.length + '</b> · 总金额 <b class="mono" style="color:var(--data)">' + fmtAmt(sum) + '</b> · 已归档 <b class="mono" style="color:var(--ink-2)">' + (BIDS.length - total.length) + '</b></span></div></div>' +
+    '<div class="vbody"><div class="pipe-tool">' +
+    '<div class="tool-group"><span class="tool-label">优先级</span><div class="seg-ctl">' + priBtns + '</div></div>' +
+    '<div class="tool-group"><span class="tool-label">客户</span><select class="sel" data-f="pipe-client" aria-label="按客户筛选">' + cliOpts + '</select></div>' +
+    '<div class="tool-group"><span class="tool-label">排序</span><select class="sel" data-f="pipe-sort" aria-label="排序方式">' +
+    '<option value="deadline"' + (ST.pipeSort === 'deadline' ? ' selected' : '') + '>按截止</option>' +
+    '<option value="priority"' + (ST.pipeSort === 'priority' ? ' selected' : '') + '>按优先级</option></select></div>' +
+    '<div class="tool-group" style="margin-left:auto"><span class="hint-line">横向滚动查看全部十段轨道 →</span></div>' +
+    '</div><div class="rrail" id="rrail">' + cols + '</div></div></div>';
+}
+
+/* ============ V2 单标深潜 ============ */
+function gateInfo(b, from, to) {
+  if (b.gate && b.gate.from === from) {
+    return { v: b.gate.verdict, items: b.gate.items, note: '校验由 set-stage 内嵌执行，留痕 set_stage.log' };
+  }
+  const def = gateDef(from, to);
+  if (from < b.stage) return { v: 'pass', items: [], note: '已通过 · 明细未登记（留痕 set_stage.log）' };
+  if (def) return { v: 'wait', items: [{ t: '校验明细未登记', d: '完成条件：' + def, st: 'wait' }], note: '演示环境未接入该标校验明细' };
+  return { v: 'none', items: [], note: '该闸口检查项未登记（由 rules/ 契约定义）' };
+}
+function verdictChip(v) {
+  if (v === 'pass') return '<span class="chip ok">已通过</span>';
+  if (v === 'block') return '<span class="chip danger">被拦</span>';
+  if (v === 'wait') return '<span class="chip amber">待校验</span>';
+  return '<span class="chip muted">未登记</span>';
+}
+function stIcon(st) {
+  if (st === 'ok') return '<span class="gd-st ok">' + icon('i-check') + '</span>';
+  if (st === 'fail') return '<span class="gd-st fail">' + icon('i-close') + '</span>';
+  return '<span class="gd-st wait">' + icon('i-wait') + '</span>';
+}
+function vDeep() {
+  const b = bidById(ST.selBid) || BIDS[0];
+  const selFrom = ST.selGate == null ? Math.min(b.stage, 8) : ST.selGate;
+  const selInfo = gateInfo(b, selFrom, selFrom + 1);
+
+  /* 左栏：阶段标尺 */
+  let rail = '';
+  for (let i = 0; i <= 9; i++) {
+    const st = i < b.stage ? 'past' : i === b.stage ? 'cur' : 'ahead';
+    let badge = '';
+    if (i === b.stage) badge = '<span class="chip amber rv-badge">当前</span>';
+    if (b.blocked && b.gate && b.gate.from === i) badge = '<span class="chip danger rv-badge">卡点</span>';
+    rail += '<div class="rv-row ' + st + (ST.selGate === i ? ' sel' : '') + '" data-a="sel-stage" data-i="' + i + '" role="button" tabindex="0">' +
+      '<span class="rv-node"></span><span class="rv-code">S' + i + '</span><span class="rv-name">' + STAGE_NAMES[i] + '</span>' + badge + '</div>';
+    if (i < 9) {
+      let gcls = 'idle', glabel = 'S' + i + ' → S' + (i + 1);
+      if (b.gate && b.gate.from === i) {
+        gcls = b.gate.verdict === 'pass' ? 'pass' : b.gate.verdict === 'block' ? 'block' : 'wait';
+      } else if (i < b.stage) gcls = 'pass';
+      rail += '<div class="rv-gate ' + gcls + (ST.selGate === i ? ' sel' : '') + '" data-a="sel-stage" data-i="' + i + '" role="button" tabindex="0">' +
+        '<span class="rg-sq"></span><span class="rv-gate-label">闸口 ' + glabel + '</span></div>';
+    }
+  }
+  let gdItems = '';
+  if (selInfo.items.length) {
+    gdItems = selInfo.items.map((it) => '<div class="gd-item">' + stIcon(it.st) +
+      '<div><div class="gd-t">' + esc(it.t) + '</div>' + (it.d ? '<div class="gd-d">' + esc(it.d) + '</div>' : '') + '</div></div>').join('');
+  } else {
+    gdItems = '<div class="gd-d" style="padding:6px 0">' + esc(selInfo.note) + '</div>';
+  }
+  const leftCol =
+    '<div class="panel"><div class="ph"><span class="ph-t">阶段标尺</span><span class="ph-code">GATE RAIL</span>' +
+    '<span class="ph-right"><span class="chip plain mono">S' + b.stage + '</span></span></div>' +
+    '<div class="pb"><div class="rail-v">' + rail + '</div></div></div>' +
+    '<div class="panel gate-detail"><div class="ph"><span class="ph-t">门禁详情</span>' +
+    '<span class="ph-code">GATE S' + selFrom + ' → S' + (selFrom + 1) + '</span>' +
+    '<span class="ph-right">' + verdictChip(selInfo.v) + '</span></div>' +
+    '<div class="pb">' + gdItems +
+    '<div class="gd-foot">' + esc(selInfo.note) + '<br>完成条件 = 门禁清单原文（生成工单时将引用）</div></div></div>';
+
+  /* 中栏：遥测 / 缺陷 / 产物 / 素材 / 摘要 */
+  let mid = '';
+  if (b.tele.length) {
+    mid += '<div class="tele-strip">' + b.tele.map((t) =>
+      '<div class="tele"><div class="t-l">' + esc(t.l) + '</div><div class="t-v ' + (t.c || '') + '">' + esc(t.v) + '</div><div class="t-s">' + esc(t.s || '') + '</div></div>').join('') + '</div>';
+  }
+  let defBody = '';
+  if (b.defectRounds.length) {
+    defBody += b.defectRounds.map((r) =>
+      '<div class="def-round"><div class="def-round-head"><span class="def-round-t">' + esc(r.n) + '</span>' +
+      r.chips.map((c) => '<span class="chip ' + (c[2] === 'danger' ? 'danger' : c[2] === 'warn' ? 'warn' : 'muted') + '">' + c[0] + ' ' + c[1] + '</span>').join('') +
+      (r.d ? '<span class="hint-line right">' + esc(r.d) + '</span>' : '') + '</div></div>').join('');
+  }
+  if (b.defectItems.length) {
+    defBody += b.defectItems.map((it) =>
+      '<div class="def-item ' + it.lv + '"><div class="di-main"><div class="di-t">' + esc(it.t) + '</div>' +
+      '<div class="di-loc">定位：' + esc(it.loc) + ' · 状态：' + esc(it.st) + '</div></div>' +
+      '<div class="di-actions"><span class="chip ' + (it.lv === 'lv-block' ? 'danger' : 'warn') + '">' + esc(it.lvName) + '</span></div></div>').join('');
+  }
+  if (!b.defectRounds.length && !b.defectItems.length) defBody = '<div class="hint-line" style="padding:6px 0">' + esc(b.defectNote) + '</div>';
+  else defBody += '<div class="hint-line mt6">' + esc(b.defectNote) + '</div>';
+  const defectPanel = '<div class="panel"><div class="ph"><span class="ph-t">缺陷面板</span><span class="ph-code">AUDITOR</span>' +
+    '<span class="ph-right">' + (b.defectRounds.length || b.defectItems.length ?
+      '<button class="btn btn-sm" data-a="ticket" data-tpl="审计 round-N">生成修复工单</button>' : '') + '</span></div>' +
+    '<div class="pb">' + defBody + '</div></div>';
+
+  let artRows = '';
+  if (b.artifacts.length) {
+    artRows = b.artifacts.map((a) =>
+      '<tr><td><span class="fname">' + esc(a.f) + '</span>' + (a.note ? '<div class="cell-sub danger-text">' + esc(a.note) + '</div>' : '') + '</td>' +
+      '<td class="prod">' + esc(a.p) + '</td><td><span class="chip ' + (a.st === 'confirmed' ? 'ok' : 'info') + '">' + esc(a.st) + '</span></td>' +
+      '<td class="tid">' + esc(a.tid) + '</td></tr>').join('');
+  } else {
+    artRows = '<tr><td colspan="4" class="hint-line" style="padding:10px 8px">未登记产物（编制阶段产出后由 watcher 登记）</td></tr>';
+  }
+  const artPanel = '<div class="panel"><div class="ph"><span class="ph-t">产出与登记</span><span class="ph-code">ARTIFACTS</span>' +
+    '<span class="ph-right"><span class="hint-line">manifest 含 producer / model / duration / ticket_id</span></span></div>' +
+    '<div class="pb pb-flush"><table class="art-tbl"><thead><tr><th>产物</th><th>生产者</th><th>状态</th><th>工单</th></tr></thead><tbody>' + artRows + '</tbody></table></div></div>';
+
+  let sliceBody = '';
+  if (b.slices.length) {
+    sliceBody = b.slices.map((s) =>
+      '<div class="slice-item"><span class="ico" style="color:var(--link)">' + icon('i-doc') + '</span>' +
+      '<span class="si-t">' + esc(s.n) + '</span><span class="si-m right">' + esc(s.m) + '</span></div>').join('');
+  } else {
+    sliceBody = '<div class="hint-line" style="padding:4px 0">' + esc(b.slicesNote || '未登记素材引用。') + '</div>';
+  }
+  if (b.sliceGap) {
+    sliceBody += '<div class="slice-gap"><div class="sg-t">缺口：' + esc(b.sliceGap.t) + '</div><div class="sg-s">' + esc(b.sliceGap.s) + '</div>' +
+      '<div style="margin-top:8px"><button class="btn btn-sm" data-a="gap-open" data-prefill="' + esc(b.sliceGap.t) + '">登记缺口</button></div></div>';
+  }
+  const slicePanel = '<div class="panel"><div class="ph"><span class="ph-t">素材引用反查</span><span class="ph-code">SLICES</span></div><div class="pb">' + sliceBody + '</div></div>';
+
+  let aiPanel = '';
+  if (b.ai) {
+    aiPanel = '<div class="panel ai-sum"><div class="ph"><span class="ph-t">AI 摘要</span><span class="ph-code">SUMMARY</span>' +
+      '<span class="ph-right"><span class="chip plain">人写审读 · 证据必附</span></span></div>' +
+      '<div class="pb"><div class="as-body">' + esc(b.ai.body) + '</div>' +
+      '<div class="as-meta"><span>author: ' + esc(b.ai.author) + '</span><span>evidence: ' + esc(b.ai.ev) + '</span></div></div></div>';
+  } else {
+    aiPanel = '<div class="panel"><div class="ph"><span class="ph-t">AI 摘要</span><span class="ph-code">SUMMARY</span></div>' +
+      '<div class="pb"><div class="hint-line">暂无摘要（ai_summaries 为空 · 摘要须 author + evidence）</div></div></div>';
+  }
+  mid += defectPanel + artPanel + slicePanel + aiPanel;
+
+  /* 右栏：时间线 / 操作台 / 人工待办 */
+  let tl = '';
+  if (b.events.length) {
+    let nextUsed = false;
+    tl = b.events.map((e) => {
+      const dd = e.date ? daysTo(e.date) : null;
+      const done = e.done || (dd != null && dd < 0);
+      let cls = '', dcls = 'done', dTxt = done ? '已完成' : '';
+      if (!done) {
+        cls = !nextUsed ? 'next' : '';
+        if (!nextUsed) nextUsed = true;
+        if (dd <= 7) { cls = 'urgent'; dcls = 'danger'; }
+        else if (dd <= 14) dcls = 'warn';
+        dTxt = '剩 ' + dd + ' 天';
+      }
+      return '<div class="tl2-item ' + cls + (done ? ' done' : '') + '"><span class="tl2-dot"></span>' +
+        '<span class="tl2-name">' + esc(e.name) + '</span>' +
+        '<span class="tl2-date">' + esc(e.date || '-') + '</span>' +
+        '<span class="tl2-days ' + dcls + '">' + dTxt + '</span></div>';
+    }).join('');
+  } else {
+    tl = '<div class="hint-line" style="padding:4px 0">该标未登记关键时间节点。</div>';
+  }
+  const tlPanel = '<div class="panel"><div class="ph"><span class="ph-t">倒计时时间线</span><span class="ph-code">TIMELINE</span></div><div class="pb"><div class="tl2">' + tl + '</div></div></div>';
+
+  const showSign = b.gate && b.gate.from === 5 && b.gate.to === 6;
+  const advDisabled = b.stage >= 9;
+  const opsPanel = '<div class="panel ops"><div class="ph"><span class="ph-t">操作台</span><span class="ph-code">OPS</span></div>' +
+    '<div class="pb"><div class="op-btns">' +
+    '<button class="btn btn-primary btn-lg" data-a="advance"' + (advDisabled ? ' disabled title="已归档，无推进会动作"' : '') + '>' + icon('i-play') + '推进阶段</button>' +
+    '<button class="btn btn-lg" data-a="ticket" data-tpl="auto">' + icon('i-copy') + '生成工单</button>' +
+    (showSign ? '<button class="btn btn-lg" data-a="advance" title="S5 → S6 含人工签核">' + icon('i-shield') + '签核（L3）</button>' : '') +
+    '<button class="btn btn-ghost" data-a="todo-add">' + icon('i-plus') + '加人工待办</button>' +
+    '</div><div class="ops-note">推进即调用 set-stage（门禁内嵌），被拦时返回卡点清单；工单为提示词模板，由人复制启动，不直接指挥 AI 会话。</div></div></div>';
+
+  const todoItems = (b.todos || []).map((t) => '<li><span class="led info" style="margin-top:4px"></span><span>' + esc(t.text) + '</span><span class="tl-time">' + esc(t.t || '') + '</span></li>').join('');
+  const todoPanel = '<div class="panel"><div class="ph"><span class="ph-t">人工待办</span><span class="ph-code">HUMAN</span></div>' +
+    '<div class="pb">' + (todoItems ? '<ul class="todo-list">' + todoItems + '</ul>' : '<div class="hint-line">暂无人工待办 · 用操作台按钮追加</div>') + '</div></div>';
+
+  const bidOpts = BIDS.map((x) => '<option value="' + x.id + '"' + (x.id === b.id ? ' selected' : '') + '>' + esc(x.client) + ' · ' + x.id + '</option>').join('');
+  const srcChip = b.source === 'secondary' ? '<span class="chip warn">二手源</span>' : '';
+  const blkChip = b.blocked ? '<span class="chip danger">卡点</span>' : '';
+  const archChip = b.stage >= 9 ? '<span class="chip ok">已归档</span>' : '';
+  const stayTxt = b.stay != null ? b.stay + ' 天' : '-';
+
+  return '<div class="view active">' +
+    '<div class="deep-head"><div class="dh-left"><div class="dh-id-row"><span class="dh-id">' + b.id + '</span>' +
+    '<span class="tc-prio" style="' + prioStyle(b.pri) + '">' + b.pri + '</span>' + blkChip + srcChip + archChip + '</div>' +
+    '<div class="dh-title">' + esc(b.client) + ' · ' + esc(b.proj) + '</div></div>' +
+    '<div class="dh-meta"><span class="mrow">金额 <b class="amt">' + (b.amt == null ? '待确认' : fmtAmt(b.amt)) + '</b></span>' +
+    '<span class="mrow">阶段 <b>S' + b.stage + ' ' + STAGE_NAMES[b.stage] + '</b></span>' +
+    '<span class="mrow">负责人 <b>Duke</b></span>' +
+    '<span class="mrow">停留 <b>' + stayTxt + '</b></span>' +
+    '<span class="mrow">来源 <b>' + (b.source === 'secondary' ? 'secondary' : 'primary') + '</b></span></div>' +
+    '<div class="dh-switch"><label class="sr-only" for="bid-select">切换标的</label>' +
+    '<select class="sel" id="bid-select" data-f="bid-sel" style="max-width:230px">' + bidOpts + '</select>' +
+    '<button class="btn btn-sm" data-a="nav" data-v="pipeline">返回管线</button></div></div>' +
+    '<div class="deep-grid"><div class="deep-col">' + leftCol + '</div>' +
+    '<div class="deep-col">' + mid + '</div>' +
+    '<div class="deep-col">' + tlPanel + opsPanel + todoPanel + '</div></div></div>';
+}
+
+/* ============ V3 今日必办 ============ */
+function vToday() {
+  const groups = [
+    { k: 'danger', name: '阻断 · 立即处理', chip: 'danger' },
+    { k: 'warn', name: '临期 · 今日推进', chip: 'warn' },
+    { k: 'info', name: '提醒 · 保持关注', chip: 'muted' }
+  ];
+  const open = ALERTS.filter((a) => a.st === 'open');
+  const doneN = ALERTS.length - open.length;
+  const cnt = (k) => open.filter((a) => a.sev === k).length;
+  const allDone = open.length === 0;
+
+  let body = '';
+  if (allDone) {
+    body = '<div class="empty celebrate"><div class="e-ico">' + icon('i-shield', 'ico16') + '</div>' +
+      '<div class="e-t">今日清明</div>' +
+      '<div class="e-s">6 条警情已全部处置 · 数据面稳定 · 保持值守节奏<br>consistency 下一次运行：明早 08:30</div>' +
+      '<div class="e-a"><button class="btn" data-a="alerts-reset">撤销全部处置（演示回滚）</button></div></div>';
+  } else {
+    groups.forEach((g) => {
+      const items = ALERTS.filter((a) => a.sev === g.k && a.st === 'open');
+      if (!items.length) return;
+      body += '<div class="alert-group"><div class="ag-head"><span class="led ' + g.k + '"></span>' +
+        '<span class="ag-t">' + g.name + '</span><span class="ag-n">' + items.length + ' 条</span></div>';
+      items.forEach((a) => {
+        const idx = ALERTS.indexOf(a);
+        body += '<div class="alert-row"><span class="led ' + a.sev + ' lg ar-led"></span>' +
+          '<div class="ar-main"><div class="ar-title">' + esc(a.title) + '</div>' +
+          '<div class="ar-meta"><span>' + esc(a.relName) + '</span><span>' + esc(a.time) + '</span></div></div>' +
+          '<div class="ar-act">' +
+          (a.goto ? '<button class="btn btn-sm" data-a="alert-goto" data-i="' + idx + '">' + (a.goto.v === 'deep' ? '去处理' : '去查看') + ' ' + icon('i-arrow-r') + '</button>' : '') +
+          '<button class="btn btn-sm btn-ok" data-a="alert-do" data-i="' + idx + '">处理</button>' +
+          '<button class="btn btn-sm btn-ghost" data-a="alert-ignore" data-i="' + idx + '">忽略</button>' +
+          '</div></div>';
+      });
+      body += '</div>';
+    });
+    const handled = ALERTS.filter((a) => a.st !== 'open');
+    if (handled.length) {
+      body += '<div class="alert-group"><div class="ag-head"><span class="led" style="background:var(--ok)"></span>' +
+        '<span class="ag-t">已处置 · 留痕</span><span class="ag-n">' + handled.length + ' 条</span></div>';
+      handled.forEach((a) => {
+        const idx = ALERTS.indexOf(a);
+        body += '<div class="alert-row done"><span class="led ok lg ar-led"></span>' +
+          '<div class="ar-main"><div class="ar-title">' + esc(a.title) + '</div>' +
+          '<div class="ar-meta"><span class="ar-done-tag">' + (a.st === 'handled' ? '已处理' : '已忽略') + '（留痕 ' + esc(a.at || '') + '）</span></div></div>' +
+          '<div class="ar-act"><button class="btn btn-sm btn-ghost" data-a="alert-undo" data-i="' + idx + '">撤销</button></div></div>';
+      });
+      body += '</div>';
+    }
+  }
+  return '<div class="view active"><div class="vhead"><h2 class="vhead-t">今日必办</h2>' +
+    '<span class="vhead-code">ALERTS</span><span class="vhead-sub">consistency 08:30 · alerts.json 投影</span>' +
+    '<div class="vhead-right"><span class="hint-line">已处置 <b class="mono" style="color:var(--ok)">' + doneN + '</b> / ' + ALERTS.length + '</span></div></div>' +
+    '<div class="vbody"><div class="today-tool">' +
+    '<div class="t-stat"><span class="ts-v danger">' + cnt('danger') + '</span><span class="ts-k">阻断</span></div>' +
+    '<span class="sep-v"></span>' +
+    '<div class="t-stat"><span class="ts-v warn">' + cnt('warn') + '</span><span class="ts-k">临期</span></div>' +
+    '<span class="sep-v"></span>' +
+    '<div class="t-stat"><span class="ts-v info">' + cnt('info') + '</span><span class="ts-k">提醒</span></div>' +
+    '<span class="sep-v"></span>' +
+    '<div class="t-stat"><span class="ts-v" style="color:var(--ok)">' + doneN + '</span><span class="ts-k">已处置</span></div>' +
+    '</div><div class="today-body">' + body + '</div></div></div>';
+}
+
+/* ============ V4 资产台账 ============ */
+const GAPS = [];
+function certStateUntil(u) { const d = daysTo(u); return d != null && d <= 60 ? '临期' : '有效'; }
+function assetFilterOpts(d) {
+  const map = {
+    certs: ['全部', '有效', '临期', '过期'],
+    people: ['全部', '在投', '空闲', '跨标冲突'],
+    cases: ['全部', '证券通信', '证券', '银行'],
+    sols: ['全部']
+  };
+  return map[d].map((x) => '<option' + (x === ST.assetFilter ? ' selected' : '') + '>' + x + '</option>').join('');
+}
+function vAssets() {
+  const d = ST.assetDomain;
+  const tabs = [['certs', '证照', CERTS.length], ['people', '人员', PEOPLE.length], ['cases', '案例', CASES.length], ['sols', '方案', SOLS.length]]
+    .map((t) => '<button class="atab' + (d === t[0] ? ' on' : '') + '" data-a="asset-tab" data-d="' + t[0] + '">' + t[1] + '<span class="atab-n">' + t[2] + '</span></button>').join('');
+  let head = '', rows = '';
+  if (d === 'certs') {
+    head = '<th>证照名称</th><th>级别 / 类型</th><th>有效期至</th><th>状态</th><th>在投占用</th>';
+    CERTS.forEach((c, i) => {
+      const st = certStateUntil(c.until);
+      if (ST.assetFilter !== '全部' && ST.assetFilter !== st) return;
+      const dd = daysTo(c.until);
+      rows += '<tr data-a="asset-row" data-d="certs" data-i="' + i + '">' +
+        '<td><span class="led ' + (c.warn ? 'warn' : 'ok') + '" style="margin-right:8px"></span>' + esc(c.name) + '</td>' +
+        '<td class="muted">' + esc(c.level) + '</td>' +
+        '<td class="num ' + (c.warn ? 'expiry-warn' : 'expiry-ok') + '">' + esc(c.until) + (dd != null ? ' <span style="color:var(--ink-3);font-size:10.5px">剩 ' + dd + ' 天</span>' : '') + '</td>' +
+        '<td><span class="chip ' + (st === '临期' ? 'warn' : 'ok') + '">' + st + '</span></td>' +
+        '<td>' + (c.occ.length ? '<span class="occ">' + c.occ.map((o) => '<span class="chip muted">' + esc(o) + '</span>').join('') + '</span>' : '<span class="muted3">未占用</span>') + '</td></tr>';
+    });
+  } else if (d === 'people') {
+    head = '<th>化名</th><th>角色</th><th>证书</th><th>在投占用</th><th>状态</th>';
+    PEOPLE.forEach((p, i) => {
+      if (ST.assetFilter === '跨标冲突' && !p.conflict) return;
+      if ((ST.assetFilter === '在投' || ST.assetFilter === '空闲') && p.st !== ST.assetFilter) return;
+      rows += '<tr data-a="asset-row" data-d="people" data-i="' + i + '">' +
+        '<td><b>' + esc(p.name) + '</b></td><td class="muted">' + esc(p.role) + '</td>' +
+        '<td class="mono" style="font-size:11.5px">' + esc(p.certs) + '</td>' +
+        '<td>' + (p.occ.length ? '<span class="occ">' + p.occ.map((o) => '<span class="chip muted">' + esc(o) + '</span>').join('') +
+          (p.conflict ? '<span class="chip danger">跨标冲突</span>' : '') + '</span>' : '<span class="muted3">未占用</span>') + '</td>' +
+        '<td><span class="chip ' + (p.st === '空闲' ? 'ok' : 'info') + '">' + esc(p.st) + '</span></td></tr>';
+    });
+  } else if (d === 'cases') {
+    head = '<th>客户</th><th>行业</th><th>年度</th><th>场景</th><th>切片数</th>';
+    CASES.forEach((c, i) => {
+      if (ST.assetFilter !== '全部' && c.industry !== ST.assetFilter) return;
+      rows += '<tr data-a="asset-row" data-d="cases" data-i="' + i + '">' +
+        '<td><b>' + esc(c.client) + '</b></td><td class="muted">' + esc(c.industry) + '</td>' +
+        '<td class="num">' + c.year + '</td><td class="muted">' + esc(c.scene) + '</td>' +
+        '<td class="num">' + c.slices + '</td></tr>';
+    });
+  } else {
+    head = '<th>方案名称</th><th>适用场景</th><th>切片数</th><th>最近引用</th>';
+    SOLS.forEach((s, i) => {
+      rows += '<tr data-a="asset-row" data-d="sols" data-i="' + i + '">' +
+        '<td><b>' + esc(s.name) + '</b></td><td class="muted">' + esc(s.scene) + '</td>' +
+        '<td class="num">' + s.slices + '</td>' +
+        '<td class="muted">' + esc(s.ref) + '</td></tr>';
+    });
+  }
+  if (!rows) rows = '<tr><td colspan="5"><div class="no-filter-msg hint-line">无匹配记录 · 调整筛选条件</div></td></tr>';
+  const ledger = GAPS.length ? '<div class="ledger-strip"><span class="ls-t">待补缺口 ' + GAPS.length + ' 条</span>' +
+    '<span>最近登记：' + esc(GAPS[GAPS.length - 1].name) + '（' + esc(GAPS[GAPS.length - 1].t) + '）</span>' +
+    '<span class="right hint-line">已写入 inbox · 收割后转正</span></div>' : '';
+  return '<div class="view active"><div class="vhead"><h2 class="vhead-t">资产台账</h2>' +
+    '<span class="vhead-code">ASSETS</span><span class="vhead-sub">certs / people / cases / solutions · 索引即契约</span>' +
+    '<div class="vhead-right"><button class="btn" data-a="gap-open">' + icon('i-plus') + '缺口登记</button></div></div>' +
+    '<div class="vbody"><div class="assets-tool"><div class="atabs">' + tabs + '</div>' +
+    '<div class="tool-group"><span class="tool-label">筛选</span><select class="sel" data-f="asset-filter" aria-label="筛选">' + assetFilterOpts(d) + '</select></div>' +
+    '<span class="hint-line" style="margin-left:auto">行点击查看详情与文件指针 · 临期按提前期 60 天判定</span></div>' +
+    '<div class="assets-body">' + ledger +
+    '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '</div></div></div>';
+}
+
+/* ============ V5 商机 ============ */
+function leadCard(l, mode) {
+  const sc = l.score >= 80 ? '' : l.score >= 60 ? 'mid' : 'low';
+  const recChip = l.rec === '纳入' ? '<span class="chip amber">纳入</span>' : l.rec === '观察' ? '<span class="chip info">观察</span>' : '<span class="chip muted">排除</span>';
+  let actions = '';
+  if (mode === 'pending') {
+    if (l.auto) actions = '<button class="btn btn-sm btn-primary" data-a="lead-confirm" data-i="' + LEADS.indexOf(l) + '">确认升级</button>' +
+      '<button class="btn btn-sm btn-ghost" data-a="lead-reject-auto" data-i="' + LEADS.indexOf(l) + '">驳回</button>';
+    else actions = '<button class="btn btn-sm" data-a="lead-up" data-i="' + LEADS.indexOf(l) + '">升级为 bid</button>' +
+      '<button class="btn btn-sm btn-ghost" data-a="lead-discard" data-i="' + LEADS.indexOf(l) + '">丢弃</button>';
+  } else if (mode === 'handled') {
+    actions = '<span class="chip ok">' + (l.resolved || '已处理') + '</span>';
+  } else {
+    actions = '<span class="chip muted">已排除</span>';
+  }
+  let ev = '';
+  if (l.quote && mode === 'pending') {
+    ev = '<div class="lc-ev-toggle"><button class="btn btn-sm btn-ghost" data-a="ev-toggle">展开证据</button></div>' +
+      '<div class="ev-box"><div class="ev-quote">“' + esc(l.quote) + '”</div>' +
+      '<div class="ev-src">来源：' + esc(l.src || '-') + ' · 引文逐字（scout 证据纪律）</div></div>';
+  }
+  const noteChip = l.note ? '<span class="chip warn">' + esc(l.note) + '</span>' : '';
+  const rejLine = mode === 'rejected' && l.reject ? '<div class="ev-src" style="margin-top:6px">拒绝原因：' + esc(l.reject) + '</div>' : '';
+  const resLine = mode === 'handled' && l.newBid ? '<div class="ev-src" style="margin-top:6px">已入库：<span class="mono">' + esc(l.newBid) + '</span> · 管线 S1 预审</div>' : '';
+  return '<div class="lead-card' + (l.auto && mode === 'pending' ? ' auto' : '') + '">' +
+    '<div class="lc-top"><div class="lc-score ' + sc + '">' + l.score + '</div>' +
+    '<div class="lc-main"><div class="lc-t">' + esc(l.client) + ' · ' + esc(l.proj) + '</div>' +
+    '<div class="lc-sub"><span class="mono">' + l.id + '</span>' + recChip + noteChip +
+    (l.amt ? '<span class="mono">预算 ' + l.amt + ' 万</span>' : '') + '</div></div>' +
+    '<div class="lc-actions">' + actions + '</div></div>' + ev + rejLine + resLine + '</div>';
+}
+function vLeads() {
+  const pend = LEADS.filter((l) => l.st === 'pending');
+  const handled = LEADS.filter((l) => l.st === 'handled');
+  const rejected = LEADS.filter((l) => l.st === 'rejected');
+  const tab = ST.leadsTab;
+  const tabsHTML = [['pending', '待确认', pend.length], ['handled', '已处理', handled.length], ['rejected', '拒绝区', rejected.length]]
+    .map((t) => '<button class="ltab' + (tab === t[0] ? ' on' : '') + '" data-a="lead-tab" data-t="' + t[0] + '">' + t[1] + '<span class="ltab-n">' + t[2] + '</span></button>').join('');
+  let main = '';
+  if (tab === 'pending') {
+    const auto = pend.filter((l) => l.auto);
+    const incl = pend.filter((l) => !l.auto && l.rec === '纳入');
+    const watch = pend.filter((l) => l.rec === '观察');
+    if (auto.length) main += '<div class="lane"><div class="lane-head"><span class="led warn live"></span><span class="lane-t">M3 自动升级待确认</span>' +
+      '<span class="lane-note">recommend=P0 且评分 ≥ 80 · lead.promote 待人工确认</span></div>' + auto.map((l) => leadCard(l, 'pending')).join('') + '</div>';
+    if (incl.length) main += '<div class="lane"><div class="lane-head"><span class="led info"></span><span class="lane-t">纳入</span>' +
+      '<span class="lane-note">' + incl.length + ' 条 · 建议升级</span></div>' + incl.map((l) => leadCard(l, 'pending')).join('') + '</div>';
+    if (watch.length) main += '<div class="lane"><div class="lane-head"><span class="led"></span><span class="lane-t">观察</span>' +
+      '<span class="lane-note">' + watch.length + ' 条 · 补全信息后决策</span></div>' + watch.map((l) => leadCard(l, 'pending')).join('') + '</div>';
+  } else if (tab === 'handled') {
+    main = handled.length ? handled.map((l) => leadCard(l, 'handled')).join('') :
+      '<div class="empty"><div class="e-ico">' + icon('i-check', 'ico16') + '</div><div class="e-t">暂无已处理线索</div>' +
+      '<div class="e-s">升级为 bid 或驳回自动升级后，留痕归档于此</div></div>';
+  } else {
+    main = rejected.length ? rejected.map((l) => leadCard(l, 'rejected')).join('') :
+      '<div class="empty"><div class="e-t">拒绝区为空</div><div class="e-s">丢弃的线索会带原因归入此处</div></div>';
+  }
+  return '<div class="view active"><div class="vhead"><h2 class="vhead-t">商机</h2>' +
+    '<span class="vhead-code">LEADS</span><span class="vhead-sub">scout 初筛 · 人做最后一道决策</span>' +
+    '<div class="vhead-right"><span class="hint-line">升级 = lead.promote（含 M3 自动升级人工确认）</span></div></div>' +
+    '<div class="vbody"><div style="padding:12px 20px 0"><div class="lead-tabs" style="display:inline-flex">' + tabsHTML + '</div></div>' +
+    '<div class="leads-wrap"><div class="leads-main">' + main + '</div>' +
+    '<div class="leads-side"><div class="panel"><div class="ph"><span class="ph-t">处置统计</span><span class="ph-code">STATS</span></div>' +
+    '<div class="pb"><div class="lstat"><span class="ls-v" style="color:var(--data)">' + pend.length + '</span><span class="ls-k">待确认</span></div>' +
+    '<div class="lstat"><span class="ls-v" style="color:var(--ok)">' + handled.length + '</span><span class="ls-k">已处理</span></div>' +
+    '<div class="lstat"><span class="ls-v" style="color:var(--ink-3)">' + rejected.length + '</span><span class="ls-k">拒绝区</span></div></div></div>' +
+    '<div class="panel"><div class="ph"><span class="ph-t">规则说明</span><span class="ph-code">RULES</span></div><div class="pb">' +
+    '<div class="side-note">M3 自动升级：评分 ≥ 80 且 recommend=P0 → 生成待确认项，不自动入库。<br><br>' +
+    '升级动作预填配置；入库后管线 S1 出现新标的，事实源仍写数据面。</div></div></div>' +
+    '</div></div></div></div>';
+}
+
+/* ============ V6 每日简报 ============ */
+const DIGESTS = {
+  today: {
+    key: 'today', label: '今日 · 2026-09-11', gen: '09:00:00', genPrefix: '',
+    file: 'digests/2026-09-11.md', src: 'digest_stats 脚本保底 + 语义增强',
+    quick: [
+      ['农发行 S5→S6 门禁被拦：阻断缺陷 1 条未关闭', '商务偏离表第 7 条未逐条响应 · 封标 T-14 天'],
+      ['某证券通信机构答疑截止 09-16（剩 5 天）：答疑澄清函待提交', 'S3 解构推进中 · draft 7/12 章 · locator 98.6%'],
+      ['鹏城证券保证金凭证 09-12 到期（剩 1 天）：凭证待归档', '开标 09-15 14:30 · 保证金先行闭环']
+    ],
+    sections: [
+      { h: '门禁与审批', ps: [
+        '某证券通信机构 S3→S4 校验就绪：hits 关键词对账 100%（收录 42 / 排除 17），产物齐全，可放行。',
+        '农发行 S5→S6 被拦：auditor 阻断级 1 条未关闭（商务偏离表 · 第 7 条服务响应偏离）；locator 98.6% 已达标；人工签核未发起。',
+        '某证券交易所 S2→S3 被拦：阶段 0 产物缺 lessons_applied 字段。'] },
+      { h: '时间线', ps: [
+        '某证券通信机构：答疑 09-16 · 保证金 09-25 · 递交 / 封标 10-09 09:30 · 开标 10-09 14:00。',
+        '农发行：封标 09-25 · 开标 09-26 10:00；鹏城证券：开标 09-15 14:30（T-4）。'] },
+      { h: '资产与人员', ps: [
+        'ISO/IEC 27001 证书 47 天后到期（10-28），在投引用：某证券通信机构 / 农发行。',
+        '王工在某证券通信机构（09-20 现场）与某证券交易所（09-21 现场）存在跨标冲突，需调整排期。'] },
+      { h: '商机动态', ps: [
+        '抓取 14 渠道 · 新增线索 4 条：2 纳入（国银金租 88 分 / 招商局金融 86 分）· 2 观察。',
+        '国银金租触发 M3 自动升级待确认（评分 ≥ 80 且 recommend=P0）。'] },
+      { h: '数据面', ps: [
+        'watcher 5s 轮询正常；1 项产物 invalid-json（保留指纹待查）。',
+        '素材缺口：某证券通信机构评分点 3.2 应急响应能力无素材指针。'] }
+    ]
+  },
+  yesterday: {
+    key: 'yesterday', label: '昨日 · 2026-09-10', gen: '2026-09-10 09:00', genPrefix: '',
+    file: 'digests/2026-09-10.md', src: 'digest_stats 脚本保底 + 语义增强',
+    quick: [
+      ['农发行 S5→S6 校验被拦（18:02）：阻断 1 条已生成卡点清单', 'set_stage.log 留痕 · r2 复核收敛中'],
+      ['T-20260909-02（审计 round-2 · 农发行）产物对账通过', 'audit-r2.json 带 ticket_id 回填'],
+      ['consistency 08:30：6 项检查完成 · 2 告警', '跨标冲突 / 证照预警 → alerts.json']
+    ],
+    sections: [
+      { h: '门禁与审批', ps: [
+        '农发行 S5→S6 校验被拦：阻断 1（修复中）· 一般 2 · 提示 4。',
+        '某证券通信机构 draft 扩写推进：当前 7/12 章；cite 违规 0。'] },
+      { h: '归档', ps: [
+        '湾区银行归档闭环：apply_archive 幂等验证通过，归档提案 confirmed。'] },
+      { h: '数据面', ps: [
+        'kb 索引半自动初始化完成（16:08）：bids_history / certs / people / cases 已建指针；三标历史入库。'] }
+    ]
+  }
+};
+function digestGenTime(d) {
+  const over = ST.digRegenAt && ST.digRegenAt[d.key];
+  if (over) return d.key === 'today' ? over : '2026-09-10 ' + over;
+  return d.gen;
+}
+function digestMarkdown(d) {
+  let md = '# 值班简报 · ' + d.label.replace('今日 · ', '').replace('昨日 · ', '') + '\n';
+  md += '生成：' + d.src + ' · ' + digestGenTime(d) + '\n文件：' + d.file + '\n\n## 快读\n';
+  d.quick.forEach((q, i) => { md += (i + 1) + '. ' + q[0] + '\n'; });
+  md += '\n## 详读\n';
+  d.sections.forEach((s) => {
+    md += '\n### ' + s.h + '\n';
+    s.ps.forEach((p) => { md += '- ' + p + '\n'; });
+  });
+  return md;
+}
+function vDigest() {
+  const d = ST.digDay === 'today' ? DIGESTS.today : DIGESTS.yesterday;
+  const quick = d.quick.map((q, i) =>
+    '<div class="dig-read"><div class="dr-num">' + pad2(i + 1) + '</div><div><div class="dr-t">' + esc(q[0]) + '</div>' +
+    '<div class="dr-sub">' + esc(q[1]) + '</div></div></div>').join('');
+  const sections = d.sections.map((s) =>
+    '<div class="dig-section"><h4>' + esc(s.h) + '</h4>' + s.ps.map((p) => '<p class="dig-p">' + esc(p) + '</p>').join('') + '</div>').join('');
+  const regenTime = digestGenTime(d);
+  return '<div class="view active"><div class="vhead"><h2 class="vhead-t">每日简报</h2>' +
+    '<span class="vhead-code">DIGEST</span><span class="vhead-sub">值班简报 · 脚本保底，语义增强可选</span>' +
+    '<div class="vhead-right"><div class="seg-ctl dig-day-ctl">' +
+    '<button data-a="dig-day" data-d="today" class="' + (ST.digDay === 'today' ? 'on' : '') + '">今日</button>' +
+    '<button data-a="dig-day" data-d="yesterday" class="' + (ST.digDay === 'yesterday' ? 'on' : '') + '">昨日</button></div></div></div>' +
+    '<div class="vbody"><div class="dig-wrap"><div class="dig-main">' +
+    '<div class="dig-head"><span class="hint-line">生成时间 <b class="mono" style="color:var(--ink-2)" id="dig-gen-time">' + esc(regenTime) + '</b></span>' +
+    '<span class="chip info">' + esc(d.src) + '</span>' +
+    '<span class="hint-line mono">' + esc(d.file) + '</span>' +
+    '<div class="right" style="display:flex;gap:8px">' +
+    '<button class="btn btn-sm" data-a="dig-regen" id="dig-regen-btn">' + icon('i-refresh') + '<span class="lbl">重新生成</span><span class="spinner"></span></button>' +
+    '<button class="btn btn-sm" data-a="dig-copy">' + icon('i-copy') + '复制 Markdown</button></div></div>' +
+    '<div class="panel"><div class="ph"><span class="ph-t">快读 · 3 条</span><span class="ph-code">QUICK READ</span></div>' +
+    '<div class="pb pb-compact">' + quick + '</div></div>' +
+    '<div class="panel"><div class="ph"><span class="ph-t">详读 · 全文</span><span class="ph-code">FULL</span>' +
+    '<span class="ph-right"><span class="hint-line">数据截至 ' + (ST.digDay === 'today' ? '09:12' : '09-10') + '</span></span></div>' +
+    '<div class="pb">' + sections + '</div></div>' +
+    '</div><div class="dig-side">' +
+    '<div class="panel"><div class="ph"><span class="ph-t">生成信息</span><span class="ph-code">META</span></div><div class="pb">' +
+    '<div class="dw-row"><span class="dw-k">生成来源</span><span class="dw-v">' + esc(d.src) + '</span></div>' +
+    '<div class="dw-row"><span class="dw-k">生成时间</span><span class="dw-v mono">' + esc(regenTime) + '</span></div>' +
+    '<div class="dw-row"><span class="dw-k">文件指针</span><span class="dw-v mono">' + esc(d.file) + '</span></div>' +
+    '<div class="dw-row"><span class="dw-k">失败降级</span><span class="dw-v">stats.json 纯数据视图兜底</span></div>' +
+    '</div></div>' +
+    '<div class="panel"><div class="ph"><span class="ph-t">纪律</span></div><div class="pb">' +
+    '<div class="side-note">简报只做汇总与转述，语义生产全部在 AI 会话侧；重新生成会重跑 digest_stats 并刷新时间戳。</div></div></div>' +
+    '</div></div></div></div>';
+}
+
+/* ============ V7 系统 ============ */
+function ticketStatusChip(st) {
+  if (st === 'gen') return '<span class="chip amber">生成</span>';
+  if (st === 'run') return '<span class="chip info">已执行</span>';
+  return '<span class="chip ok">已消单</span>';
+}
+function ticketFlow(st) {
+  const order = { gen: 0, run: 1, done: 2 };
+  const steps = ['生成', '已执行', '已消单'];
+  return steps.map((s, si) =>
+    '<span class="qflow-step ' + (si < order[st] ? 'done' : si === order[st] ? 'on' : '') + '">' + s + '</span>')
+    .join('<span class="qflow-arrow">→</span>');
+}
+function vSystem() {
+  const tabs = [['roster', '智能体名册'], ['skills', 'Skill 与基线'], ['queue', '工单队列'], ['log', '运行日志'], ['config', '参数配置'], ['proposal', '提案流']]
+    .map((t) => '<button class="stab' + (ST.sysTab === t[0] ? ' on' : '') + '" data-a="sys-tab" data-t="' + t[0] + '">' + t[1] + '</button>').join('');
+  let body = '';
+
+  if (ST.sysTab === 'roster') {
+    const rows = AGENTS.map((a) =>
+      '<tr><td><b>' + esc(a.n) + '</b></td><td class="mono" style="font-size:11.5px">' + esc(a.model) + '</td>' +
+      '<td class="muted">' + esc(a.perm) + '</td><td class="num">' + esc(a.last) + '</td>' +
+      '<td>' + (a.rate !== '-' ? '<span class="chip ok">' + esc(a.rate) + '</span>' : '<span class="muted3">-</span>') + '</td></tr>').join('');
+    body = '<div class="sys-grid"><div class="panel span2"><div class="ph"><span class="ph-t">智能体名册</span><span class="ph-code">AGENTS</span>' +
+      '<span class="ph-right"><span class="hint-line">5 子智能体 + 主 Agent · 契约符合率按 golden 基线抽查</span></span></div>' +
+      '<div class="pb pb-flush"><table class="tbl"><thead><tr><th>名称</th><th>模型</th><th>权限</th><th>最近运行</th><th>契约符合率</th></tr></thead><tbody>' + rows + '</tbody></table></div></div></div>';
+  } else if (ST.sysTab === 'skills') {
+    const skRows = SKILLS.map((s) =>
+      '<tr><td><span class="mono" style="font-size:12px">' + esc(s.n) + '</span></td>' +
+      '<td><span class="chip plain mono">' + esc(s.v) + '</span></td><td><span class="chip ok">' + esc(s.st) + '</span></td>' +
+      '<td class="muted">' + esc(s.d) + '</td></tr>').join('');
+    const gRows = GOLDEN.map((g) =>
+      '<div class="lstat"><span class="ls-v" style="color:var(--data);font-size:15px">' + esc(g.v) + '</span>' +
+      '<span class="ls-k">' + esc(g.k) + '<span class="muted3" style="margin-left:6px">' + esc(g.s) + '</span></span></div>').join('');
+    body = '<div class="sys-grid"><div class="panel"><div class="ph"><span class="ph-t">Skill 版本与状态</span><span class="ph-code">SKILLS</span></div>' +
+      '<div class="pb pb-flush"><table class="tbl"><thead><tr><th>skill</th><th>版本</th><th>状态</th><th>说明</th></tr></thead><tbody>' + skRows + '</tbody></table></div>' +
+      '<div class="pb" style="border-top:1px solid var(--line-soft)"><div class="hint-line">v0 约定：机检未上线的检查项以 SKILL.md 人工清单执行；变更走提案流并跑 regress。</div></div></div>' +
+      '<div class="panel"><div class="ph"><span class="ph-t">金标准与基线</span><span class="ph-code">GOLDEN</span></div><div class="pb">' + gRows + '</div></div></div>';
+  } else if (ST.sysTab === 'queue') {
+    const rows = ST.tickets.map((t, i) => {
+      const text = t.text || assembleTicket(t.tpl, t.bid, t.id);
+      const ops = t.st === 'run' ? '<button class="btn btn-sm btn-ok" data-a="q-recon" data-i="' + i + '">对账消单</button>' : '';
+      return '<div class="qrow" id="qrow-' + i + '"><div class="qrow-head" data-a="q-expand" data-i="' + i + '" role="button" tabindex="0">' +
+        '<span class="qrow-id">' + esc(t.id) + '</span><span class="qrow-t">' + esc(t.tpl) + '</span>' +
+        '<span class="qrow-bid mono">' + esc(t.bid) + '</span>' +
+        '<span class="qrow-right">' + (t.closed ? '<span class="hint-line">' + esc(t.closed) + '</span>' : '') + ticketStatusChip(t.st) +
+        '<span class="ico" style="color:var(--ink-3)">' + icon('i-chev-d') + '</span></span></div>' +
+        '<div class="qrow-body"><div class="qflow">' + ticketFlow(t.st) + (t.artifact ? '<span class="hint-line right">' + esc(t.artifact) + '</span>' : '') + '</div>' +
+        '<div class="qtext">' + esc(text) + '</div>' +
+        '<div class="qfoot"><button class="btn btn-sm" data-a="q-copy" data-i="' + i + '">' + icon('i-copy') + '复制工单文本</button>' + ops +
+        '<span class="hint-line">状态流转由 watcher 对账推进 · 人只复制启动</span></div></div></div>';
+    }).join('');
+    body = '<div class="panel" style="max-width:980px"><div class="ph"><span class="ph-t">工单队列</span><span class="ph-code">TICKETS</span>' +
+      '<span class="ph-right"><span class="hint-line">生成 → 已执行（产物带 ticket_id）→ 已消单（watcher 对账）</span></span></div>' +
+      '<div class="pb pb-flush">' + rows + '</div></div>';
+  } else if (ST.sysTab === 'log') {
+    const lvls = ['全部', 'INFO', 'WARN', 'ERROR'];
+    const chips = lvls.map((l) => '<button data-a="log-filter" data-l="' + l + '" class="' + (ST.logFilter === l ? 'on' : '') + '">' + l + '</button>').join('');
+    const shown = LOGS.filter((l) => ST.logFilter === '全部' || l.lvl.toUpperCase() === ST.logFilter);
+    const rows = shown.length ? shown.map((l) =>
+      '<div class="log-row ' + (l.lvl === 'warn' ? 'wrn' : l.lvl === 'error' ? 'err' : '') + '">' +
+      '<span class="lg-time">' + esc(l.t) + '</span><span class="lg-lvl ' + l.lvl + '">' + l.lvl.toUpperCase() + '</span>' +
+      '<span class="lg-mod">' + esc(l.mod) + '</span><span class="lg-msg">' + esc(l.msg) + '</span></div>').join('') :
+      '<div class="term-empty">' + (ST.logFilter === 'ERROR' ? '错误 0 条 · 系统稳定' : '无匹配记录') + '</div>';
+    body = '<div class="sys-grid"><div class="panel span2"><div class="ph"><span class="ph-t">值班操作 · 手动触发</span><span class="ph-code">TRIGGERS</span></div>' +
+      '<div class="pb"><div class="trig-row">' +
+      '<button class="btn" data-a="trig" data-t="capture">' + icon('i-play') + '<span class="lbl">立即抓取</span><span class="spinner"></span></button>' +
+      '<button class="btn" data-a="trig" data-t="digest">' + icon('i-play') + '<span class="lbl">生成 digest</span><span class="spinner"></span></button>' +
+      '<button class="btn" data-a="trig" data-t="consistency">' + icon('i-play') + '<span class="lbl">跑一致性</span><span class="spinner"></span></button>' +
+      '<button class="btn" data-a="trig" data-t="inbox">' + icon('i-play') + '<span class="lbl">收割 inbox</span><span class="spinner"></span></button>' +
+      '<span class="hint-line" style="margin-left:auto">确定性脚本 · 不产语义</span></div></div></div>' +
+      '<div class="panel span2"><div class="ph"><span class="ph-t">运行日志</span><span class="ph-code">LOG STREAM</span>' +
+      '<span class="ph-right"><div class="seg-ctl">' + chips + '</div></span></div>' +
+      '<div class="pb pb-flush"><div class="logterm" id="logterm">' + rows + '</div></div></div></div>';
+  } else if (ST.sysTab === 'config') {
+    body = '<div class="panel" style="max-width:760px"><div class="ph"><span class="ph-t">参数配置（参数级）</span><span class="ph-code">CONFIG.JSON</span>' +
+      '<span class="ph-right"><span class="hint-line">直接写 config.json · 全量留痕</span></span></div><div class="pb">' +
+      '<div class="cfg-row"><span class="cfg-k">抓取时间<span class="cfg-sub">标讯两班抓取</span></span>' +
+      '<span class="cfg-v"><input class="inp cfg-time" id="cfg-c1" value="' + esc(CFG.capture[0]) + '" aria-label="抓取时间一">' +
+      '<span class="cfg-hint">/</span><input class="inp cfg-time" id="cfg-c2" value="' + esc(CFG.capture[1]) + '" aria-label="抓取时间二">' +
+      '<span class="cfg-hint">HH:MM</span></span></div>' +
+      '<div class="cfg-row"><span class="cfg-k">评分阈值<span class="cfg-sub">纳入建议线</span></span>' +
+      '<span class="cfg-v"><input class="inp cfg-num" id="cfg-score" value="' + CFG.score + '" aria-label="评分阈值">' +
+      '<span class="cfg-hint">0 - 100</span><span class="err-inline" id="err-score" style="color:var(--danger);font-size:11px;display:none"></span></span></div>' +
+      '<div class="cfg-row"><span class="cfg-k">预警提前期<span class="cfg-sub">证照 / 保证金窗口</span></span>' +
+      '<span class="cfg-v"><input class="inp cfg-num" id="cfg-lead" value="' + CFG.leadDays + '" aria-label="预警提前期天数">' +
+      '<span class="cfg-hint">天</span><span class="err-inline" id="err-lead" style="color:var(--danger);font-size:11px;display:none"></span></span></div>' +
+      '<div class="cfg-row"><span class="cfg-k">题述开关<span class="cfg-sub">语义题述注入</span></span>' +
+      '<span class="cfg-v"><label class="switch"><input type="checkbox" id="cfg-tishi"' + (CFG.tishi ? ' checked' : '') + '><span class="track"></span><span class="knob"></span></label>' +
+      '<span class="cfg-hint" id="tishi-txt">' + (CFG.tishi ? '开' : '关') + '</span></span></div>' +
+      '<div class="cfg-row"><span class="cfg-k">digest 语义增强<span class="cfg-sub">内容级参数</span></span>' +
+      '<span class="cfg-v"><label class="switch"><input type="checkbox" checked disabled><span class="track"></span><span class="knob"></span></label>' +
+      '<span class="cfg-hint">锁定：内容级变更须走提案流（禁止热改生效中配置）</span></span></div>' +
+      '<div class="cfg-save-row"><button class="btn btn-primary" data-a="cfg-save">保存</button>' +
+      '<span class="hint-line" id="cfg-status">当前值来自 config.json 投影</span></div>' +
+      '</div></div>' +
+      '<div class="panel" style="max-width:760px"><div class="ph"><span class="ph-t">配置三级纪律</span><span class="ph-code">POLICY</span></div><div class="pb">' +
+      '<div class="side-note">参数级：阈值 / 渠道 / cron / 画像，直接写 config.json。<br>内容级：prompt / skill 工艺 / 工单模板，走提案流（validator → 人确认 → git commit）。<br>触发级：看板按钮拉起会话，一期不做，由工单复制衔接。</div></div></div>';
+  } else {
+    const p = PROPOSAL;
+    const stChip = p.status === 'pending' ? '<span class="chip amber">待审</span>' : p.status === 'approved' ? '<span class="chip ok">已通过</span>' : '<span class="chip danger">已驳回</span>';
+    const act = p.status === 'pending' ? '<button class="btn btn-sm" data-a="proposal-open">查看详情</button>' : '<span class="hint-line">已留痕（log.jsonl）</span>';
+    body = '<div class="panel" style="max-width:860px"><div class="ph"><span class="ph-t">提案流</span><span class="ph-code">PROPOSALS</span>' +
+      '<span class="ph-right"><span class="hint-line">内容级变更入口 · 禁止热改</span></span></div><div class="pb">' +
+      '<div class="prop-card"><span class="led ' + (p.status === 'pending' ? 'warn live' : p.status === 'approved' ? 'ok' : 'danger') + '"></span>' +
+      '<div class="prop-main"><div class="prop-id">' + esc(p.id) + '</div>' +
+      '<div class="prop-t">' + esc(p.title) + '</div>' +
+      '<div class="prop-sub"><span>目标 ' + esc(p.target) + '</span><span>' + esc(p.type) + '</span><span>提交 ' + esc(p.submitted) + '</span></div></div>' +
+      '<div class="lc-actions">' + stChip + act + '</div></div>' +
+      '</div></div>';
+  }
+  return '<div class="view active"><div class="vhead"><h2 class="vhead-t">系统</h2>' +
+    '<span class="vhead-code">SYSTEM</span><span class="vhead-sub">agents / skills / queue / log / config / proposals</span>' +
+    '<div class="vhead-right"><span class="hint-line">数据面版本 watcher 5s 轮询</span></div></div>' +
+    '<div class="vbody"><div class="sys-tool"><div class="stabs">' + tabs + '</div></div>' +
+    '<div class="sys-body">' + body + '</div></div></div>';
+}
+
+/* ============ 模态基础设施 ============ */
+let _lastFocus = null, _modalOpen = false;
+function openModal(inner, opts) {
+  opts = opts || {};
+  if (!_modalOpen) _lastFocus = document.activeElement;
+  const root = $('#modal-root');
+  root.innerHTML = '<div class="overlay open" id="overlay"><div class="modal ' + (opts.size || '') + '" role="dialog" aria-modal="true" tabindex="-1" aria-label="' + esc(opts.label || '对话框') + '">' + inner + '</div></div>';
+  _modalOpen = true;
+  const overlay = $('#overlay');
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  requestAnimationFrame(() => {
+    const m = overlay.querySelector('.modal');
+    const af = m.querySelector('[data-autofocus]');
+    (af || m).focus();
+  });
+}
+function closeModal() {
+  if (!_modalOpen) return;
+  const overlay = $('#overlay');
+  _modalOpen = false;
+  if (overlay) {
+    overlay.classList.remove('open');
+    setTimeout(() => { const r = $('#modal-root'); if (r && !_modalOpen) r.innerHTML = ''; }, 170);
+  }
+  if (_lastFocus && _lastFocus.focus) { try { _lastFocus.focus(); } catch (e) { /* noop */ } }
+}
+function modalShell(code, title, body, foot, size) {
+  return '<div class="modal-h"><span class="mh-code">' + esc(code) + '</span><span class="mh-t">' + esc(title) + '</span>' +
+    '<button class="btn btn-sm btn-ghost mh-x" data-a="modal-close" aria-label="关闭">' + icon('i-close') + '</button></div>' +
+    '<div class="modal-b">' + body + '</div>' +
+    (foot ? '<div class="modal-f">' + foot + '</div>' : '');
+}
+function trapTab(e) {
+  const m = $('#overlay .modal');
+  if (!m) return;
+  const list = Array.from(m.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter((el) => !el.disabled);
+  if (!list.length) return;
+  const first = list[0], last = list[list.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
+/* ============ 抽屉 ============ */
+let _drawerLast = null;
+function openDrawer(html, label) {
+  const d = $('#drawer');
+  _drawerLast = document.activeElement;
+  d.innerHTML = html;
+  d.setAttribute('aria-label', label || '详情');
+  $('#drawer-mask').classList.add('open');
+  d.classList.add('open');
+  requestAnimationFrame(() => { const af = d.querySelector('[data-autofocus]') || d.querySelector('button'); if (af) af.focus(); });
+}
+function closeDrawer() {
+  $('#drawer-mask').classList.remove('open');
+  $('#drawer').classList.remove('open');
+  if (_drawerLast && _drawerLast.focus) { try { _drawerLast.focus(); } catch (e) { /* noop */ } }
+}
+function drawerOpen() { return $('#drawer').classList.contains('open'); }
+
+/* ============ 剪贴板 ============ */
+function copyText(text, okMsg) {
+  const fallback = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      if (ok) { toast(okMsg, '', 'ok'); return; }
+      throw new Error('fail');
+    } catch (e) {
+      toast('复制失败 · 请手动选择文本', '已尝试全选预览文本，可按 Ctrl / Command + C', 'warn');
+      const pre = $('.qtext');
+      if (pre && window.getSelection) {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      }
+    }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => toast(okMsg, '', 'ok')).catch(fallback);
+  } else fallback();
+}
+
+/* ============ 工单拼装 ============ */
+function defectCount(b) {
+  if (b.defectRounds.length) {
+    const r = b.defectRounds[b.defectRounds.length - 1];
+    const total = r.chips.reduce((a, c) => a + c[1], 0);
+    const parts = r.chips.filter((c) => c[1] > 0).map((c) => c[0] + ' ' + c[1]).join(' / ');
+    return total + '（' + parts + '）';
+  }
+  return '0';
+}
+function nextRound(b) { return b.defectRounds.length ? b.defectRounds.length + 1 : 1; }
+function gateTextFor(b) {
+  const f = Math.min(b.stage, 8);
+  if (b.gate && b.gate.from === f) return b.gate.items.map((it, i) => '（' + (i + 1) + '）' + it.t).join('；');
+  const def = gateDef(f, f + 1);
+  return def ? def.replace('检查项：', '') : '按 rules/ 门禁契约执行';
+}
+function assembleTicket(tpl, bidId, tid) {
+  const b = bidById(bidId);
+  if (!b) return '';
+  const id = tid || 'T-20260911-01';
+  const r = nextRound(b);
+  const base = '~/.bidmaster/bids/' + b.id + '/';
+  if (tpl === '新标分析' || tpl === 'auto') {
+    return '【工单 · 新标分析】' + id + '\n' +
+      '任务目标：为 ' + b.id + '（' + b.client + ' · ' + b.proj + '）完成阶段 0 分析：资质硬门槛收敛 + 投标可行性结论。\n' +
+      '输入路径：' + base + '（公告原文 + inbox 资料）\n' +
+      '开工必读：skills/bid-scout/SKILL.md · rules/qualify_contract.json · kb/index/certs.json\n' +
+      '工艺路径：scout 初筛打分 → 主 Agent 收敛硬门槛 → 产出 phase0.json（含 lessons_applied）\n' +
+      '完成条件（门禁清单原文）：' + gateTextFor(b) + '\n' +
+      '回填要求：产物 manifest 写入 ticket_id=' + id + '，status=final；完成后回看板消单。';
+  }
+  if (tpl === '审计 round-N') {
+    return '【工单 · 审计 round-' + r + '】' + id + '\n' +
+      '任务目标：对 ' + b.id + ' draft 执行第 ' + r + ' 轮对抗审查（六类检查表 + 规则库 48 条）。\n' +
+      '输入路径：' + base + 'data/draft/\n' +
+      '开工必读：skills/bid-audit/SKILL.md · rules/audit/\n' +
+      '工艺路径：逐章审查 → 缺陷分级（阻断 / 一般 / 提示）→ 产出 audit-r' + r + '.json\n' +
+      '缺陷背景：当前登记缺陷 ' + defectCount(b) + '\n' +
+      '完成条件（门禁清单原文）：' + gateTextFor(b) + '\n' +
+      '回填要求：audit-r' + r + '.json manifest 写入 ticket_id=' + id + '；阻断级必须清零方可推进会。';
+  }
+  if (tpl === '归档收割') {
+    return '【工单 · 归档收割】' + id + '\n' +
+      '任务目标：为 ' + b.id + '（' + b.client + ' · ' + b.proj + '）执行归档提案：supersession 标注 + 脱敏。\n' +
+      '输入路径：' + base + 'archive/ · ' + base + 'inbox/\n' +
+      '开工必读：skills/bid-archive/SKILL.md · 脱敏正则库\n' +
+      '工艺路径：归档提案 → validator → 人确认 → apply_archive（幂等应用）\n' +
+      '完成条件（门禁清单原文）：apply_archive 幂等应用；lessons 采纳确认\n' +
+      '回填要求：提案 manifest 写入 ticket_id=' + id + '。';
+  }
+  if (tpl === 'kb 初始化') {
+    return '【工单 · kb 初始化】' + id + '\n' +
+      '任务目标：初始化 / 更新 kb 索引（bids_history / certs / people / cases）。\n' +
+      '输入路径：kb/raw/（只读收割）· kb/index/*.json（契约）\n' +
+      '开工必读：rules/*_contract.json\n' +
+      '工艺路径：扫描原件 → 建元数据指针 → 指纹登记（L3 信息不落索引，经脱敏门）\n' +
+      '完成条件：索引 JSON 通过 validator；指纹齐全\n' +
+      '回填要求：run manifest 写入 ticket_id=' + id + '。';
+  }
+  return '【工单 · queue 批处理】' + id + '\n' +
+    '任务目标：批处理 queue/ 待办工单（当前 1 张待处理）。\n' +
+    '输入路径：~/.bidmaster/queue/\n' +
+    '开工必读：主 Agent 流程书（skills/bid-master/SKILL.md）\n' +
+    '工艺路径：逐张执行 → 产物回填 ticket_id → watcher 对账消单\n' +
+    '完成条件：队列清零或转人工；每张产物带 ticket_id\n' +
+    '回填要求：本轮 batch manifest 写入 ticket_id=' + id + '。';
+}
+
+/* ============ 门禁模态 ============ */
+function openGateModal(bidId) {
+  const b = bidById(bidId);
+  const from = Math.min(b.stage, 8), to = from + 1;
+  const info = gateInfo(b, from, to);
+  const items = info.items.map((it) => '<div class="gd-item">' + stIcon(it.st) +
+    '<div><div class="gd-t">' + esc(it.t) + '</div>' + (it.d ? '<div class="gd-d">' + esc(it.d) + '</div>' : '') + '</div></div>').join('');
+  const canPass = info.items.length > 0 && info.items.every((it) => it.st === 'ok');
+  let foot = '';
+  if (info.v === 'pass' && canPass) {
+    foot = '<span class="mf-note ok-text">' + info.items.length + '/' + info.items.length + ' 项通过 · 可放行</span>' +
+      '<button class="btn" data-a="modal-close">取消</button>' +
+      '<button class="btn btn-primary" data-a="gate-confirm" data-id="' + b.id + '" data-autofocus>确认推进</button>';
+  } else if (info.v === 'block') {
+    foot = '<span class="mf-note danger-text">存在未通过项 · 确认推进已禁用</span>' +
+      '<button class="btn" data-a="modal-close">取消</button>' +
+      '<button class="btn btn-danger" data-a="ticket" data-tpl="审计 round-N" data-bid="' + b.id + '">生成修复工单</button>' +
+      '<button class="btn btn-primary" disabled>确认推进</button>';
+  } else {
+    foot = '<span class="mf-note">校验未运行 · 演示环境未接入该标明细</span>' +
+      '<button class="btn" data-a="modal-close">取消</button>' +
+      '<button class="btn btn-primary" disabled>确认推进</button>';
+  }
+  openModal(modalShell('GATE', '门禁校验 · S' + from + ' → S' + to + '（' + b.client + '）',
+    '<div class="gd-item" style="border-bottom:1px solid var(--line-soft);padding-top:0">' +
+    '<div><div class="gd-t">' + b.id + ' · ' + esc(b.proj) + '</div>' +
+    '<div class="gd-d">当前停留 S' + b.stage + ' ' + STAGE_NAMES[b.stage] + ' · 完成条件 = 门禁清单原文，工单将引用</div></div></div>' +
+    items + '<div class="gd-foot">' + esc(info.note) + '</div>',
+    foot), { label: '门禁校验' });
+}
+function doAdvance(bidId, btn) {
+  const b = bidById(bidId);
+  const from = b.stage;
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spinner dark"></span>执行中…';
+  setTimeout(() => {
+    b.stage = Math.min(9, b.stage + 1);
+    b.stay = 0;
+    b.blocked = false;
+    b.blockedList = [];
+    const nf = Math.min(b.stage, 8);
+    const def = gateDef(nf, nf + 1);
+    b.gate = def ? { from: nf, to: nf + 1, verdict: 'wait', items: [{ t: '校验未运行', d: '完成条件：' + def, st: 'wait' }] } : null;
+    closeModal();
+    toast(b.id + ' 门禁通过 · 已推进至 S' + b.stage, 'set_stage.log 留痕 · 阶段停留已重置', 'ok');
+    pushLog('info', 'gate', 'S' + from + '→S' + b.stage + ' 校验通过 · 放行（' + b.id + '）→ set_stage.log');
+    renderView();
+  }, 800);
+}
+
+/* ============ 工单模态 ============ */
+let tktUI = { bidId: null, tpl: '新标分析', tid: '' };
+function openTicketModal(bidId, tpl) {
+  tktUI = { bidId: bidId || ST.selBid, tpl: tpl || '新标分析', tid: 'T-20260911-' + pad2(ST.seq + 1) };
+  renderTicketModal();
+}
+function renderTicketModal() {
+  const b = bidById(tktUI.bidId);
+  const tpls = ['新标分析', '审计 round-N', '归档收割', 'kb 初始化', 'queue 批处理'];
+  const grid = tpls.map((t) => {
+    const lbl = t === '审计 round-N' ? '审计 round-' + nextRound(b) : t;
+    return '<button class="tpl-btn' + (tktUI.tpl === t ? ' on' : '') + '" data-a="tk-tpl" data-t="' + esc(t) + '">' + esc(lbl) + '</button>';
+  }).join('');
+  const text = assembleTicket(tktUI.tpl, b.id, tktUI.tid);
+  const vars = [
+    ['bid_id', b.id],
+    ['当前阶段', 'S' + b.stage + ' ' + STAGE_NAMES[b.stage]],
+    ['缺陷计数', defectCount(b)],
+    ['输入路径', '~/.bidmaster/bids/' + b.id + '/'],
+    ['ticket_id', tktUI.tid]
+  ].map((v) => '<div class="dw-row"><span class="dw-k">' + esc(v[0]) + '</span><span class="dw-v mono">' + esc(v[1]) + '</span></div>').join('');
+  openModal(modalShell('TICKET', '生成工单 · ' + b.id,
+    '<div class="k-label" style="margin-bottom:8px">模板选择（5 种）</div><div class="tpl-grid">' + grid + '</div>' +
+    '<div class="k-label" style="margin:14px 0 6px">变量自动填充</div>' + vars +
+    '<div class="k-label" style="margin:14px 0 6px">工单预览（真实拼装）</div>' +
+    '<div class="qtext pre-select" style="max-height:190px">' + esc(text) + '</div>',
+    '<span class="mf-note">完成条件引用门禁清单原文 · ticket_id 由产物回填后 watcher 对账</span>' +
+    '<button class="btn" data-a="modal-close">关闭</button>' +
+    '<button class="btn" data-a="tk-copy">' + icon('i-copy') + '复制</button>' +
+    '<button class="btn btn-primary" data-a="tk-queue">存入队列</button>',
+    'wide'), { label: '生成工单' });
+}
+function queueTicket() {
+  ST.seq++;
+  const t = { id: tktUI.tid, tpl: tktUI.tpl, bid: tktUI.bidId, st: 'gen', created: '09-11', text: assembleTicket(tktUI.tpl, tktUI.bidId, tktUI.tid) };
+  ST.tickets.unshift(t);
+  closeModal();
+  toast('工单 ' + t.id + ' 已存入队列', '状态：生成 · 由人复制启动（看板不直接指挥会话）', 'ok');
+  pushLog('info', 'ticket', t.id + ' 生成入列 · ' + t.tpl + ' · ' + t.bid);
+  if (ST.view === 'system') renderView();
+}
+
+/* ============ 其它模态 ============ */
+function openTodoModal() {
+  openModal(modalShell('HUMAN', '加人工待办 · ' + ST.selBid,
+    '<div class="field"><label for="todo-text">待办内容</label><textarea class="txa" id="todo-text" rows="3" placeholder="如：与商务确认偏离表整改口径"></textarea><span class="err-msg">请填写待办内容</span></div>' +
+    '<div class="gd-foot">人工待办追加到该标（bid.add_human_todo · 幂等）。</div>',
+    '<button class="btn" data-a="modal-close">取消</button><button class="btn btn-primary" data-a="todo-submit" data-autofocus>提交</button>'),
+    { label: '加人工待办' });
+}
+function submitTodo() {
+  const f = $('#todo-text').closest('.field');
+  const v = $('#todo-text').value.trim();
+  if (!v) { f.classList.add('has-err'); $('#todo-text').classList.add('err'); return; }
+  const b = bidById(ST.selBid);
+  b.todos.push({ text: v, t: hhmm(stayNow()) });
+  closeModal();
+  toast('已追加人工待办', b.id + ' · 留在本标操作台', 'ok');
+  renderView();
+}
+function stayNow() { return demoNow(); }
+
+function openGapModal(prefill) {
+  const bidOpts = '<option value="">不关联</option>' + BIDS.map((b) => '<option>' + esc(b.id) + '</option>').join('');
+  openModal(modalShell('GAP', '缺口登记',
+    '<div class="field"><label for="gap-type">缺口类型</label><select class="sel" id="gap-type"><option value="">请选择</option><option>证照</option><option>人员</option><option>案例</option><option>方案</option><option>素材</option></select><span class="err-msg">请选择缺口类型</span></div>' +
+    '<div class="field"><label for="gap-name">名称 / 说明</label><input class="inp" id="gap-name" value="' + esc(prefill || '') + '" placeholder="如：评分点 3.2 应急响应能力 无素材指针"><span class="err-msg">请填写名称或说明</span></div>' +
+    '<div class="field"><label for="gap-bid">关联标的</label><select class="sel" id="gap-bid">' + bidOpts + '</select></div>' +
+    '<div class="field"><label for="gap-note">备注（可选）</label><textarea class="txa" id="gap-note" rows="2"></textarea></div>' +
+    '<div class="gd-foot">提交后写入 inbox（人审后收割转正）；不直接改资产索引。</div>',
+    '<button class="btn" data-a="modal-close">取消</button><button class="btn btn-primary" data-a="gap-submit" data-autofocus>提交登记</button>'),
+    { label: '缺口登记' });
+}
+function submitGap() {
+  let ok = true;
+  const tF = $('#gap-type').closest('.field'), nF = $('#gap-name').closest('.field');
+  const t = $('#gap-type').value, n = $('#gap-name').value.trim();
+  if (!t) { tF.classList.add('has-err'); $('#gap-type').classList.add('err'); ok = false; } else { tF.classList.remove('has-err'); $('#gap-type').classList.remove('err'); }
+  if (!n) { nF.classList.add('has-err'); $('#gap-name').classList.add('err'); ok = false; } else { nF.classList.remove('has-err'); $('#gap-name').classList.remove('err'); }
+  if (!ok) return;
+  const bid = $('#gap-bid').value;
+  GAPS.push({ type: t, name: n, bid, t: hhmm(demoNow()) });
+  closeModal();
+  toast('缺口已登记', '已写入 inbox（待收割转正）· 留痕已记录', 'ok');
+  pushLog('info', 'inbox', '缺口登记入列：' + n + '（' + t + (bid ? ' · ' + bid : '') + '）');
+  renderView();
+}
+
+function openUpgradeModal(li) {
+  const l = LEADS[li];
+  openModal(modalShell('LEAD', '升级为 bid · ' + l.client,
+    '<div class="field"><label for="up-client">客户</label><input class="inp" id="up-client" value="' + esc(l.client) + '"><span class="err-msg">请填写客户</span></div>' +
+    '<div class="field"><label for="up-proj">项目</label><input class="inp" id="up-proj" value="' + esc(l.proj) + '"><span class="err-msg">请填写项目</span></div>' +
+    '<div class="field"><label for="up-stage">阶段</label><select class="sel" id="up-stage" disabled><option>S1 预审</option></select></div>' +
+    '<div class="field"><label for="up-pri">优先级</label><select class="sel" id="up-pri"><option>P0</option><option selected>P1</option><option>P2</option></select></div>' +
+    '<div class="field"><label for="up-amt">金额（万元）</label><input class="inp" id="up-amt" value="' + (l.amt || '') + '" placeholder="暂缺，可在深潜补录"></div>' +
+    '<div class="gd-foot">确认后 lead.promote：lead 状态变更，管线 S1 出现该标的（投影重建，不写业务状态）。</div>',
+    '<button class="btn" data-a="modal-close">取消</button><button class="btn btn-primary" data-a="up-confirm" data-li="' + li + '" data-autofocus>确认升级</button>'),
+    { label: '升级为 bid' });
+}
+const CLIENT_CODES = { '国银金租': 'gyjz', '招商局金融': 'zsj', '鹏城银行': 'pengcheng-bank', '东莞农商行': 'dgnc', '中部某城商行': 'zbcc', '某教育机构': 'edu' };
+const PROJ_CODES = { '数据安全评估服务': 'dsa', '安全运营外包': 'soo', '密码应用安全性评估': 'mip', '等保测评': 'dbcp', '信创安全改造': 'xcgz', '网站安全监测': 'wsmon' };
+function confirmUpgrade(el) {
+  const li = Number(el.dataset.li);
+  const l = LEADS[li];
+  let ok = true;
+  ['up-client', 'up-proj'].forEach((id) => {
+    const f = $('#' + id).closest('.field');
+    if (!$('#' + id).value.trim()) { f.classList.add('has-err'); $('#' + id).classList.add('err'); ok = false; }
+    else { f.classList.remove('has-err'); $('#' + id).classList.remove('err'); }
+  });
+  if (!ok) return;
+  const client = $('#up-client').value.trim(), proj = $('#up-proj').value.trim();
+  const pri = $('#up-pri').value;
+  const amt = $('#up-amt').value.trim();
+  const id = '2026-' + (CLIENT_CODES[l.client] || 'x') + '-' + (PROJ_CODES[l.proj] || 'x');
+  l.st = 'handled';
+  l.resolved = '已升级';
+  l.newBid = id;
+  BIDS.push({
+    id, client, proj, stage: 1, pri, amt: amt ? Number(amt) : null, stay: null, draft: null, source: 'primary',
+    flags: [], blocked: false, blockedList: [], gate: null, events: [],
+    tele: [], defectRounds: [], defectItems: [],
+    defectNote: '预审阶段尚未启动编制。', artifacts: [], slices: [], slicesNote: '素材引用在编制阶段登记。',
+    ai: null, todos: []
+  });
+  closeModal();
+  toast(client + ' · ' + proj + ' 已升级为 bid', id + ' 入库管线 S1 预审 · lead.promote 留痕', 'ok');
+  pushLog('info', 'lead', 'lead.promote：' + l.id + ' → ' + id + '（S1 · ' + pri + '）');
+  renderView();
+}
+function rejectAuto(li) {
+  const l = LEADS[li];
+  l.st = 'rejected';
+  l.reject = '自动升级已驳回（M3 人工确认）';
+  toast('已驳回自动升级', l.client + ' · 转入拒绝区', 'warn');
+  pushLog('info', 'lead', 'M3 自动升级驳回：' + l.id + '（' + l.client + '）');
+  renderView();
+}
+function openDiscardModal(li) {
+  const l = LEADS[li];
+  openModal(modalShell('LEAD', '丢弃线索 · ' + l.client,
+    '<div class="field"><label for="dc-reason">拒绝原因</label><select class="sel" id="dc-reason"><option value="">请选择</option><option>画像不符：非金融行业</option><option>金额过低</option><option>地域不符</option><option>重复线索</option><option>其他</option></select><span class="err-msg">请选择拒绝原因</span></div>' +
+    '<div class="field"><label for="dc-note">备注（可选）</label><textarea class="txa" id="dc-note" rows="2"></textarea></div>' +
+    '<div class="gd-foot">丢弃后进入拒绝区（留痕原因），不物理删除。</div>',
+    '<button class="btn" data-a="modal-close">取消</button><button class="btn btn-danger" data-a="discard-confirm" data-li="' + li + '" data-autofocus>确认丢弃</button>'),
+    { label: '丢弃线索' });
+}
+function confirmDiscard(el) {
+  const li = Number(el.dataset.li);
+  const f = $('#dc-reason').closest('.field');
+  const reason = $('#dc-reason').value;
+  if (!reason) { f.classList.add('has-err'); $('#dc-reason').classList.add('err'); return; }
+  const l = LEADS[li];
+  const note = $('#dc-note').value.trim();
+  l.st = 'rejected';
+  l.reject = reason + (note ? ' · ' + note : '');
+  closeModal();
+  toast('已移入拒绝区', l.client + ' · ' + reason, 'warn');
+  pushLog('info', 'lead', 'lead.discard：' + l.id + ' · ' + reason);
+  renderView();
+}
+
+/* ============ 提案 / 配置 / 触发 ============ */
+function openProposalModal() {
+  openModal(modalShell('PROP', '提案详情 · ' + PROPOSAL.id,
+    '<div class="dw-row"><span class="dw-k">标题</span><span class="dw-v">' + esc(PROPOSAL.title) + '</span></div>' +
+    '<div class="dw-row"><span class="dw-k">目标文件</span><span class="dw-v mono">' + esc(PROPOSAL.target) + '</span></div>' +
+    '<div class="dw-row"><span class="dw-k">类型</span><span class="dw-v">' + esc(PROPOSAL.type) + '</span></div>' +
+    '<div class="k-label" style="margin:14px 0 6px">变更摘要</div>' +
+    '<div class="diff-box">① 新增 cite 机检接线说明（rules/cite_contract.json → SKILL.md 接线段）\n' +
+    '② 补记降级路径：机检未上线时保留人工清单（manifest 标注 evidence=partial）\n' +
+    '③ 版本标记 v0 → v1（apply 即 git commit）</div>' +
+    '<div class="gd-foot">内容级变更纪律：validator 预检 → 人确认 → git commit；禁止热改生效中 prompt。</div>',
+    '<button class="btn" data-a="modal-close">关闭</button>' +
+    '<button class="btn btn-danger" data-a="proposal-reject">' + icon('i-x-sq') + '驳回</button>' +
+    '<button class="btn btn-primary" data-a="proposal-approve">' + icon('i-check') + '通过</button>'),
+    { label: '提案详情' });
+}
+function approveProposal() {
+  PROPOSAL.status = 'approved';
+  closeModal();
+  toast('提案已通过', 'apply 留痕：skills/bid-audit/SKILL.md v0 → v1（git commit）', 'ok');
+  pushLog('info', 'proposal', 'proposal.apply：P-20260910-01 通过 · skills/bid-audit/SKILL.md v0 → v1');
+  renderView();
+}
+function rejectProposal() {
+  PROPOSAL.status = 'rejected';
+  closeModal();
+  toast('提案已驳回', '留痕 log.jsonl · 提交人可见', 'warn');
+  pushLog('info', 'proposal', 'proposal.reject：P-20260910-01 驳回（含批注）');
+  renderView();
+}
+function saveConfig() {
+  const c1 = $('#cfg-c1').value.trim(), c2 = $('#cfg-c2').value.trim();
+  let ok = true;
+  const timeOk = (v) => /^\d{1,2}:\d{2}$/.test(v);
+  if (!timeOk(c1) || !timeOk(c2)) {
+    $('#cfg-c1').classList.add('err'); $('#cfg-c2').classList.add('err');
+    $('#cfg-status').textContent = '抓取时间格式应为 HH:MM';
+    $('#cfg-status').style.color = 'var(--danger)';
+    ok = false;
+  } else { $('#cfg-c1').classList.remove('err'); $('#cfg-c2').classList.remove('err'); }
+  const scoreV = Number($('#cfg-score').value);
+  const scoreEl = $('#err-score');
+  if (!Number.isFinite(scoreV) || scoreV < 0 || scoreV > 100) {
+    scoreEl.textContent = '评分阈值需在 0 - 100 之间'; scoreEl.style.display = 'inline'; $('#cfg-score').classList.add('err'); ok = false;
+  } else { scoreEl.style.display = 'none'; $('#cfg-score').classList.remove('err'); }
+  const leadV = Number($('#cfg-lead').value);
+  const leadEl = $('#err-lead');
+  if (!Number.isFinite(leadV) || leadV < 1 || leadV > 365) {
+    leadEl.textContent = '预警提前期需为 1 - 365 天'; leadEl.style.display = 'inline'; $('#cfg-lead').classList.add('err'); ok = false;
+  } else { leadEl.style.display = 'none'; $('#cfg-lead').classList.remove('err'); }
+  if (!ok) return;
+  const diffs = [];
+  if (CFG.capture[0] !== c1 || CFG.capture[1] !== c2) diffs.push('抓取时间 ' + CFG.capture.join(' / ') + ' → ' + c1 + ' / ' + c2);
+  if (CFG.score !== scoreV) diffs.push('评分阈值 ' + CFG.score + ' → ' + scoreV);
+  if (CFG.leadDays !== leadV) diffs.push('预警提前期 ' + CFG.leadDays + ' → ' + leadV + ' 天');
+  const tishi = $('#cfg-tishi').checked;
+  if (CFG.tishi !== tishi) diffs.push('题述开关 ' + (CFG.tishi ? '开' : '关') + ' → ' + (tishi ? '开' : '关'));
+  CFG.capture = [c1, c2]; CFG.score = scoreV; CFG.leadDays = leadV; CFG.tishi = tishi;
+  if (!diffs.length) {
+    toast('无变更', '当前值与 config.json 一致', 'info');
+    $('#cfg-status').textContent = '无变更';
+    $('#cfg-status').style.color = '';
+    return;
+  }
+  toast('配置已保存（config.json）', diffs.join(' · '), 'ok');
+  $('#cfg-status').textContent = '已保存 ' + hhmmss(demoNow()) + ' · config.update 留痕';
+  $('#cfg-status').style.color = 'var(--ok)';
+  pushLog('info', 'config', 'config.update：' + diffs.join('；'));
+}
+const TRIG = {
+  capture: { stepTxt: ['拉取 14 渠道', '写入 leads.jsonl'], doneT: '抓取完成', doneS: '14 渠道 · 新增线索 4 条', log: 'trigger：立即抓取完成 · 14 渠道 · 新增线索 4 条' },
+  digest: { stepTxt: ['digest_stats 统计', '语义增强合成'], doneT: '简报已生成', doneS: '时间戳已刷新 · digests/2026-09-11.md', log: 'trigger：digest 重新生成（脚本保底 + 语义增强）',
+    onDone: () => { ST.digRegenAt = ST.digRegenAt || {}; ST.digRegenAt.today = hhmmss(demoNow()); } },
+  consistency: { stepTxt: ['跨标冲突检查', '证照预警扫描'], doneT: '一致性检查完成', doneS: '6 项 · 2 告警 → alerts.json', log: 'trigger：consistency 6 项检查完成 · 2 告警' },
+  inbox: { stepTxt: ['flock 加锁', '转正与去重'], doneT: 'inbox 收割完成', doneS: '新增 0 · 跳过 0 · 无待转正', log: 'trigger：inbox 收割完成（flock 正常）' }
+};
+function runTrigger(el) {
+  const d = TRIG[el.dataset.t];
+  const lbl = el.querySelector('.lbl');
+  const orig = lbl.textContent;
+  el.classList.add('loading');
+  lbl.textContent = '步骤 1/2 · ' + d.stepTxt[0];
+  setTimeout(() => { lbl.textContent = '步骤 2/2 · ' + d.stepTxt[1]; }, 750);
+  setTimeout(() => {
+    el.classList.remove('loading');
+    lbl.textContent = orig;
+    if (d.onDone) d.onDone();
+    toast(d.doneT, d.doneS, 'ok');
+    pushLog('info', 'trigger', d.log);
+    renderView();
+  }, 1600);
+}
+function regenDigest(el) {
+  const lbl = el.querySelector('.lbl');
+  const orig = lbl.textContent;
+  el.classList.add('loading');
+  lbl.textContent = '生成中…';
+  setTimeout(() => {
+    const key = ST.digDay;
+    ST.digRegenAt = ST.digRegenAt || {};
+    ST.digRegenAt[key] = hhmmss(demoNow());
+    toast('简报已重新生成', 'digest_stats 脚本保底 + 语义增强 · 时间戳已刷新', 'ok');
+    pushLog('info', 'digest', 'digest 重新生成（' + (key === 'today' ? '今日' : '昨日') + '）· 时间戳 ' + ST.digRegenAt[key]);
+    renderView();
+  }, 1500);
+  /* 恢复按钮由整页重渲染完成 */
+  void orig;
+  void lbl;
+}
+function reconTicket(i) {
+  const t = ST.tickets[i];
+  if (!t || t.st !== 'run') return;
+  t.st = 'done';
+  t.closed = '09-11 消单';
+  toast(t.id + ' 对账消单通过', '产物 ' + (t.artifact || 'audit-r2.json') + ' · ticket_id 匹配 · watcher 对账', 'ok');
+  pushLog('info', 'ticket', t.id + ' 消单 · watcher 对账通过（ticket_id 匹配）');
+  renderView();
+}
+
+/* ============ 资产抽屉 ============ */
+function openAssetDrawer(d, i) {
+  let label = '', title = '', rows = [], note = '';
+  if (d === 'certs') {
+    const c = CERTS[i];
+    label = '证照'; title = c.name;
+    const dd = daysTo(c.until);
+    rows = [['有效期至', c.until + (dd != null ? '（剩 ' + dd + ' 天）' : '')], ['状态', certStateUntil(c.until)],
+      ['在投占用', c.occ.length ? c.occ.join(' / ') : '未占用'], ['级别 / 类型', c.level], ['发证机构', '未录入'],
+      ['文件指针', 'kb/index/certs.json'], ['敏感级', 'L2'], ['更新', '2026-09-10 16:08']];
+    note = '证件编号属 L3，不录入索引；临期按预警提前期 60 天判定。';
+  } else if (d === 'people') {
+    const p = PEOPLE[i];
+    label = '人员'; title = p.name + ' · ' + p.role;
+    rows = [['角色', p.role], ['证书', p.certs], ['在投占用', p.occ.length ? p.occ.join(' / ') : '未占用'],
+      ['冲突', p.conflict ? '跨标冲突（需人工排期）' : '无'], ['状态', p.st],
+      ['文件指针', 'kb/index/people.json'], ['敏感级', 'L2'], ['更新', '2026-09-10 16:08']];
+    note = '真名属个人信息，入库前确认必要性；排期冲突以最终发布为准。';
+  } else if (d === 'cases') {
+    const c = CASES[i];
+    label = '案例'; title = c.client + ' · ' + c.scene;
+    rows = [['行业', c.industry], ['年度', String(c.year)], ['场景', c.scene], ['金额带', '未录入'],
+      ['切片数', String(c.slices)], ['文件指针', 'kb/index/cases.json'], ['敏感级', 'L2'], ['更新', '2026-09-10 16:08']];
+    note = '业绩案例待人工拆条后切片（商务标业绩章节 → 逐案例）。';
+  } else {
+    const s = SOLS[i];
+    label = '方案'; title = s.name;
+    rows = [['适用场景', s.scene], ['切片数', String(s.slices)], ['最近引用', s.ref],
+      ['文件指针', 'kb/index/solutions.json（索引）'], ['敏感级', 'L2'], ['说明', '切片原文不入 Git']];
+    note = '高复用方案素材统一做切片，引用关系由素材指针登记。';
+  }
+  const rowsHtml = rows.map((r) => '<div class="dw-row"><span class="dw-k">' + esc(r[0]) + '</span><span class="dw-v">' + esc(r[1]) + '</span></div>').join('');
+  openDrawer('<div class="dw-head"><span class="k-label">' + label + ' · 详情</span><span class="dw-title flex1 ellip">' + esc(title) + '</span>' +
+    '<button class="btn btn-sm btn-ghost" data-a="drawer-close" aria-label="关闭抽屉" data-autofocus>' + icon('i-close') + '</button></div>' +
+    '<div class="dw-body">' + rowsHtml + '<div class="dw-note">' + esc(note) + '</div></div>', title);
+}
+
+/* ============ 全局事件 ============ */
+document.addEventListener('click', (e) => {
+  const inGate = e.target.closest('.gate-mark') || e.target.closest('.gpop');
+  if (!inGate) $$('.gate-mark .gpop').forEach((p) => p.remove());
+  const el = e.target.closest('[data-a]');
+  if (!el) return;
+  const a = el.dataset.a;
+  switch (a) {
+    case 'nav': setView(el.dataset.v); break;
+    case 'modal-close': closeModal(); break;
+    case 'drawer-close': closeDrawer(); break;
+    case 'open-bid': ST.selBid = el.dataset.id; ST.selGate = null; setView('deep'); break;
+    case 'blk-pop': e.stopPropagation(); { const p = el.closest('.pop-wrap').querySelector('.gpop'); p.classList.toggle('open'); } break;
+    case 'gate-pop': e.stopPropagation(); {
+      if (el.querySelector('.gpop')) { el.querySelector('.gpop').remove(); break; }
+      $$('.gate-mark .gpop').forEach((p) => p.remove());
+      el.insertAdjacentHTML('beforeend', gatePopHTML(Number(el.dataset.i)));
+    } break;
+    case 'pipe-pri': ST.pipePri = el.dataset.p; renderView(); break;
+    case 'sel-stage': ST.selGate = Number(el.dataset.i); renderView(); break;
+    case 'advance': openGateModal(ST.selBid); break;
+    case 'ticket': openTicketModal(el.dataset.bid || ST.selBid, el.dataset.tpl === 'auto' ? null : el.dataset.tpl); break;
+    case 'tk-tpl': tktUI.tpl = el.dataset.t; renderTicketModal(); break;
+    case 'tk-copy': copyText(assembleTicket(tktUI.tpl, tktUI.bidId, tktUI.tid), '工单文本已复制（可直接粘贴到 AI 会话）'); break;
+    case 'tk-queue': queueTicket(); break;
+    case 'gate-confirm': doAdvance(el.dataset.id, el); break;
+    case 'todo-add': openTodoModal(); break;
+    case 'todo-submit': submitTodo(); break;
+    case 'alert-do': { const x = ALERTS[+el.dataset.i]; x.st = 'handled'; x.at = hhmm(demoNow()); renderView(); break; }
+    case 'alert-ignore': { const x = ALERTS[+el.dataset.i]; x.st = 'ignored'; x.at = hhmm(demoNow()); renderView(); break; }
+    case 'alert-undo': { const x = ALERTS[+el.dataset.i]; x.st = 'open'; delete x.at; renderView(); break; }
+    case 'alert-goto': { const x = ALERTS[+el.dataset.i];
+      if (x.goto.v === 'deep') { ST.selBid = x.goto.id; ST.selGate = null; setView('deep'); }
+      else { ST.assetDomain = x.goto.domain; ST.assetFilter = '全部'; setView('assets'); } break; }
+    case 'alerts-reset': ALERTS.forEach((x) => { x.st = 'open'; delete x.at; }); renderView(); toast('已回滚全部处置', '演示重放用', 'info'); break;
+    case 'asset-tab': ST.assetDomain = el.dataset.d; ST.assetFilter = '全部'; renderView(); break;
+    case 'asset-row': openAssetDrawer(el.dataset.d, Number(el.dataset.i)); break;
+    case 'gap-open': openGapModal(el.dataset.prefill || ''); break;
+    case 'gap-submit': submitGap(); break;
+    case 'lead-tab': ST.leadsTab = el.dataset.t; renderView(); break;
+    case 'ev-toggle': { const box = el.closest('.lead-card').querySelector('.ev-box'); if (!box) break; box.classList.toggle('open'); el.textContent = box.classList.contains('open') ? '收起证据' : '展开证据'; } break;
+    case 'lead-up': case 'lead-confirm': openUpgradeModal(Number(el.dataset.i)); break;
+    case 'lead-reject-auto': rejectAuto(Number(el.dataset.i)); break;
+    case 'lead-discard': openDiscardModal(Number(el.dataset.i)); break;
+    case 'up-confirm': confirmUpgrade(el); break;
+    case 'discard-confirm': confirmDiscard(el); break;
+    case 'dig-day': ST.digDay = el.dataset.d; renderView(); break;
+    case 'dig-regen': regenDigest(el); break;
+    case 'dig-copy': copyText(digestMarkdown(ST.digDay === 'today' ? DIGESTS.today : DIGESTS.yesterday), '简报 Markdown 已复制'); break;
+    case 'sys-tab': ST.sysTab = el.dataset.t; renderView(); break;
+    case 'q-expand': el.closest('.qrow').classList.toggle('open'); break;
+    case 'q-copy': { const t = ST.tickets[+el.dataset.i]; copyText(t.text || assembleTicket(t.tpl, t.bid, t.id), '工单文本已复制'); } break;
+    case 'q-recon': reconTicket(Number(el.dataset.i)); break;
+    case 'log-filter': ST.logFilter = el.dataset.l; renderView(); break;
+    case 'cfg-save': saveConfig(); break;
+    case 'trig': runTrigger(el); break;
+    case 'proposal-open': openProposalModal(); break;
+    case 'proposal-approve': approveProposal(); break;
+    case 'proposal-reject': rejectProposal(); break;
+    default: break;
+  }
+});
+document.addEventListener('change', (e) => {
+  const el = e.target;
+  if (el.closest('[data-f]')) {
+    const f = el.closest('[data-f]').dataset.f;
+    if (f === 'pipe-client') { ST.pipeClient = el.value; renderView(); }
+    else if (f === 'pipe-sort') { ST.pipeSort = el.value; renderView(); }
+    else if (f === 'bid-sel') { ST.selBid = el.value; ST.selGate = null; renderView(); }
+    else if (f === 'asset-filter') { ST.assetFilter = el.value; renderView(); }
+  }
+  if (el.id === 'cfg-tishi') { const t = $('#tishi-txt'); if (t) t.textContent = el.checked ? '开' : '关'; }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (_modalOpen) { closeModal(); e.preventDefault(); return; }
+    if (drawerOpen()) { closeDrawer(); e.preventDefault(); return; }
+    $$('.gate-mark .gpop').forEach((p) => p.remove());
+  }
+  if (e.key === 'Tab' && _modalOpen) { trapTab(e); return; }
+  if (e.key === 'Enter' && e.target && e.target.dataset && e.target.dataset.a && e.target.getAttribute('role') === 'button') {
+    e.preventDefault(); e.target.click(); return;
+  }
+  const tag = (e.target && e.target.tagName) || '';
+  if (/^[1-7]$/.test(e.key) && !_modalOpen && !drawerOpen() && tag !== 'INPUT' && tag !== 'SELECT' && tag !== 'TEXTAREA') {
+    const views = ['pipeline', 'deep', 'today', 'assets', 'leads', 'digest', 'system'];
+    setView(views[Number(e.key) - 1]);
+  }
+});
+
+/* ============ 启动 ============ */
+function init() {
+  try {
+    const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    if (h.get('view')) ST.view = h.get('view');
+    if (h.get('bid')) ST.selBid = h.get('bid');
+    if (h.get('sys')) ST.sysTab = h.get('sys');
+    if (h.get('dom')) ST.assetDomain = h.get('dom');
+    if (h.get('ltab')) ST.leadsTab = h.get('ltab');
+    if (h.get('day')) ST.digDay = h.get('day');
+  } catch (e) { /* noop */ }
+  tickClock();
+  setView(ST.view);
+  setTimeout(() => {
+    const sk = $('#skel');
+    if (sk) { sk.classList.add('off'); setTimeout(() => sk.remove(), 320); }
+  }, 620);
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>S-05 bid-card-refresh 新建 · Duke · 2026-08-13</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --warn-ink: #92400E;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --add: #DCFCE7;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --r: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 14px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 30px 36px; box-shadow: var(--shadow);
+    margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--brand-soft);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 26px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 26px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; }
+  .sec-title .file-tag {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); color: var(--brand-deep);
+    padding: 3px 10px; border-radius: 5px; margin-left: 6px;
+  }
+  .sec-title .action {
+    margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+  }
+  .action.new { background: var(--add); color: #065F46; }
+  .action.info { background: var(--bg-soft); color: var(--ink-soft); }
+  .sec-lede { color: var(--ink-soft); font-size: 13px; margin: 8px 0 12px; }
+
+  .st { font-size: 14.5px; font-weight: 700; margin: 14px 0 6px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+  .st::before { content: ""; width: 3px; height: 14px; background: var(--brand); border-radius: 2px; }
+
+  pre.code {
+    background: #0F1E33; color: #E6F1FB; padding: 14px 16px;
+    border-radius: 8px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0;
+  }
+  pre.code .c { color: #94A3B8; }
+  pre.code .k { color: #C7D2FE; }
+  pre.code .s { color: #FDE68A; }
+  pre.code .v { color: #7DD3FC; }
+  pre.code .f { color: #6EE7B7; }
+  pre.code .n { color: #FCA5A5; }
+  pre.code .w { color: #FDE68A; background: rgba(245,158,11,.15); padding: 0 4px; border-radius: 3px; }
+  pre.code .a { color: #6EE7B7; }
+  pre.code .b { color: #94A3B8; }
+
+  .copy-hint {
+    background: var(--brand-soft); color: var(--brand-deep);
+    padding: 8px 12px; border-radius: 6px; font-size: 12.5px; margin: 6px 0;
+    border-left: 3px solid var(--brand);
+  }
+  .copy-hint b { color: var(--brand-deep); }
+
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .risk {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .risk.crit { border-left: 3px solid var(--danger); }
+  .risk.warn { border-left: 3px solid var(--warn); }
+  .risk.mid { border-left: 3px solid var(--accent); }
+  .risk h5 { margin: 0 0 4px; font-size: 13px; }
+  .risk p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+
+  .decision {
+    background: var(--accent-soft); border: 1px solid #C7D2FE;
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+  }
+  .decision h4 { margin: 0 0 6px; color: var(--accent); font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { text-align: left; padding: 9px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12px;
+    border-bottom: 1px solid var(--line); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code { font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; color: var(--brand-deep); }
+
+  @media (max-width: 900px) {
+    .risk-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+    .sec { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">S-05 · BID-CARD-REFRESH CREATE · 2026-08-13</span>
+    <h1>S-05 新建 patch · 4 个文件 + 2 套调度方案 · 每日 09:45 跑通</h1>
+    <div class="sub">2 天估时 · 看板"活起来"的关键 Skill · 没有 workbench 时不崩,失败入本地队列</div>
+  </div>
+
+  <!-- 总览 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">0</span>改造总览</div>
+    <div class="sec-lede">S-05 是 <b>完全新建</b> 的 Skill——支撑 PRD §3.1 F-P0-03 + 整个看板的"活气"。4 个文件 + 2 套调度方案(cron 优先,launchd 备选)。</div>
+
+    <table>
+      <thead><tr><th>#</th><th>文件</th><th>动作</th><th>行数</th><th>关键点</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>SKILL.md</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~120 行</td><td>完整 Skill 文档,带 frontmatter</td></tr>
+        <tr><td>2</td><td><code>scripts/main.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~180 行</td><td>核心:重算 priority + last_sync + 触发 p0-watcher</td></tr>
+        <tr><td>3</td><td><code>scripts/bidboard_client.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~90 行</td><td>复用 S-02 同款 wrapper</td></tr>
+        <tr><td>4</td><td><code>config.json</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新建</span></td><td>~20 行</td><td>BOARD_URL / TOKEN / cron 表达式</td></tr>
+        <tr><td>5</td><td><code>~/Library/LaunchAgents/...plist</code></td><td><span class="pill" style="background: var(--bg-soft); color: var(--ink-soft); font-size: 11px; padding: 1px 6px;">配置</span></td><td>~30 行</td><td>macOS launchd 调度(推荐)</td></tr>
+        <tr><td>6</td><td><code>crontab -e</code></td><td><span class="pill" style="background: var(--bg-soft); color: var(--ink-soft); font-size: 11px; padding: 1px 6px;">配置</span></td><td>1 行</td><td>Linux/Mac cron 调度(备选)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>💡 关键设计</h4>
+      <p><b>1. 不做 daemon 进程</b>:这是 "Skill",不是后台服务。每次跑一次就退出,简单可靠。Mac 用 launchd / Linux 用 crontab 调度。</p>
+      <p><b>2. 三件事一次完成</b>:① 重算 priority ② 写 last_sync(证明看板活着)③ 触发 p0-watcher。</p>
+      <p><b>3. 幂等性</b>:同一天多次跑结果应一致。优先级变了才 PATCH,没变不动,避免 P0 看门狗重复告警。</p>
+      <p><b>4. 失败兜底</b>:workbench 不起时不崩,入 <code>~/.bidboard_queue.jsonl</code>,workbench 起来后 replay。</p>
+    </div>
+  </div>
+
+  <!-- 文件 1: SKILL.md -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">1</span>文件 1 · <span class="file-tag">SKILL.md</span>
+      <span class="action new">新建</span>
+    </div>
+    <div class="sec-lede">完整 Skill 文档,WorkBuddy / Qoder / 任何 Agent runtime 都能识别。</div>
+    <div class="copy-hint"><b>操作</b>:<code>mkdir -p ~/.workbuddy/skills/bid-card-refresh/scripts</code>,然后 <code>touch SKILL.md</code>。</div>
+
+<pre class="code">---
+name: bid-card-refresh
+version: "1.0.0"
+description: |
+  投标看板每日刷新 · 每日 09:45 cron 自动跑一次,完成三件事:
+  1) 重算所有 bids 的 priority(按 §6.5 算法:T≤3→P0, T≤7→P1, 其他→P2;+ 阻塞升级)
+  2) 写 last_sync 字段(证明看板"活的")
+  3) 触发 p0-watcher(把 P0 客户列表推给告警 Skill)
+  触发词:刷新看板、重算优先级、09:45 仪式、bid card refresh、看板刷新。
+agent_created: true
+---
+
+# 投标看板每日刷新 · bid-card-refresh
+
+> **定位**:这是"看板的心脏"。每个工作日 09:45 自动跑一次,确保看板数据是最新的、priority 是准的、P0 客户会被及时告警。
+> **不是**后台 daemon(那是 p0-watcher 的事),而是"被 cron 调起一次就退出"的脚本。
+
+## 一、职责
+
+每日 09:45 跑一次,执行三件事:
+1. **重算 priority** — 按 §6.5 算法(见后),priority 变了才 PATCH(避免无意义写入)
+2. **写 last_sync** — 所有 bids 写当前时间,证明看板"活的"
+3. **触发 p0-watcher** — 把 P0 客户列表作为参数,spawn p0-watcher Skill
+
+## 二、触发场景
+
+- **自动**(推荐):macOS launchd / Linux crontab 每日 09:45
+- **手动**:`python3 scripts/main.py --once`(单次跑)
+- **测试**:`python3 scripts/main.py --once --dry-run`(不发请求)
+- **强制**:`python3 scripts/main.py --once --force`(即使今天已跑过也跑)
+
+## 三、执行步骤
+
+### 步骤 1:拉取所有 bids
+
+GET `http://127.0.0.1:8765/api/bids` → 列表
+
+### 步骤 2:逐个重算 priority
+
+```
+对每条 bid:
+    old_priority = bid.priority
+    new_priority = calc_priority(bid, today)
+    if new_priority != old_priority:
+        PATCH /api/bids/<code>/priority  {value: new_priority}
+        log_event("priority 变化", code, old → new)
+```
+
+### 步骤 3:写 last_sync
+
+```
+对每条 bid:
+    PATCH /api/bids/<code>/last_sync  {value: now()}
+```
+
+### 步骤 4:触发 P0 看门狗
+
+```
+p0_list = [b.code for b in bids if b.priority == "P0"]
+if p0_list:
+    spawn("p0-watcher", clients=p0_list)  # 通过 workbuddy run / wb_cli
+```
+
+### 步骤 5:幂等性
+
+- 同一天多次跑,结果应一致
+- 用 `~/.bidboard_refresh_YYYYMMDD` 标记今日已跑
+- 强制重跑:`--force`
+
+## 四、§6.5 优先级算法(复述)
+
+```python
+def calc_priority(bid, today):
+    if not bid.due_at or bid.due_at == "持续":
+        return "P2"
+    if all nodes done:
+        return "P2"
+    days = (due - today).days
+    if days <= 3: priority = "P0"
+    elif days <= 7: priority = "P1"
+    else: priority = "P2"
+    has_block = any(n.status == "blocked" for n in bid.flow.nodes)
+    if has_block:
+        if priority == "P1": priority = "P0"
+        elif priority == "P2": priority = "P1"
+    return priority
+```
+
+## 五、配置(config.json)
+
+```json
+{
+  "board_url": "http://127.0.0.1:8765",
+  "token_env": "BIDBOARD_TOKEN",
+  "today_override": null,         // 测试时强制改 today
+  "spawn_p0_watcher": true,        // 是否触发 p0-watcher
+  "p0_watcher_cmd": "workbuddy run p0-watcher --clients={clients}",
+  "log_file": "~/.bidboard_refresh.log",
+  "idempotency_file": "~/.bidboard_refresh_{YYYYMMDD}"
+}
+```
+
+## 六、依赖
+
+- Python 3.7+(只 stdlib:urllib / json / datetime)
+- 远程依赖:`workbench 127.0.0.1:8765` 起着(否则入队列兜底)
+- 可选:`workbuddy` CLI(触发 p0-watcher 用,未装也不影响主流程)
+
+## 七、验收
+
+- 看 `~/.bidboard_refresh.log` 每次跑有 N 行日志
+- 看看板 `last_sync` 字段:每天更新
+- 跑一次后立刻看 `bid-board-v2-20260810.html` 底部事件流,应出现 "bid-card-refresh" 来源的 N+1 条 API 调用
+
+## 八、扩展(P1 阶段考虑)
+
+- 长连接 SSE 监听:`--watch` 模式,实时响应 bids 变化(替代 cron)
+- 多用户支持:每个 user_id 独立一份 idempotency
+- Slack 通知:`refresh_done` hook
+</pre>
+  </div>
+
+  <!-- 文件 2: main.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">2</span>文件 2 · <span class="file-tag">scripts/main.py</span>
+      <span class="action new">新建</span>
+    </div>
+    <div class="sec-lede">核心逻辑 ~180 行。3 步走完,带幂等性和失败兜底。</div>
+    <div class="copy-hint"><b>操作</b>:<code>touch scripts/main.py</code>,复制下面整段。<code>chmod +x scripts/main.py</code>(让 launchd 能直接调)。</div>
+
+<pre class="code"><span class="c">#!/usr/bin/env python3</span>
+<span class="c">"""
+bid-card-refresh · 每日 09:45 跑一次的看板刷新
+用法:
+  python3 main.py --once             # 单次跑(默认)
+  python3 main.py --once --dry-run   # 干跑,不发请求
+  python3 main.py --once --force     # 强制跑(忽略今日已跑标记)
+  python3 main.py --once --no-spawn  # 不触发 p0-watcher
+"""
+import argparse, json, os, sys, subprocess
+from datetime import datetime, date, timedelta
+from pathlib import Path
+
+SKILL_DIR = Path(__file__).resolve().parent.parent
+LOG_FILE = Path(os.environ.get(
+    <span class="s">"BIDBOARD_REFRESH_LOG"</span>,
+    str(Path.home() / <span class="s">".bidboard_refresh.log"</span>)))
+
+
+def <span class="f">load_config</span>():
+    p = <span class="v">SKILL_DIR</span> / <span class="s">"config.json"</span>
+    <span class="k">if</span> p.exists():
+        <span class="k">return</span> json.loads(p.read_text(encoding=<span class="s">"utf-8"</span>))
+    <span class="c"># 默认配置</span>
+    <span class="k">return</span> {
+        <span class="s">"board_url"</span>: <span class="s">"http://127.0.0.1:8765"</span>,
+        <span class="s">"token_env"</span>: <span class="s">"BIDBOARD_TOKEN"</span>,
+        <span class="s">"today_override"</span>: <span class="k">None</span>,
+        <span class="s">"spawn_p0_watcher"</span>: <span class="k">True</span>,
+        <span class="s">"p0_watcher_cmd"</span>: <span class="s">"workbuddy run p0-watcher --clients={clients}"</span>,
+    }
+
+
+def <span class="f">log</span>(msg: str):
+    <span class="c">"""写到 LOG_FILE,带时间戳。"""</span>
+    ts = datetime.now().strftime(<span class="s">"%Y-%m-%d %H:%M:%S"</span>)
+    line = <span class="s">f"[{ts}] {msg}"</span>
+    <span class="f">print</span>(line)
+    <span class="k">try</span>:
+        <span class="k">with</span> <span class="f">open</span>(<span class="v">LOG_FILE</span>, <span class="s">"a"</span>, encoding=<span class="s">"utf-8"</span>) <span class="k">as</span> f:
+            f.write(line + <span class="s">"\n"</span>)
+    <span class="k">except</span> OSError:
+        <span class="k">pass</span>
+
+
+def <span class="f">calc_priority</span>(bid: dict, today: date) -> str:
+    <span class="c">"""§6.5 优先级算法:持续→P2;全完成→P2;T≤3→P0;T≤7→P1;其他→P2;+ 阻塞升级。"""</span>
+    due_str = bid.get(<span class="s">"due_at"</span>, <span class="s">""</span>)
+    <span class="k">if</span> <span class="k">not</span> due_str <span class="k">or</span> due_str == <span class="s">"持续"</span>:
+        <span class="k">return</span> <span class="s">"P2"</span>
+
+    <span class="c"># 全完成 → P2</span>
+    flow = bid.get(<span class="s">"flow"</span>) <span class="k">or</span> {}
+    nodes = flow.get(<span class="s">"nodes"</span>, [])
+    <span class="k">if</span> nodes <span class="k">and</span> <span class="f">all</span>(n.get(<span class="s">"status"</span>) == <span class="s">"done"</span> <span class="k">for</span> n <span class="k">in</span> nodes):
+        <span class="k">return</span> <span class="s">"P2"</span>
+
+    <span class="c"># 解析 due_at(形如 "2026-08-13 17:00")</span>
+    <span class="k">try</span>:
+        due = datetime.strptime(due_str.split()[<span class="n">0</span>], <span class="s">"%Y-%m-%d"</span>).date()
+    <span class="k">except</span> (ValueError, IndexError):
+        <span class="k">return</span> <span class="s">"P2"</span>
+
+    days = (due - today).days
+    <span class="k">if</span> days &lt;= <span class="n">3</span>:
+        priority = <span class="s">"P0"</span>
+    <span class="k">elif</span> days &lt;= <span class="n">7</span>:
+        priority = <span class="s">"P1"</span>
+    <span class="k">else</span>:
+        priority = <span class="s">"P2"</span>
+
+    <span class="c"># 阻塞升级</span>
+    has_block = <span class="k">any</span>(n.get(<span class="s">"status"</span>) == <span class="s">"blocked"</span> <span class="k">for</span> n <span class="k">in</span> nodes)
+    <span class="k">if</span> has_block:
+        <span class="k">if</span> priority == <span class="s">"P1"</span>:
+            priority = <span class="s">"P0"</span>
+        <span class="k">elif</span> priority == <span class="s">"P2"</span>:
+            priority = <span class="s">"P1"</span>
+
+    <span class="k">return</span> priority
+
+
+def <span class="f">fetch_bids</span>(cfg: dict) -> list:
+    <span class="c">"""GET /api/bids → 列表。失败返回空列表(主流程不崩)。"""</span>
+    <span class="k">import</span> urllib.request, urllib.error
+    url = cfg[<span class="s">"board_url"</span>] + <span class="s">"/api/bids"</span>
+    token = os.environ.get(cfg.get(<span class="s">"token_env"</span>, <span class="s">"BIDBOARD_TOKEN"</span>), <span class="s">""</span>)
+    headers = {<span class="s">"Authorization"</span>: <span class="s">f"Bearer {token}"</span>} <span class="k">if</span> token <span class="k">else</span> {}
+    <span class="k">try</span>:
+        req = urllib.request.Request(url, headers=headers)
+        <span class="k">with</span> urllib.request.urlopen(req, timeout=<span class="n">5</span>) <span class="k">as</span> r:
+            data = json.loads(r.read().decode(<span class="s">"utf-8"</span>))
+            <span class="k">if</span> <span class="f">isinstance</span>(data, list):
+                <span class="k">return</span> data
+            <span class="k">return</span> data.get(<span class="s">"bids"</span>, data.get(<span class="items"</span>, []))
+    <span class="k">except</span> (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) <span class="k">as</span> e:
+        <span class="f">log</span>(<span class="s">f"⚠ fetch_bids 失败(不影响主流程): {e}"</span>)
+        <span class="k">return</span> []
+
+
+def <span class="f">patch_field</span>(cfg: dict, code: str, field: str, value) -> bool:
+    <span class="c">"""PATCH /api/bids/&lt;code&gt;/&lt;field&gt;。失败入队列,返回 True/False。"""</span>
+    <span class="k">import</span> urllib.request, urllib.error
+    url = <span class="s">f"{cfg['board_url']}/api/bids/{code}/{field}"</span>
+    token = os.environ.get(cfg.get(<span class="s">"token_env"</span>, <span class="s">"BIDBOARD_TOKEN"</span>), <span class="s">""</span>)
+    body = json.dumps({<span class="s">"value"</span>: value}).encode(<span class="s">"utf-8"</span>)
+    headers = {<span class="s">"Content-Type"</span>: <span class="s">"application/json"</span>}
+    <span class="k">if</span> token:
+        headers[<span class="s">"Authorization"</span>] = <span class="s">f"Bearer {token}"</span>
+    <span class="k">try</span>:
+        req = urllib.request.Request(url, data=body, headers=headers, method=<span class="s">"PATCH"</span>)
+        urllib.request.urlopen(req, timeout=<span class="n">3</span>).read()
+        <span class="k">return</span> <span class="k">True</span>
+    <span class="k">except</span> (urllib.error.URLError, TimeoutError, OSError) <span class="k">as</span> e:
+        <span class="c"># 入本地重试队列</span>
+        qfile = Path.home() / <span class="s">".bidboard_queue.jsonl"</span>
+        <span class="k">try</span>:
+            <span class="k">with</span> <span class="f">open</span>(qfile, <span class="s">"a"</span>, encoding=<span class="s">"utf-8"</span>) <span class="k">as</span> f:
+                f.write(json.dumps({
+                    <span class="s">"ts"</span>: datetime.now().isoformat(timespec=<span class="s">"seconds"</span>),
+                    <span class="s">"path"</span>: <span class="s">f"/api/bids/{code}/{field}"</span>,
+                    <span class="s">"payload"</span>: {<span class="s">"value"</span>: value},
+                    <span class="s">"err"</span>: <span class="f">str</span>(e)
+                }, ensure_ascii=<span class="k">False</span>) + <span class="s">"\n"</span>)
+        <span class="k">except</span> OSError:
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="k">False</span>
+
+
+def <span class="f">spawn_p0_watcher</span>(cfg: dict, p0_list: list, dry_run: bool):
+    <span class="c">"""触发 p0-watcher Skill(若启用)。"""</span>
+    <span class="k">if</span> <span class="k">not</span> cfg.get(<span class="s">"spawn_p0_watcher"</span>, <span class="k">True</span>):
+        <span class="f">log</span>(<span class="s">f"  · spawn_p0_watcher 关闭,跳过"</span>)
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="k">not</span> p0_list:
+        <span class="f">log</span>(<span class="s">f"  · 无 P0 客户,跳过 spawn"</span>)
+        <span class="k">return</span>
+    clients = <span class="s">","</span>.<span class="f">join</span>(p0_list)
+    cmd = cfg.get(<span class="s">"p0_watcher_cmd"</span>, <span class="s">"workbuddy run p0-watcher --clients={clients}"</span>).<span class="f">format</span>(clients=clients)
+    <span class="f">log</span>(<span class="s">f"  · 触发 p0-watcher: {cmd}"</span>)
+    <span class="k">if</span> dry_run:
+        <span class="k">return</span>
+    <span class="k">try</span>:
+        subprocess.Popen(cmd, shell=<span class="k">True</span>, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="f">log</span>(<span class="s">f"  ⚠ spawn 失败(不影响主流程): {e}"</span>)
+
+
+def <span class="f">check_idempotency</span>(today: date, force: bool) -> bool:
+    <span class="c">"""返回 True 表示"今天已跑过,应跳过"。force=True 强制跑。"""</span>
+    <span class="k">if</span> force:
+        <span class="k">return</span> <span class="k">False</span>
+    marker = Path.home() / <span class="s">f".bidboard_refresh_{today.strftime('%Y%m%d')}"</span>
+    <span class="k">if</span> marker.exists():
+        <span class="k">return</span> <span class="k">True</span>
+    <span class="k">return</span> <span class="k">False</span>
+
+
+def <span class="f">mark_done</span>(today: date):
+    marker = Path.home() / <span class="s">f".bidboard_refresh_{today.strftime('%Y%m%d')}"</span>
+    marker.write_text(datetime.now().isoformat(timespec=<span class="s">"seconds"</span>), encoding=<span class="s">"utf-8"</span>)
+
+
+def <span class="f">main</span>():
+    ap = argparse.ArgumentParser(description=<span class="s">"投标看板每日刷新"</span>)
+    ap.add_argument(<span class="s">"--once"</span>, action=<span class="s">"store_true"</span>, default=<span class="k">True</span>, help=<span class="s">"单次跑(默认)"</span>)
+    ap.add_argument(<span class="s">"--dry-run"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"只打印,不发请求"</span>)
+    ap.add_argument(<span class="s">"--force"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"忽略今日已跑标记,强制跑"</span>)
+    ap.add_argument(<span class="s">"--no-spawn"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"不触发 p0-watcher"</span>)
+    args = ap.parse_args()
+
+    cfg = <span class="f">load_config</span>()
+
+    <span class="c"># today 支持测试时强制改</span>
+    <span class="k">if</span> cfg.get(<span class="s">"today_override"</span>):
+        today = datetime.strptime(cfg[<span class="s">"today_override"</span>], <span class="s">"%Y-%m-%d"</span>).date()
+    <span class="k">else</span>:
+        today = date.today()
+
+    <span class="f">log</span>(<span class="s">f"========== bid-card-refresh 启动 (today={today}) =========="</span>)
+
+    <span class="c"># 幂等性检查</span>
+    <span class="k">if</span> <span class="f">check_idempotency</span>(today, args.force):
+        <span class="f">log</span>(<span class="s">f"⏭ 今日已跑过(标记文件存在),跳过(用 --force 强制跑)"</span>)
+        <span class="k">return</span>
+
+    <span class="c"># 拉 bids</span>
+    bids = <span class="f">fetch_bids</span>(cfg)
+    <span class="k">if</span> <span class="k">not</span> bids:
+        <span class="f">log</span>(<span class="s">f"⚠ 拉取 bids 失败或为空(可能 workbench 未起),退出"</span>)
+        <span class="k">return</span>
+    <span class="f">log</span>(<span class="s">f"  · 拉取 {len(bids)} 条 bids"</span>)
+
+    <span class="c"># 步骤 2:重算 priority</span>
+    now_str = datetime.now().strftime(<span class="s">"%Y-%m-%d %H:%M:%S"</span>)
+    n_pri_change = n_block = <span class="n">0</span>
+    p0_list = []
+
+    <span class="k">for</span> bid <span class="k">in</span> bids:
+        code = bid.get(<span class="s">"code"</span>)
+        <span class="k">if</span> <span class="k">not</span> code:
+            <span class="k">continue</span>
+
+        old_pri = bid.get(<span class="s">"priority"</span>, <span class="s">"P2"</span>)
+        new_pri = <span class="f">calc_priority</span>(bid, today)
+
+        <span class="k">if</span> new_pri != old_pri:
+            n_pri_change += <span class="n">1</span>
+            <span class="f">log</span>(<span class="s">f"  · {code} priority: {old_pri} → {new_pri}"</span>)
+            <span class="k">if</span> <span class="k">not</span> args.dry_run:
+                <span class="f">patch_field</span>(cfg, code, <span class="s">"priority"</span>, new_pri)
+        <span class="k">if</span> new_pri == <span class="s">"P0"</span>:
+            p0_list.append(code)
+
+    <span class="f">log</span>(<span class="s">f"  · priority 变化: {n_pri_change} 条"</span>)
+
+    <span class="c"># 步骤 3:写 last_sync(给所有 bids,证明看板活着)</span>
+    <span class="k">if</span> <span class="k">not</span> args.dry_run:
+        <span class="k">for</span> bid <span class="k">in</span> bids:
+            code = bid.get(<span class="s">"code"</span>)
+            <span class="k">if</span> code:
+                <span class="f">patch_field</span>(cfg, code, <span class="s">"last_sync"</span>, now_str)
+    <span class="f">log</span>(<span class="s">f"  · last_sync 写入: {len(bids)} 条"</span>)
+
+    <span class="c"># 步骤 4:触发 p0-watcher</span>
+    <span class="k">if</span> <span class="k">not</span> args.no_spawn:
+        <span class="f">spawn_p0_watcher</span>(cfg, p0_list, args.dry_run)
+
+    <span class="c"># 标记今日已跑</span>
+    <span class="k">if</span> <span class="k">not</span> args.dry_run:
+        <span class="f">mark_done</span>(today)
+
+    <span class="f">log</span>(<span class="s">f"========== bid-card-refresh 完成 ==========\n"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="f">main</span>()
+</pre>
+  </div>
+
+  <!-- 文件 3: bidboard_client.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">3</span>文件 3 · <span class="file-tag">scripts/bidboard_client.py</span>
+      <span class="action new">新建(复用 S-02)</span>
+    </div>
+    <div class="sec-lede">复用 S-02 同款 wrapper。main.py 已经内置了 fetch/patch 逻辑,这个 wrapper 主要是给未来的其他脚本(CLI 测试 / 死信队列 replay)用。</div>
+    <div class="copy-hint"><b>操作</b>:<code>cp ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py ~/.workbuddy/skills/bid-card-refresh/scripts/</code></div>
+    <p style="font-size: 13px; color: var(--ink-soft);">↑ 直接复用,零修改。main.py 内部已自带 fetch/patch,不依赖这个文件,但保留供其他脚本用。</p>
+  </div>
+
+  <!-- 文件 4: config.json -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">4</span>文件 4 · <span class="file-tag">config.json</span>
+      <span class="action new">新建</span>
+    </div>
+    <div class="sec-lede">默认配置 + 可选覆盖。环境变量 <code>BIDBOARD_TOKEN</code> 优先(避免 token 落文件)。</div>
+    <div class="copy-hint"><b>操作</b>:<code>touch config.json</code>,复制下面 JSON。</div>
+
+<pre class="code">{
+  <span class="c">"_comment": "bid-card-refresh 配置 · 环境变量 BIDBOARD_TOKEN 优先"</span>,
+  <span class="v">"board_url"</span>: <span class="s">"http://127.0.0.1:8765"</span>,
+  <span class="v">"token_env"</span>: <span class="s">"BIDBOARD_TOKEN"</span>,
+
+  <span class="c">// 测试时可改 today 模拟未来/过去日期</span>
+  <span class="v">"today_override"</span>: <span class="k">null</span>,
+
+  <span class="c">// 是否触发 p0-watcher(关闭后只刷看板不告警)</span>
+  <span class="v">"spawn_p0_watcher"</span>: <span class="k">true</span>,
+  <span class="v">"p0_watcher_cmd"</span>: <span class="s">"workbuddy run p0-watcher --clients={clients}"</span>,
+
+  <span class="c">// 日志路径(可改)</span>
+  <span class="v">"log_file"</span>: <span class="s">"~/.bidboard_refresh.log"</span>,
+
+  <span class="c">// 幂等标记(每次跑会创建 ~/.bidboard_refresh_YYYYMMDD 文件,第二天自动失效)</span>
+  <span class="v">"idempotency_file"</span>: <span class="s">"~/.bidboard_refresh_{YYYYMMDD}"</span>
+}
+</pre>
+  </div>
+
+  <!-- 文件 5: launchd 调度 -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">5</span>文件 5 · <span class="file-tag">~/Library/LaunchAgents/com.workbuddy.bidcardrefresh.plist</span>
+      <span class="action info">配置</span>
+    </div>
+    <div class="sec-lede">macOS launchd 是 Duke 用的最稳的调度方式(cron 在 Mac 上经常不触发)。</div>
+    <div class="copy-hint"><b>操作</b>:<code>mkdir -p ~/Library/LaunchAgents</code>,然后 <code>touch ~/Library/LaunchAgents/com.workbuddy.bidcardrefresh.plist</code>,复制下面 plist。</div>
+
+<pre class="code">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;!-- 唯一标识 --&gt;
+    &lt;key&gt;Label&lt;/key&gt;
+    &lt;string&gt;com.workbuddy.bidcardrefresh&lt;/string&gt;
+
+    &lt;!-- 要执行的命令 --&gt;
+    &lt;key&gt;ProgramArguments&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;/usr/bin/python3&lt;/string&gt;
+        &lt;string&gt;/Users/duke/.workbuddy/skills/bid-card-refresh/scripts/main.py&lt;/string&gt;
+        &lt;string&gt;--once&lt;/string&gt;
+    &lt;/array&gt;
+
+    &lt;!-- 工作目录 --&gt;
+    &lt;key&gt;WorkingDirectory&lt;/key&gt;
+    &lt;string&gt;/Users/duke/.workbuddy/skills/bid-card-refresh&lt;/string&gt;
+
+    &lt;!-- 环境变量(把 token 放这里更安全) --&gt;
+    &lt;key&gt;EnvironmentVariables&lt;/key&gt;
+    &lt;dict&gt;
+        &lt;key&gt;BIDBOARD_TOKEN&lt;/key&gt;
+        &lt;string&gt;REPLACE_WITH_YOUR_TOKEN&lt;/string&gt;
+        &lt;key&gt;PATH&lt;/key&gt;
+        &lt;string&gt;/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin&lt;/string&gt;
+    &lt;/dict&gt;
+
+    &lt;!-- 触发时间:每周一-五 09:45 --&gt;
+    &lt;key&gt;StartCalendarInterval&lt;/key&gt;
+    &lt;dict&gt;
+        &lt;key&gt;Hour&lt;/key&gt;
+        &lt;integer&gt;9&lt;/integer&gt;
+        &lt;key&gt;Minute&lt;/key&gt;
+        &lt;integer&gt;45&lt;/integer&gt;
+        &lt;key&gt;Weekday&lt;/key&gt;
+        &lt;integer&gt;1&lt;/integer&gt;  &lt;!-- 周一 --&gt;
+    &lt;/dict&gt;
+    &lt;!-- 复制 StartCalendarInterval 块到周二~周五 --&gt;
+
+    &lt;!-- 日志(launchd 自身会记,脚本也记) --&gt;
+    &lt;key&gt;StandardOutPath&lt;/key&gt;
+    &lt;string&gt;/tmp/bidcardrefresh.out&lt;/string&gt;
+    &lt;key&gt;StandardErrorPath&lt;/key&gt;
+    &lt;string&gt;/tmp/bidcardrefresh.err&lt;/string&gt;
+
+    &lt;!-- 工作日 9:45 必跑,系统唤醒时补跑 --&gt;
+    &lt;key&gt;RunAtLoad&lt;/key&gt;
+    &lt;false/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</pre>
+
+    <h3 class="st">5.1 启用 launchd 任务</h3>
+<pre class="code"><span class="c"># 1. 复制 plist 到 LaunchAgents(已 done)</span>
+ls -la ~/Library/LaunchAgents/com.workbuddy.bidcardrefresh.plist
+
+<span class="c"># 2. 加载任务(立即生效,虽然定时还没到)</span>
+launchctl load ~/Library/LaunchAgents/com.workbuddy.bidcardrefresh.plist
+
+<span class="c"># 3. 验证</span>
+launchctl list | grep bidcardrefresh
+<span class="c"># 期望:看到 - 0 com.workbuddy.bidcardrefresh</span>
+
+<span class="c"># 4. 立即手动跑一次(测试)</span>
+launchctl start com.workbuddy.bidcardrefresh
+tail -20 ~/.bidboard_refresh.log
+<span class="c"># 期望:看到 "========== bid-card-refresh 启动 ==========" 和 N 条日志</span>
+
+<span class="c"># 5. 卸载(如果不要了)</span>
+launchctl unload ~/Library/LaunchAgents/com.workbuddy.bidcardrefresh.plist
+</pre>
+  </div>
+
+  <!-- 文件 6: crontab 备选 -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">6</span>文件 6 · <span class="file-tag">crontab(备选)</span>
+      <span class="action info">配置</span>
+    </div>
+    <div class="sec-lede">如果不用 launchd(Duke 习惯用 Mac 但系统有时不灵),crontab 是最简单备选。</div>
+
+    <div class="copy-hint"><b>操作</b>:<code>crontab -e</code>,粘贴下面这行。</div>
+
+<pre class="code"><span class="c"># bid-card-refresh · 工作日 09:45 跑一次</span>
+<span class="w">45 9 * * 1-5</span>  /usr/bin/python3 /Users/duke/.workbuddy/skills/bid-card-refresh/scripts/main.py --once >> ~/.bidboard_refresh.log 2>&1
+</pre>
+
+    <p style="font-size: 13px; color: var(--ink-soft); margin-top: 8px;">
+    <b>说明</b>:<code>1-5</code> = 周一到周五。<code>>> ~/.bidboard_refresh.log 2>&1</code> = 标准输出和错误都追加到日志(脚本自身也写日志,这里双保险)。</p>
+  </div>
+
+  <!-- 测试 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>测试步骤(必须全过)</div>
+
+    <h3 class="st">7.1 单元测试:CLI --help / --dry-run</h3>
+<pre class="code"><span class="c"># 1. 验证 SKILL.md 存在</span>
+ls -la ~/.workbuddy/skills/bid-card-refresh/SKILL.md
+
+<span class="c"># 2. 验证 main.py 跑得起来</span>
+python3 ~/.workbuddy/skills/bid-card-refresh/scripts/main.py --help
+<span class="c"># 期望:看到 usage + --once/--dry-run/--force/--no-spawn 4 个参数</span>
+
+<span class="c"># 3. dry-run(无 workbench 也行,只打 fetch_bids 警告)</span>
+python3 ~/.workbuddy/skills/bid-card-refresh/scripts/main.py --once --dry-run
+<span class="c"># 期望:</span>
+<span class="c">#   ========== bid-card-refresh 启动 (today=2026-08-13) ==========</span>
+<span class="c">#     ⚠ fetch_bids 失败(不影响主流程): ...</span>
+<span class="c">#   ========== bid-card-refresh 完成 ==========</span>
+</pre>
+
+    <h3 class="st">7.2 workbench 起着时的端到端</h3>
+<pre class="code"><span class="c"># 1. 启动 workbench(另一终端)</span>
+workbuddy start
+
+<span class="c"># 2. 跑一次</span>
+python3 ~/.workbuddy/skills/bid-card-refresh/scripts/main.py --once --force
+<span class="c"># 期望日志(7 行 + 末尾):</span>
+<span class="c">#   ========== bid-card-refresh 启动 (today=2026-08-13) ==========</span>
+<span class="c">#     · 拉取 N 条 bids</span>
+<span class="c">#     · {code} priority: P1 → P0   (如果有变化)</span>
+<span class="c">#     · priority 变化: K 条</span>
+<span class="c">#     · last_sync 写入: N 条</span>
+<span class="c">#     · 触发 p0-watcher: workbuddy run p0-watcher --clients=xxx</span>
+<span class="c">#   ========== bid-card-refresh 完成 ==========</span>
+
+<span class="c"># 3. 看看板主页(打开 bid-board-v2-20260810.html)</span>
+<span class="c"># 期望:</span>
+<span class="c">#   - P0 客户卡片 "同步" 字段显示 09:45 时间</span>
+<span class="c">#   - 事件流出现 N+1 条 bid-card-refresh 来源的 API 调用</span>
+
+<span class="c"># 4. 验证幂等性:再跑一次(无 --force)</span>
+python3 ~/.workbuddy/skills/bid-card-refresh/scripts/main.py --once
+<span class="c"># 期望:"⏭ 今日已跑过,跳过"</span>
+</pre>
+
+    <h3 class="st">7.3 失败兜底测试</h3>
+<pre class="code"><span class="c"># 1. 停掉 workbench</span>
+workbuddy stop
+
+<span class="c"># 2. 跑 main.py</span>
+python3 ~/.workbuddy/skills/bid-card-refresh/scripts/main.py --once --force
+<span class="c"># 期望:</span>
+<span class="c">#   ⚠ fetch_bids 失败(不影响主流程): ...</span>
+<span class="c">#   ========== bid-card-refresh 完成 ==========</span>
+<span class="c"># (不崩,但也没干活)</span>
+
+<span class="c"># 3. 启动 workbench,让 bid-news-collection 跑一次(入 bids)</span>
+workbuddy start
+python3 ~/.workbuddy/skills/bid-news-collection/scripts/run.py --date 20260813
+
+<span class="c"># 4. 跑 main.py(此时 workbench 起着,但有上次失败的 priority 变化吗?)</span>
+python3 ~/.workbuddy/skills/bid-card-refresh/scripts/main.py --once --force
+<span class="c"># 期望:正常跑通</span>
+</pre>
+
+    <h3 class="st">7.4 模拟"今天"测试(改变 today_override)</h3>
+<pre class="code"><span class="c"># 1. 临时改 config.json 模拟未来日期</span>
+cat > ~/.workbuddy/skills/bid-card-refresh/config.json &lt;&lt; 'EOF'
+{
+  "board_url": "http://127.0.0.1:8765",
+  "token_env": "BIDBOARD_TOKEN",
+  "today_override": "2026-08-12",
+  "spawn_p0_watcher": false
+}
+EOF
+
+<span class="c"># 2. 跑</span>
+python3 ~/.workbuddy/skills/bid-card-refresh/scripts/main.py --once --force
+<span class="c"># 期望:看到 "(today=2026-08-12)" 提示,Duke T-1 客户变 P0</span>
+
+<span class="c"># 3. 恢复 config.json(改回 today_override=null)</span>
+</pre>
+
+    <h3 class="st">7.5 launchd 调度测试</h3>
+<pre class="code"><span class="c"># 1. 加载 plist</span>
+launchctl load ~/Library/LaunchAgents/com.workbuddy.bidcardrefresh.plist
+launchctl list | grep bidcardrefresh
+
+<span class="c"># 2. 手动触发(不等到 9:45)</span>
+launchctl start com.workbuddy.bidcardrefresh
+
+<span class="c"># 3. 看日志</span>
+sleep 2
+tail -20 ~/.bidboard_refresh.log
+
+<span class="c"># 4. 改时间到 1 分钟后,等 launchd 触发</span>
+<span class="c"># (这一步需要 root 改系统时间,跳过)</span>
+<span class="c"># 替代:用 launchctl startnow 立即跑</span>
+launchctl kickstart -k gui/$(id -u)/com.workbuddy.bidcardrefresh
+</pre>
+  </div>
+
+  <!-- 风险 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">8</span>风险与回滚</div>
+    <div class="risk-grid">
+      <div class="risk crit">
+        <h5>🔴 launchd 不触发</h5>
+        <p>Mac 经常因为系统休眠 / 用户登出导致 launchd 错过定时。<br><b>缓解</b>:launchd 配置加 <code>StartCalendarInterval</code> 多日(周一到周五各一行);错过会下次系统唤醒补跑。</p>
+      </div>
+      <div class="risk crit">
+        <h5>🔴 workbench 不起,刷新挂掉</h5>
+        <p>main.py fetch_bids 失败时优雅退出,但 priority 永远不更新。<br><b>缓解</b>:日志加 "⚠ 拉取失败" 提示,人工补跑;P1 阶段加"如果连续 N 天失败则告警微信"。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 spawn p0-watcher 失败</h5>
+        <p><code>workbuddy</code> CLI 未装或路径错,触发不到 P0 告警。<br><b>缓解</b>:config.json 的 <code>p0_watcher_cmd</code> 可改;主流程不依赖此步骤,失败仅记日志。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 幂等性误判</h5>
+        <p>同一天多次跑第二次会跳过,如果有 priority 紧急变化就漏了。<br><b>缓解</b>:用 <code>--force</code> 强制跑;launchd 默认不传 <code>--force</code> 保持幂等。</p>
+      </div>
+      <div class="risk mid">
+        <h5>🔵 写 last_sync 频繁</h5>
+        <p>每天写 60+ bids 的 last_sync,看板事件流会刷屏。<br><b>缓解</b>:事件流按"来源"过滤;last_sync 写入不做 addAiReady(避免噪声)。</p>
+      </div>
+    </div>
+
+    <h3 class="st">8.1 回滚</h3>
+    <ol style="font-size: 13.5px; color: var(--ink-soft); padding-left: 20px; line-height: 1.8;">
+      <li><code>launchctl unload ~/Library/LaunchAgents/com.workbuddy.bidcardrefresh.plist</code></li>
+      <li>删除 <code>~/.workbuddy/skills/bid-card-refresh/</code> 整个目录</li>
+      <li>删除幂等标记 <code>rm ~/.bidboard_refresh_*</code>(今天/昨天的)</li>
+      <li>crontab 方案:<code>crontab -e</code> 删对应行</li>
+    </ol>
+  </div>
+
+  <!-- 联动 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">9</span>与 S-01 / S-02 的联动</div>
+    <div class="sec-lede">3 个 Skill 共同组成"看板数据流"。</div>
+
+    <table>
+      <thead><tr><th>时刻</th><th>触发</th><th>Skill</th><th>推到看板</th></tr></thead>
+      <tbody>
+        <tr><td>09:30</td><td>cron</td><td>S-02 bid-news-collection</td><td>新商机 <code>create</code> / 老项目 <code>setStage</code></td></tr>
+        <tr><td>09:30 ~ 09:45</td><td>人工</td><td>下载招标文件</td><td>—</td></tr>
+        <tr><td>09:45</td><td>cron</td><td><b>S-05 bid-card-refresh(本 Skill)</b></td><td>priority 重算 + last_sync + 触发 p0-watcher</td></tr>
+        <tr><td>09:45 之后</td><td>人工 / AI</td><td>S-01 bid-file-review</td><td>5 个 review_sync 调用</td></tr>
+        <tr><td>任意时刻</td><td>daemon(S-07 P1)</td><td>p0-watcher</td><td>SSE 订阅,实时告警</td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>📋 改造清单速查</h4>
+      <p>总耗时 <b>2 天</b>(实操 1 天可完成,如果 workbench 起着):</p>
+      <ul style="margin: 6px 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft);">
+        <li>第 1 天上午:4 个文件全建(SKILL.md / main.py / bidboard_client.py / config.json)</li>
+        <li>第 1 天下午:跑 <code>--once --dry-run</code> + <code>--once --force</code> 验证</li>
+        <li>第 2 天:配 launchd(或 crontab),<code>launchctl start</code> 测一次</li>
+        <li>第 3 天:等 09:45 真实触发,看 <code>~/.bidboard_refresh.log</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px;">
+    <code>s05-bid-card-refresh-create-20260813.html</code> · 4 新文件 + 2 套调度方案 · 估时 2 天 · 2026-08-13
+  </div>
+</div>
+</body>
+</html>

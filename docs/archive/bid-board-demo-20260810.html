@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>投标看板 DEMO · Duke · Mavis</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --p0: #FEE2E2; --p0-ink: #991B1B;
+    --p1: #FEF3C7; --p1-ink: #92400E;
+    --p2: #DBEAFE; --p2-ink: #1E40AF;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --dash-bg: #0F1E33;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.6; font-size: 14.5px;
+  }
+  .wrap { max-width: 1480px; margin: 0 auto; padding: 24px 24px 60px; }
+
+  /* ===== 顶部条 ===== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .topbar h1 { font-size: 22px; margin: 0; font-weight: 700; }
+  .topbar h1 .small { font-size: 12px; color: var(--ink-mute); font-weight: 500; margin-left: 8px; letter-spacing: .04em; }
+  .topbar .actions { display: flex; gap: 8px; }
+  .btn {
+    border: 1px solid var(--line); background: white; color: var(--ink);
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .btn:hover { border-color: var(--brand); color: var(--brand-deep); }
+  .btn.primary { background: var(--brand); color: white; border-color: var(--brand); }
+  .btn.primary:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+  .btn.ghost { background: transparent; }
+  .btn.tiny { padding: 4px 10px; font-size: 12px; }
+
+  /* ===== 主布局 ===== */
+  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 18px; }
+  .col-main { min-width: 0; }
+  .col-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+  /* ===== 看板 ===== */
+  .dash {
+    background: var(--dash-bg); border-radius: 14px; padding: 18px 20px;
+    color: #E6F1FB; box-shadow: 0 12px 40px rgba(15,30,51,.18);
+  }
+  .dash .bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .dash .bar .title { font-size: 14px; font-weight: 600; letter-spacing: .04em; }
+  .dash .bar .title .dot { color: var(--ok); margin-right: 6px; }
+  .dash .bar .meta { font-size: 12px; color: #94A3B8; font-family: "SF Mono", monospace; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
+  .stat {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .stat .k { font-size: 10.5px; color: #94A3B8; letter-spacing: .08em; text-transform: uppercase; }
+  .stat .v { font-size: 20px; font-weight: 700; margin-top: 3px; }
+  .stat .v small { font-size: 11px; color: #94A3B8; font-weight: 500; margin-left: 3px; }
+  .stat.alert .v { color: #FCA5A5; }
+  .stat.warn .v { color: #FCD34D; }
+  .stat.ok .v { color: #6EE7B7; }
+  .stat .v.flash { animation: flash .8s; }
+  @keyframes flash { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .card {
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px; padding: 12px 14px;
+    transition: all .3s;
+  }
+  .card.p0 { border-left: 3px solid #EF4444; }
+  .card.p1 { border-left: 3px solid #F59E0B; }
+  .card.p2 { border-left: 3px solid #38BDF8; }
+  .card.flash { animation: cardflash .8s; }
+  @keyframes cardflash {
+    0% { background: rgba(99,102,241,.2); }
+    100% { background: rgba(255,255,255,.05); }
+  }
+  .card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .card .client { font-size: 14px; font-weight: 700; }
+  .card .code { font-size: 10.5px; color: #94A3B8; font-family: "SF Mono", monospace; }
+  .stage {
+    display: inline-block; font-size: 10.5px; padding: 2px 7px; border-radius: 999px;
+    font-weight: 600;
+  }
+  .st-跟踪 { background: #374151; color: #D1D5DB; }
+  .st-审查 { background: #1E3A8A; color: #BFDBFE; }
+  .st-报价 { background: #78350F; color: #FDE68A; }
+  .st-修订 { background: #831843; color: #FBCFE8; }
+  .st-封标 { background: #7F1D1D; color: #FECACA; }
+  .st-述标 { background: #064E3B; color: #A7F3D0; }
+  .card .due { font-size: 11.5px; color: #94A3B8; margin-top: 2px; }
+  .card .due b { color: #FCA5A5; }
+  .card .due b.urgent { color: #FCA5A5; animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  .row { margin-top: 8px; }
+  .row .lbl { font-size: 10.5px; color: #94A3B8; letter-spacing: .04em; }
+  .row .val { font-size: 12px; margin-top: 2px; line-height: 1.5; }
+  .row.ai .val { color: #7DD3FC; }
+  .row.block .val { color: #FCA5A5; }
+  .row.decision .val { color: #FDE68A; font-weight: 600; }
+  .row .chip {
+    display: inline-block; padding: 1px 6px; background: rgba(125,211,252,.12);
+    color: #7DD3FC; border-radius: 4px; font-size: 11px; margin: 1px 3px 1px 0;
+  }
+
+  .today {
+    background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.3);
+    border-radius: 10px; padding: 10px 14px;
+  }
+  .today h4 { margin: 0 0 6px; font-size: 11px; color: #C7D2FE; letter-spacing: .08em; text-transform: uppercase; }
+  .today ul { margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.7; }
+  .today li b { color: #FDE68A; }
+  .today li code { font-family: "SF Mono", monospace; font-size: 11.5px; color: #7DD3FC; }
+  .today .empty { color: #94A3B8; font-style: italic; font-size: 12px; }
+
+  /* ===== 侧栏 ===== */
+  .panel {
+    background: white; border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+  }
+  .panel h3 {
+    margin: 0 0 10px; font-size: 13px; color: var(--brand-deep);
+    letter-spacing: .04em; text-transform: uppercase; font-weight: 700;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel h3 .tag {
+    font-size: 10px; background: var(--accent-soft); color: var(--accent);
+    padding: 1px 6px; border-radius: 4px; font-weight: 600;
+  }
+
+  /* 模拟 agent 面板 */
+  .agent-section { margin-bottom: 10px; }
+  .agent-section .sec-name {
+    font-size: 11.5px; color: var(--ink-mute); font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .agent-section .sec-name::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--brand);
+  }
+  .agent-section .sec-name.s::before { background: var(--accent); }
+  .agent-section .sec-name.w::before { background: var(--warn); }
+  .agent-grid { display: grid; gap: 6px; }
+  .agent-btn {
+    width: 100%; text-align: left; background: var(--bg-soft);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+    font-size: 12px; cursor: pointer; color: var(--ink);
+    display: flex; align-items: center; gap: 8px; transition: all .15s;
+  }
+  .agent-btn:hover { background: white; border-color: var(--brand); transform: translateX(2px); }
+  .agent-btn .ic { font-size: 14px; }
+  .agent-btn .name { font-weight: 600; }
+  .agent-btn .desc { color: var(--ink-mute); font-size: 11px; margin-top: 1px; }
+
+  /* 日志 */
+  .log {
+    background: #0F1E33; border-radius: 8px; padding: 10px 12px;
+    font-family: "SF Mono", "Menlo", monospace; font-size: 11.5px;
+    max-height: 360px; overflow-y: auto; color: #94A3B8;
+    line-height: 1.6;
+  }
+  .log .line { padding: 2px 0; }
+  .log .line .ts { color: #64748B; }
+  .log .line .api { color: #7DD3FC; }
+  .log .line .ok { color: #6EE7B7; }
+  .log .line .warn { color: #FCD34D; }
+  .log .line .err { color: #FCA5A5; }
+  .log .line .key { color: #C7D2FE; }
+  .log .line .str { color: #FDE68A; }
+
+  /* 代码区 */
+  .code-block {
+    background: #0F1E33; color: #E6F1FB; padding: 16px 18px;
+    border-radius: 10px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto;
+  }
+  .code-block .c { color: #94A3B8; }
+  .code-block .k { color: #C7D2FE; }
+  .code-block .s { color: #FDE68A; }
+  .code-block .v { color: #7DD3FC; }
+  .code-block .f { color: #6EE7B7; }
+  .code-block .h { color: #FCA5A5; }
+
+  /* Toast */
+  .toast-wrap { position: fixed; top: 24px; right: 24px; z-index: 1000;
+    display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--dash-bg); color: #E6F1FB; padding: 10px 16px;
+    border-radius: 10px; font-size: 13px; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    border-left: 3px solid var(--brand);
+    animation: slideIn .3s;
+  }
+  .toast.warn { border-left-color: var(--warn); }
+  .toast.err { border-left-color: var(--danger); }
+  .toast.ok { border-left-color: var(--ok); }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* Tabs (代码示例) */
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .tab {
+    padding: 8px 14px; font-size: 13px; color: var(--ink-mute);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab.active { color: var(--brand-deep); border-bottom-color: var(--brand); font-weight: 600; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .sec-title {
+    font-size: 18px; font-weight: 700; margin: 24px 0 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sec-title .n {
+    background: var(--brand); color: white; width: 24px; height: 24px;
+    border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .meta-block {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 14px;
+  }
+  .meta-cell {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .meta-cell .k { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: .04em; }
+  .meta-cell .v { font-size: 13px; font-weight: 600; margin-top: 4px; color: var(--ink); }
+  .meta-cell .v code { font-family: "SF Mono", monospace; font-size: 12px; color: var(--brand-deep); }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .meta-block { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .grid, .stats { grid-template-columns: 1fr; }
+    .wrap { padding: 16px 12px 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <h1>投标看板 DEMO <span class="small">/ 支持任意 agent · skill 调用与同步</span></h1>
+    <div class="actions">
+      <button class="btn ghost tiny" onclick="openSecondTab()">📑 开第二个 tab 看同步</button>
+      <button class="btn tiny" onclick="resetData()">↺ 重置数据</button>
+    </div>
+  </div>
+
+  <div class="meta-block">
+    <div class="meta-cell">
+      <div class="k">持久化</div>
+      <div class="v"><code>localStorage[bid_board_v1]</code> · 跨 tab</div>
+    </div>
+    <div class="meta-cell">
+      <div class="k">实时同步</div>
+      <div class="v"><code>BroadcastChannel</code> + <code>storage</code> 降级</div>
+    </div>
+    <div class="meta-cell">
+      <div class="k">Agent 入口</div>
+      <div class="v"><code>window.BidBoard</code> · 全局 API</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="col-main">
+      <!-- 看板 -->
+      <div class="dash" id="dash">
+        <div class="bar">
+          <div class="title"><span class="dot" id="live-dot">●</span>投标看板 · BID BOARD</div>
+          <div class="meta" id="meta">--:--:-- · last-sync: --</div>
+        </div>
+
+        <div class="stats" id="stats"></div>
+        <div class="grid" id="grid"></div>
+        <div class="today" id="today">
+          <h4>今日动作 · TODAY'S DECISIONS</h4>
+          <div id="today-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-side">
+      <!-- 模拟 agent 面板 -->
+      <div class="panel">
+        <h3>模拟 Agent <span class="tag">点我看效果</span></h3>
+
+        <div class="agent-section">
+          <div class="sec-name s">标讯采集 · bid-news-collection</div>
+          <div class="agent-grid">
+            <button class="agent-btn" onclick="evt.collectRun()">
+              <span class="ic">📥</span>
+              <div>
+                <div class="name">09:30 采集跑完</div>
+                <div class="desc">拉 40+ 渠道 · 新商机入 bids</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="agent-section">
+          <div class="sec-name s">标书审查 · bid-file-review</div>
+          <div class="agent-grid">
+            <button class="agent-btn" onclick="evt.reviewDongguan()">
+              <span class="ic">📋</span>
+              <div>
+                <div class="name">东莞银行 100+ 项审查完成</div>
+                <div class="desc">ai_ready +1 · 评级出</div>
+              </div>
+            </button>
+            <button class="agent-btn" onclick="evt.reviewUnionPay()">
+              <span class="ic">📋</span>
+              <div>
+                <div class="name">银联 #1 审查评分</div>
+                <div class="desc">评分 92 → 优先级 P1</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="agent-section">
+          <div class="sec-name w">报价生成 · quote-generation-v3</div>
+          <div class="agent-grid">
+            <button class="agent-btn" onclick="evt.quoteNfh()">
+              <span class="ic">💰</span>
+              <div>
+                <div class="name">农发行 BOM v1 出</div>
+                <div class="desc">报价就绪 · 待签字</div>
+              </div>
+            </button>
+            <button class="agent-btn" onclick="evt.quoteUnionPay2()">
+              <span class="ic">💰</span>
+              <div>
+                <div class="name">银联 #2 BOM v0</div>
+                <div class="desc">分包边界未明</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="agent-section">
+          <div class="sec-name">修订助手 · content-creator</div>
+          <div class="agent-grid">
+            <button class="agent-btn" onclick="evt.draftNfh()">
+              <span class="ic">✏️</span>
+              <div>
+                <div class="name">农发行 V1.4 差异点比对</div>
+                <div class="desc">3 处必改 · 客户化段落</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="agent-section">
+          <div class="sec-name w">门禁 · gate</div>
+          <div class="agent-grid">
+            <button class="agent-btn" onclick="evt.gateDongguan()">
+              <span class="ic">🔒</span>
+              <div>
+                <div class="name">东莞封标门禁:报</div>
+                <div class="desc">JSON / 格式 / 公式全过</div>
+              </div>
+            </button>
+            <button class="agent-btn" onclick="evt.blockDongguan()">
+              <span class="ic">⛔</span>
+              <div>
+                <div class="name">东莞:报价签字阻塞</div>
+                <div class="desc">block 字段写入 → 卡片变红</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="agent-section">
+          <div class="sec-name">清理 / 归档</div>
+          <div class="agent-grid">
+            <button class="agent-btn" onclick="evt.completeDongguan()">
+              <span class="ic">✅</span>
+              <div>
+                <div class="name">东莞封标完成</div>
+                <div class="desc">stage → 述标 · 移出 P0</div>
+              </div>
+            </button>
+            <button class="agent-btn" onclick="evt.newBid()">
+              <span class="ic">🆕</span>
+              <div>
+                <div class="name">新商机入 bids</div>
+                <div class="desc">国信证券 · 2026-08-11</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- API 日志 -->
+      <div class="panel">
+        <h3>API 调用日志 <span class="tag">实时</span></h3>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 代码示例 -->
+  <div class="sec-title"><span class="n">2</span>任何 Agent / Skill 怎么调它</div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="js" onclick="switchTab('js')">JavaScript (浏览器内)</div>
+    <div class="tab" data-tab="python" onclick="switchTab('python')">Python (后端 agent)</div>
+    <div class="tab" data-tab="wbcli" onclick="switchTab('wbcli')">wb_cli (工作台)</div>
+    <div class="tab" data-tab="curl" onclick="switchTab('curl')">HTTP (远程 skill)</div>
+  </div>
+
+  <div class="tab-panel active" data-tab="js">
+<pre class="code-block"><span class="c">// 任意 skill 跑完,直接推看板</span>
+
+<span class="c">// 1. bid-file-review 跑完</span>
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">addAiReady</span>(<span class="s">'dgyhst2026'</span>, <span class="s">'100+ 项检查完成'</span>);
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">setStage</span>(<span class="s">'dgyhst2026'</span>, <span class="s">'封标'</span>);
+
+<span class="c">// 2. quote-generation-v3 出 BOM</span>
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">addAiReady</span>(<span class="s">'nfh2026'</span>, <span class="s">'BOM v1'</span>);
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">setBlock</span>(<span class="s">'nfh2026'</span>, <span class="s">'报价签字'</span>);
+
+<span class="c">// 3. 任意 skill 都能订阅变化</span>
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">subscribe</span>((<span class="k">event</span>) => {
+  <span class="k">console</span>.log(<span class="s">'看板变化:'</span>, <span class="k">event</span>);
+  <span class="c">// 触发其他动作:发微信 / 落档 / 启动别的 skill</span>
+});
+
+<span class="c">// 4. 写自定义字段</span>
+<span class="v">window</span>.<span class="f">BidBoard</span>.<span class="f">write</span>(<span class="s">'nfh2026'</span>, {
+  <span class="key">stage</span>: <span class="s">'修订'</span>,
+  <span class="key">ai_ready</span>: [<span class="s">'差异点比对'</span>, <span class="s">'客户化段落'</span>],
+  <span class="key">human_todo</span>: [<span class="s">'技术方案重写'</span>],
+  <span class="key">block</span>: <span class="s">''</span>
+});</pre>
+  </div>
+
+  <div class="tab-panel" data-tab="python">
+<pre class="code-block"><span class="c"># 后端 agent / skill 跑完,推看板</span>
+<span class="k">import</span> requests
+
+<span class="c"># 看板后端服务(轻量,接收 ingest 事件)</span>
+BOARD_URL = <span class="s">"http://127.0.0.1:8765/api/bids/ingest"</span>
+
+<span class="k">def</span> <span class="f">push_bid_update</span>(code: str, **fields):
+    requests.<span class="f">post</span>(<span class="s">f"{BOARD_URL}/{code}"</span>, json=fields)
+
+<span class="c"># 1. bid-file-review 跑完(任何 skill 都可调用)</span>
+<span class="f">push_bid_update</span>(<span class="s">"dgyhst2026"</span>,
+    stage=<span class="s">"封标"</span>,
+    add_ai_ready=<span class="s">"100+ 项检查"</span>,
+    set_block=<span class="s">"报价签字"</span>
+)
+
+<span class="c"># 2. 订阅 SSE 流(异步接收变化)</span>
+<span class="k">import</span> sseclient
+events = sseclient.<span class="f">SSEClient</span>(<span class="s">"http://127.0.0.1:8765/api/bids/stream"</span>)
+<span class="k">for</span> event <span class="k">in</span> events:
+    <span class="c"># 看板有任何更新都实时收到</span>
+    <span class="k">print</span>(event.data)
+
+<span class="c"># 3. 复杂写入(整张卡替换)</span>
+requests.<span class="f">put</span>(<span class="s">f"{BOARD_URL}/nfh2026"</span>, json={
+    <span class="s">"stage"</span>: <span class="s">"修订"</span>,
+    <span class="s">"ai_ready"</span>: [<span class="s">"差异点比对"</span>, <span class="s">"客户化段落"</span>, <span class="s">"BOM v1"</span>],
+    <span class="s">"human_todo"</span>: [<span class="s">"技术方案重写"</span>],
+    <span class="s">"block"</span>: <span class="s">""</span>
+})</pre>
+  </div>
+
+  <div class="tab-panel" data-tab="wbcli">
+<pre class="code-block"><span class="c"># 工作台 wb_cli 直接调</span>
+
+<span class="c"># 1. 单字段更新(给东莞加 AI 就绪项)</span>
+wb_cli bid update <span class="h">dgyhst2026</span> \
+  --add-ai-ready <span class="s">"100+ 项检查"</span> \
+  --set-stage <span class="s">"封标"</span>
+
+<span class="c"># 2. 整张卡覆盖</span>
+wb_cli bid write <span class="h">nfh2026</span> <span class="s">'{
+  "stage": "修订",
+  "priority": "P1",
+  "ai_ready": ["差异点比对", "客户化段落", "BOM v1"],
+  "human_todo": ["技术方案重写"],
+  "block": ""
+}'</span>
+
+<span class="c"># 3. 一次性批量(09:45 看板刷新)</span>
+wb_cli bid refresh --all
+
+<span class="c"># 4. 触发 P0 看门狗(任何 stage 变化或 block 出现)</span>
+wb_cli bid watch --priority P0 --webhook <span class="s">"lark://im/send?to=duke"</span>
+
+<span class="c"># 5. 任何 skill 都能监听看板事件</span>
+wb_cli bid subscribe --on change --do <span class="s">"log_to_cubox"</span></pre>
+  </div>
+
+  <div class="tab-panel" data-tab="curl">
+<pre class="code-block"><span class="c"># 远程 skill / 任何语言都能调(只要能发 HTTP)</span>
+
+<span class="c"># 1. 单条更新</span>
+curl -X POST <span class="s">http://127.0.0.1:8765/api/bids/dgyhst2026/ai_ready</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{"value": "100+ 项检查"}'</span>
+
+<span class="c"># 2. 整张卡 PATCH</span>
+curl -X PATCH <span class="s">http://127.0.0.1:8765/api/bids/nfh2026</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{
+    "stage": "修订",
+    "ai_ready": ["差异点比对", "BOM v1"],
+    "block": ""
+  }'</span>
+
+<span class="c"># 3. 订阅(SSE 长连接)</span>
+curl -N <span class="s">http://127.0.0.1:8765/api/bids/stream</span>
+
+<span class="c"># 4. 创建新商机</span>
+curl -X POST <span class="s">http://127.0.0.1:8765/api/bids</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{
+    "code": "gxzq260512",
+    "client": "国信证券",
+    "stage": "跟踪",
+    "due_at": "2026-08-25 17:00"
+  }'</span></pre>
+  </div>
+
+  <div class="sec-title"><span class="n">3</span>同步机制</div>
+  <div class="meta-block">
+    <div class="meta-cell">
+      <div class="k">浏览器内</div>
+      <div class="v">JS API 同步调用 + 自定义事件 <code>bidboard:change</code></div>
+    </div>
+    <div class="meta-cell">
+      <div class="k">跨 tab / 跨窗口</div>
+      <div class="v"><code>BroadcastChannel('bidboard')</code> · 实时推送,无轮询</div>
+    </div>
+    <div class="meta-cell">
+      <div class="k">跨设备 / 跨进程</div>
+      <div class="v">HTTP API + SSE 流(落到 wb_cli 后端 127.0.0.1:8765)</div>
+    </div>
+  </div>
+
+  <p style="color: var(--ink-mute); font-size: 13px; margin-top: 20px;">
+    <b>怎么用这个 demo?</b>① 点右侧按钮看效果;② 点"开第二个 tab"看实时同步;③ 看 API 日志知道每次都调了什么;④ 复制代码贴到你的 skill 里。
+  </p>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ============================================================
+// 数据层
+// ============================================================
+const STORAGE_KEY = 'bid_board_v1';
+const CHANNEL = 'bidboard';
+
+const STAGES = ['跟踪', '审查', '报价', '修订', '封标', '述标'];
+
+const initialData = {
+  bids: [
+    { code: 'dgyhst2026', client: '东莞银行', stage: '修订', priority: 'P0',
+      due_at: '2026-08-13 17:00', ai_ready: ['JSON 校验', '格式检查'],
+      human_todo: ['技术方案核对'], block: '', last_sync: '09:30' },
+    { code: 'nfh2026', client: '农发行', stage: '修订', priority: 'P1',
+      due_at: '2026-08-16 18:00', ai_ready: ['差异点比对'],
+      human_todo: ['技术方案重写'], block: '', last_sync: '09:30' },
+    { code: 'unionpay-intl26-1', client: '银联国际 #1', stage: '审查', priority: 'P2',
+      due_at: '2026-08-20 17:00', ai_ready: ['检查表就绪'],
+      human_todo: [], block: '', last_sync: '09:30' },
+    { code: 'unionpay-intl26-2', client: '银联国际 #2', stage: '审查', priority: 'P2',
+      due_at: '2026-08-20 17:00', ai_ready: ['检查表就绪'],
+      human_todo: [], block: '', last_sync: '09:30' },
+    { code: 'unionpay-intl26-3', client: '银联国际 #3', stage: '审查', priority: 'P2',
+      due_at: '2026-08-20 17:00', ai_ready: [],
+      human_todo: [], block: '', last_sync: '09:30' },
+    { code: 'payh26', client: '平安银行', stage: '跟踪', priority: 'P2',
+      due_at: '持续', ai_ready: ['标讯监控中'],
+      human_todo: [], block: '', last_sync: '09:30' }
+  ]
+};
+
+let data = loadData();
+const subscribers = new Set();
+let bc = null;
+try { bc = new BroadcastChannel(CHANNEL); } catch(e) {}
+
+// 持久化
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(initialData));
+}
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  if (bc) bc.postMessage({ type: 'sync', data });
+}
+
+// 跨 tab 同步
+if (bc) {
+  bc.onmessage = (e) => {
+    if (e.data.type === 'sync') {
+      data = e.data.data;
+      render();
+      log('system', '跨 tab 同步接收', 'info');
+    }
+  };
+}
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_KEY && e.newValue) {
+    try {
+      data = JSON.parse(e.newValue);
+      render();
+      log('system', 'localStorage 事件触发同步', 'info');
+    } catch(e) {}
+  }
+});
+
+// 事件通知(本 tab 内)
+function notify(evt) {
+  subscribers.forEach(cb => { try { cb(evt); } catch(e) {} });
+  // 也发自定义 DOM 事件
+  window.dispatchEvent(new CustomEvent('bidboard:change', { detail: evt }));
+}
+
+// ============================================================
+// 公共 API(暴露给 agent / skill)
+// ============================================================
+window.BidBoard = {
+  // 单字段
+  setStage(code, stage) { update(code, { stage }); },
+  setPriority(code, priority) { update(code, { priority }); },
+  setBlock(code, block) { update(code, { block }); },
+  setHumanTodo(code, human_todo) { update(code, { human_todo: Array.isArray(human_todo) ? human_todo : [human_todo] }); },
+  setDueAt(code, due_at) { update(code, { due_at }); },
+
+  // 数组类
+  addAiReady(code, item) {
+    const b = find(code); if (!b) return;
+    if (!b.ai_ready.includes(item)) {
+      b.ai_ready = [...b.ai_ready, item];
+      save();
+      renderCard(code);
+      notify({ type: 'addAiReady', code, item });
+      log('addAiReady', code, { item });
+    }
+  },
+  removeAiReady(code, item) {
+    const b = find(code); if (!b) return;
+    b.ai_ready = b.ai_ready.filter(x => x !== item);
+    save(); renderCard(code);
+    notify({ type: 'removeAiReady', code, item });
+    log('removeAiReady', code, { item });
+  },
+
+  // 整张卡
+  write(code, patch) { update(code, patch); },
+
+  // 创建
+  create(bid) {
+    if (find(bid.code)) {
+      toast('客户已存在: ' + bid.code, 'warn');
+      return;
+    }
+    const newBid = Object.assign({
+      priority: 'P2', stage: '跟踪', ai_ready: [], human_todo: [],
+      block: '', due_at: '持续', last_sync: nowHM()
+    }, bid);
+    data.bids.push(newBid);
+    save(); render();
+    notify({ type: 'create', code: bid.code });
+    log('create', bid.code, bid);
+    toast('新建客户: ' + bid.client, 'ok');
+  },
+
+  // 读取
+  read(code) { return find(code); },
+  list() { return [...data.bids]; },
+  stats() {
+    const s = { total: data.bids.length, p0: 0, p1: 0, p2: 0,
+      ready: 0, totalAi: 0, blocked: 0, due: [] };
+    data.bids.forEach(b => {
+      s[b.priority.toLowerCase()]++;
+      s.totalAi += b.ai_ready.length;
+      if (b.ai_ready.length > 0) s.ready++;
+      if (b.block) s.blocked++;
+    });
+    s.readyRate = s.total > 0 ? Math.round(s.ready / s.total * 100) : 0;
+    return s;
+  },
+
+  // 订阅
+  subscribe(cb) {
+    subscribers.add(cb);
+    return () => subscribers.delete(cb);
+  },
+
+  // 触发自定义事件
+  emit(evt) { notify(evt); }
+};
+
+function find(code) { return data.bids.find(b => b.code === code); }
+function update(code, patch) {
+  const b = find(code);
+  if (!b) { toast('客户不存在: ' + code, 'err'); return; }
+  Object.assign(b, patch, { last_sync: nowHM() });
+  save(); render();
+  Object.keys(patch).forEach(k => {
+    notify({ type: 'update', code, field: k, value: patch[k] });
+    log('update.' + k, code, { value: patch[k] });
+  });
+}
+
+function nowHM() {
+  const d = new Date();
+  return d.toTimeString().slice(0, 8);
+}
+
+// ============================================================
+// 渲染
+// ============================================================
+function render() {
+  renderStats(); renderCards(); renderToday();
+  document.getElementById('meta').textContent = `${nowHM()} · last-sync: ${nowHM()} · ${data.bids.length} clients`;
+}
+function renderStats() {
+  const s = window.BidBoard.stats();
+  const html = `
+    <div class="stat"><div class="k">在跑客户</div><div class="v">${s.total}<small>家</small></div></div>
+    <div class="stat alert" id="stat-p0"><div class="k">P0 紧急</div><div class="v">${s.p0}<small>个</small></div></div>
+    <div class="stat warn" id="stat-p1"><div class="k">P1 本周</div><div class="v">${s.p1}<small>个</small></div></div>
+    <div class="stat" id="stat-p2"><div class="k">P2 跟踪</div><div class="v">${s.p2}<small>个</small></div></div>
+    <div class="stat ok"><div class="k">AI 就绪率</div><div class="v">${s.readyRate}<small>%</small></div></div>
+  `;
+  document.getElementById('stats').innerHTML = html;
+  // flash 一下数字
+  ['p0','p1','p2'].forEach(k => {
+    const el = document.getElementById('stat-' + k);
+    if (el) { const v = el.querySelector('.v'); v.classList.add('flash'); setTimeout(() => v.classList.remove('flash'), 800); }
+  });
+}
+function renderCards() {
+  const html = data.bids.map(b => cardHTML(b)).join('');
+  document.getElementById('grid').innerHTML = html;
+}
+function renderCard(code) {
+  const b = find(code); if (!b) return;
+  const old = document.querySelector(`.card[data-code="${code}"]`);
+  if (old) {
+    old.outerHTML = cardHTML(b);
+  } else {
+    renderCards();
+  }
+  const el = document.querySelector(`.card[data-code="${code}"]`);
+  if (el) { el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 800); }
+  renderToday();
+  renderStats();
+}
+function cardHTML(b) {
+  const aiHtml = b.ai_ready.length > 0
+    ? b.ai_ready.map(x => `<span class="chip">${x}</span>`).join('')
+    : '<span style="color:#64748B">—</span>';
+  const todos = b.human_todo.length > 0
+    ? b.human_todo.join(' / ')
+    : '<span style="color:#94A3B8">—</span>';
+  const block = b.block
+    ? b.block
+    : '<span style="color:#94A3B8">—</span>';
+  const dueHtml = b.due_at === '持续' ? '持续' :
+    b.due_at.includes('T-') ? b.due_at : `截止 <b>${b.due_at}</b>`;
+  return `
+    <div class="card ${b.priority.toLowerCase()}" data-code="${b.code}">
+      <div class="head">
+        <div>
+          <div class="client">${b.client}</div>
+          <div class="code">${b.code}</div>
+        </div>
+        <span class="stage st-${b.stage}">${b.stage}</span>
+      </div>
+      <div class="due">${dueHtml}</div>
+      <div class="row ai"><div class="lbl">AI 就绪</div><div class="val">${aiHtml}</div></div>
+      <div class="row decision"><div class="lbl">你要做的</div><div class="val">${todos}</div></div>
+      <div class="row block"><div class="lbl">阻塞</div><div class="val">${block}</div></div>
+    </div>
+  `;
+}
+function renderToday() {
+  // 今日动作:所有 P0/P1 中需要人做的
+  const todos = [];
+  data.bids.forEach(b => {
+    if ((b.priority === 'P0' || b.priority === 'P1') && b.human_todo.length > 0) {
+      todos.push({ code: b.code, client: b.client, todo: b.human_todo.join(' / '), block: b.block });
+    }
+  });
+  if (todos.length === 0) {
+    document.getElementById('today-list').innerHTML = '<div class="empty">今日无 P0/P1 需人介入动作 · 看板绿灯</div>';
+    return;
+  }
+  const html = '<ul>' + todos.map(t => `
+    <li><b>${t.client}</b> · ${t.todo}${t.block ? ` <span style="color:#FCA5A5">⚠ ${t.block}</span>` : ''} <code>[${t.code}]</code></li>
+  `).join('') + '</ul>';
+  document.getElementById('today-list').innerHTML = html;
+}
+
+// ============================================================
+// 模拟 agent 事件
+// ============================================================
+const evt = {
+  collectRun() {
+    toast('bid-news-collection 09:30 采集完成', 'ok');
+    setTimeout(() => {
+      // 模拟: 把一个 P2 升 P1
+      window.BidBoard.setPriority('unionpay-intl26-1', 'P1');
+      window.BidBoard.setStage('unionpay-intl26-1', '审查');
+    }, 600);
+  },
+  reviewDongguan() {
+    window.BidBoard.addAiReady('dgyhst2026', '100+ 项检查完成');
+    window.BidBoard.setStage('dgyhst2026', '封标');
+    toast('bid-file-review 东莞 100+ 项检查完成', 'ok');
+  },
+  reviewUnionPay() {
+    window.BidBoard.addAiReady('unionpay-intl26-1', '审查评分 92');
+    window.BidBoard.setPriority('unionpay-intl26-1', 'P1');
+    toast('银联 #1 评分 92 → 优先级 P1', 'ok');
+  },
+  quoteNfh() {
+    window.BidBoard.addAiReady('nfh2026', 'BOM v1');
+    window.BidBoard.setBlock('nfh2026', '报价签字');
+    toast('农发行 BOM v1 出 · 等待签字', 'warn');
+  },
+  quoteUnionPay2() {
+    window.BidBoard.addAiReady('unionpay-intl26-2', 'BOM v0');
+    window.BidBoard.setBlock('unionpay-intl26-2', '分包边界未明');
+    window.BidBoard.setStage('unionpay-intl26-2', '报价');
+    toast('银联 #2 BOM v0 · 分包边界待定', 'warn');
+  },
+  draftNfh() {
+    window.BidBoard.addAiReady('nfh2026', '差异点比对 3 处');
+    window.BidBoard.addAiReady('nfh2026', '客户化段落');
+    toast('农发行 V1.4 差异点比对完成', 'ok');
+  },
+  gateDongguan() {
+    window.BidBoard.addAiReady('dgyhst2026', '门禁:JSON/格式/公式 全过');
+    toast('东莞封标门禁全部通过', 'ok');
+  },
+  blockDongguan() {
+    window.BidBoard.setBlock('dgyhst2026', '报价签字');
+    toast('东莞:报价签字阻塞已写入', 'err');
+  },
+  completeDongguan() {
+    window.BidBoard.setStage('dgyhst2026', '述标');
+    window.BidBoard.setPriority('dgyhst2026', 'P2');
+    window.BidBoard.setBlock('dgyhst2026', '');
+    window.BidBoard.addAiReady('dgyhst2026', '封标完成');
+    window.BidBoard.setHumanTodo('dgyhst2026', ['5 分钟述标要点过']);
+    toast('东莞封标完成 · 进入述标准备', 'ok');
+  },
+  newBid() {
+    window.BidBoard.create({
+      code: 'gxzq260512',
+      client: '国信证券',
+      stage: '审查',
+      due_at: '2026-08-25 17:00',
+      priority: 'P2',
+      ai_ready: ['新商机入 bids'],
+      human_todo: ['看评分决定是否进报价']
+    });
+  }
+};
+
+// ============================================================
+// 工具
+// ============================================================
+function log(api, code, payload) {
+  const ts = new Date().toTimeString().slice(0, 8);
+  const payloadStr = payload ? ` <span class="key">${
+    Object.entries(payload).map(([k,v]) => `${k}=<span class="str">${JSON.stringify(v)}</span>`).join(' ')
+  }</span>` : '';
+  const html = `<div class="line"><span class="ts">${ts}</span> <span class="api">BidBoard.${api}</span>(<span class="str">"${code}"</span>)${payloadStr}</div>`;
+  const log = document.getElementById('log');
+  log.innerHTML = html + log.innerHTML;
+  if (log.children.length > 200) log.lastChild.remove();
+}
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+function resetData() {
+  if (confirm('确认重置所有数据?')) {
+    data = JSON.parse(JSON.stringify(initialData));
+    save(); render();
+    document.getElementById('log').innerHTML = '';
+    toast('数据已重置', 'ok');
+  }
+}
+function openSecondTab() {
+  window.open(window.location.href, '_blank');
+  setTimeout(() => toast('新 tab 已打开,试试在任一 tab 点按钮,另一端会同步', 'ok'), 500);
+}
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
+}
+
+// 启动
+render();
+log('system', 'init', { msg: '看板已就绪,API 可用' });
+
+// 演示订阅
+window.BidBoard.subscribe(evt => {
+  console.log('[bidboard subscribe]', evt);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "goal": "对 {bid_id} 产出归档提案（复盘归因/教训草案/案例与证照变动）",
+  "agent": "bid-archivist",
+  "skill": "/Users/duke/bid-master/skills/bid-archive/SKILL.md",
+  "inputs": [
+    "{workspace}/",
+    "{lessons}"
+  ],
+  "done_when": [
+    "{archive_dir}/proposal.json status=proposed",
+    "每条教训带 supersession",
+    "脱敏自检通过（编号/证件号/成本价 0 出现）"
+  ],
+  "prompt": "【开工绑定】先 Read {skill}，严格按其工艺执行；读不到即回复「SKILL.md 缺失」。\n\n【任务】{goal}\n【输入】{workspace}/\n【完成条件】\n{done_when}\n【回填】proposal 含 ticket_id={ticket_id}。"
+}

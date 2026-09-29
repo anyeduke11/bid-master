@@ -1,0 +1,261 @@
+{
+  "_meta": {
+    "domain": "certs",
+    "version": 1,
+    "desc": "公司级证照（金标准演练标投标文件抽取，名称级；编号 L3 未录入）",
+    "item_fields": [
+      "id",
+      "name",
+      "level",
+      "issuer",
+      "valid_from",
+      "valid_until",
+      "file",
+      "fingerprint",
+      "sensitivity",
+      "updated_at"
+    ],
+    "updated_at": "2026-09-10T16:08:12+08:00",
+    "rule": "只存元数据与文件指针；证件号/证书编号/成本价等 L3 信息不落索引（设计§14）"
+  },
+  "items": [
+    {
+      "id": "CERT-001",
+      "name": "PMP项目管理专业人士资格证书：PMI颁发，PMP，2017年12月9日首次授予",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3038",
+      "page_hits": [
+        "P3038"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-002",
+      "name": "CISAW-风险管理方向认证",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3128",
+      "page_hits": [
+        "P3128",
+        "P3433"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-003",
+      "name": "CISAW-安全运维方向认证",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3132",
+      "page_hits": [
+        "P3132",
+        "P3437"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-004",
+      "name": "CISSP",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3135",
+      "page_hits": [
+        "P3135",
+        "P3440"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-005",
+      "name": "CISSP（(ISC)²注册信息系统安全专家）",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3184",
+      "page_hits": [
+        "P3184"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-006",
+      "name": "项目管理专业人员认证-PMP",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3247",
+      "page_hits": [
+        "P3247",
+        "P3527",
+        "P3678",
+        "P3974",
+        "P4018"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-007",
+      "name": "国际注册信息系统安全专家-CISSP",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3259",
+      "page_hits": [
+        "P3259",
+        "P3690",
+        "P3971"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-008",
+      "name": "关于CISP攻防领域/IRS更名为/TRS的公告",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3392",
+      "page_hits": [
+        "P3392"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-009",
+      "name": "项目管理专业人士-PMP",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3570",
+      "page_hits": [
+        "P3570"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-010",
+      "name": "信息安全保障人员认证-CISAW（风险管理）",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3576",
+      "page_hits": [
+        "P3576"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-011",
+      "name": "信息安全保障人员认证-CISAW（安全运维）",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P3579",
+      "page_hits": [
+        "P3579"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "CERT-012",
+      "name": "信息安全保障人员认证-CISAW（应急服务）",
+      "level": null,
+      "issuer": null,
+      "valid_from": null,
+      "valid_until": null,
+      "cert_number": null,
+      "page": "P4057",
+      "page_hits": [
+        "P4057",
+        "P4102"
+      ],
+      "note": "编号属 L3 不录入（设计§14）；等级/有效期待人工对照原件核",
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    }
+  ]
+}

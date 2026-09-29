@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "name": "BD-0025 六十项比对增补（W4 · L-9 基线对齐）",
+    "created_at": "2026-09-10",
+    "source": "SEC-G-GL-LTO-BD-0025 投标文件审核检查表（详细表）V1.0（外置卷原件，60 条六组）逐条判读",
+    "method": "与 audit-rules.json 48 条语义映射；本文件只收『语义未被覆盖』的真增补，逐条保留 BD-0025 原始序号",
+    "relation": "与 audit-rules.json 合并使用；L-9 纪律：基线只增不删"
+  },
+  "rules": [
+    {"id": "BD-12", "bd_ref": "完整性-12", "category": "format-signature", "severity": "严重", "rule": "页码按要求编制且连续，目录页码与正文一致", "detect": "目录页码 vs 正文抽查"},
+    {"id": "BD-13", "bd_ref": "完整性-13", "category": "format-signature", "severity": "一般", "rule": "页眉页脚格式及内容全卷一致", "detect": "抽查首中尾三处"},
+    {"id": "BD-14", "bd_ref": "完整性-14", "category": "contradiction", "severity": "严重", "rule": "产品名称/型号全文统一", "detect": "型号清单跨章比对"},
+    {"id": "BD-15", "bd_ref": "完整性-15", "category": "disqualification", "severity": "阻断", "rule": "方案中不得出现其他用户或投标人名称（围串标/转包信号）", "detect": "全文他人名称扫描（教训：历史标书改写时的高频事故）"},
+    {"id": "BD-17", "bd_ref": "完整性-17/18", "category": "format-signature", "severity": "严重", "rule": "评分索引表格式与招标给定格式一致、加分项齐全、页码指向正确", "detect": "索引表逐行页码核对"},
+    {"id": "BD-19", "bd_ref": "完整性-19/20", "category": "submission", "severity": "阻断", "rule": "封装/封条内容/骑缝签符合要求，分册齐全", "detect": "封装前逐项核对"},
+    {"id": "BD-22", "bd_ref": "完整性-22", "category": "format-signature", "severity": "严重", "rule": "按给定填写规范填写，不得留空项", "detect": "必填项扫描"},
+    {"id": "BD-23", "bd_ref": "完整性-23", "category": "submission", "severity": "严重", "rule": "应提供原件（资质备查/授权代表身份证等）齐备", "detect": "原件清单核对"},
+    {"id": "BD-T6", "bd_ref": "技术-7/10", "category": "contradiction", "severity": "严重", "rule": "人员清单/简历/资质/项目经历跨文件一致，且能力匹配招标要求", "detect": "人员材料交叉比对"},
+    {"id": "BD-T8", "bd_ref": "技术-8", "category": "qualification", "severity": "阻断", "rule": "技术证明材料满足招标时效性要求（公司/人员/产品资质、攻防演练证明）", "detect": "证明材料日期窗口核对"},
+    {"id": "BD-B1", "bd_ref": "商务-1", "category": "submission", "severity": "阻断", "rule": "招标文件完整性：公告+发售版+澄清+答疑+踏勘全部齐备且以最新版为准", "detect": "版本清单核对"},
+    {"id": "BD-E1", "bd_ref": "电子投标平台-4/述标-1", "category": "submission", "severity": "阻断", "rule": "电子文件属性（作者/最后保存者/创建时间）已用本机新建文档方式处理", "detect": "文件属性机检（教训 L-10：结果落盘留痕）"}
+  ]
+}

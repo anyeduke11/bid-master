@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title></title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #111110;
+    --bg-subtle: #191918;
+    --surface: #1e1e1d;
+    --surface-raised: #252524;
+    --border: rgba(255,255,255,0.06);
+    --border-hover: rgba(255,255,255,0.12);
+    --accent: #8FA9C9;
+    --accent-dim: rgba(143,169,201,0.15);
+    --text: #e8e6e3;
+    --text-secondary: rgba(232,230,227,0.6);
+    --text-tertiary: rgba(232,230,227,0.32);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-drag: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1.5px var(--accent);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "SF Mono", "Fira Code", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    --font-serif: "Songti SC", "STSong", "Source Han Serif SC", "SimSun", Georgia, serif;
+    --note-bg: #2a2520;
+    --note-border: rgba(143,169,201,0.2);
+    --transition-fast: 120ms cubic-bezier(0.25, 0.1, 0.25, 1);
+    --transition-normal: 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--font-sans);
+    color: var(--text);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 512px 512px;
+    mix-blend-mode: overlay;
+  }
+
+  /* ===== canvas viewport ===== */
+  .canvas-viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+  }
+  .canvas-viewport.panning { cursor: grabbing; }
+
+  .canvas-world {
+    position: absolute;
+    left: 0; top: 0;
+    width: 20000px; height: 20000px;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  .canvas-viewport { --grid-color: rgba(255,255,255,0.04); }
+
+  /* ===== draggable elements ===== */
+  .canvas-el {
+    position: absolute;
+    cursor: grab;
+    transition: box-shadow var(--transition-normal), transform var(--transition-fast);
+  }
+  .canvas-el:hover { z-index: 10; }
+  .canvas-el.dragging {
+    cursor: grabbing;
+    z-index: 999;
+    box-shadow: var(--shadow-drag) !important;
+    transform: scale(1.01);
+    transition: none;
+  }
+
+  /* ===== section header ===== */
+  .section-header {
+    position: absolute;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    white-space: nowrap;
+  }
+  .section-header .section-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    opacity: 0.8;
+  }
+  .section-header .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .section-header .section-line {
+    flex: none;
+    width: 48px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    opacity: 0.3;
+  }
+
+  /* ===== title ===== */
+  .canvas-title {
+    position: absolute;
+    pointer-events: none;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--text);
+  }
+
+  /* ===== text block ===== */
+  .canvas-text {
+    position: absolute;
+    line-height: 1.7;
+    letter-spacing: 0.005em;
+    color: var(--text-secondary);
+    min-width: 200px;
+    max-width: 560px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ===== tag ===== */
+  .canvas-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+    white-space: nowrap;
+  }
+  .canvas-tag:hover {
+    border-color: var(--border-hover);
+    background: var(--surface-raised);
+  }
+  .canvas-tag .tag-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ===== context card ===== */
+  .context-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    min-width: 220px;
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+  }
+  .context-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+  }
+  .context-card .card-head {
+    padding: 16px 20px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .context-card .card-head .head-indicator {
+    width: 3px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .context-card .card-head h3 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--text);
+  }
+  .context-card .card-content {
+    padding: 0 20px 20px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+  .context-card .card-content ul {
+    list-style: none;
+    padding: 0;
+  }
+  .context-card .card-content li {
+    padding: 4px 0;
+    padding-left: 12px;
+    position: relative;
+  }
+  .context-card .card-content li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+  }
+  .context-card .card-content .knum {
+    font-family: var(--font-serif);
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .context-card .flow-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 2;
+  }
+  .context-card .flow-chip {
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
+    border-radius: 4px;
+    padding: 1px 7px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .context-card .flow-arr { color: var(--accent); opacity: 0.7; }
+
+  /* ===== design system card ===== */
+  .ds-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+  }
+  .ds-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+  }
+  .ds-card .ds-head {
+    padding: 16px 20px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .ds-card .ds-body { padding: 0 20px 20px; }
+
+  /* frame — color chips */
+  .ed-swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px 8px; }
+  .ed-swatch { display: flex; flex-direction: column; gap: 5px; }
+  .ed-swatch .sw { width: 100%; aspect-ratio: 1.35; border-radius: 7px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); }
+  .ed-swatch .sw-name { font-size: 10px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ed-swatch .sw-hex { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); }
+
+  /* frame — type samples */
+  .ed-type-stack { display: flex; flex-direction: column; gap: 13px; }
+  .ed-type-row { display: flex; align-items: baseline; gap: 14px; }
+  .ed-type-meta { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); min-width: 64px; flex-shrink: 0; letter-spacing: 0.04em; }
+  .ed-type-sample { color: var(--text); line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* frame — component demos */
+  .ed-comp-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .ed-comp-btn { font-size: 12px; padding: 7px 14px; border-radius: 8px; white-space: nowrap; }
+  .ed-comp-btn.primary { background: #1B365D; color: #f5f4ed; }
+  .ed-comp-btn.secondary { background: #e8e6dc; color: #3d3d3a; border: 1px solid #dcd9cb; }
+  .ed-comp-btn.disabled { background: #1B365D; color: #f5f4ed; opacity: 0.42; }
+  .ed-comp-label { font-size: 10px; color: var(--text-tertiary); margin: 2px 0 8px; letter-spacing: 0.06em; }
+  .ed-stamp-demo { display: inline-flex; align-items: center; font-size: 11px; line-height: 1; padding: 4px 8px; border: 1px solid #d8d5c6; border-radius: 3px; color: #6b6a64; letter-spacing: 1px; }
+  .ed-seal-mini { color: #9F2D2D; transform: rotate(-4deg); display: inline-flex; }
+  .ed-input-demo { width: 100%; max-width: 300px; background: #faf9f5; border: 1px solid #d8d5c6; border-radius: 8px; padding: 7px 11px; font-size: 12px; color: #504e49; }
+  .ed-num-demo { font-family: var(--font-serif); font-size: 26px; font-weight: 600; color: #1B365D; font-variant-numeric: tabular-nums; }
+
+  /* ===== color swatch (standalone) ===== */
+  .color-swatch-group { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 20px; }
+  .swatch-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .swatch-circle { width: 56px; height: 56px; border-radius: 50%; box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.08); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
+  .swatch-circle:hover { transform: scale(1.1); box-shadow: var(--shadow-md); }
+  .swatch-name { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-align: center; }
+  .swatch-hex { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-align: center; }
+
+  /* ===== type sample (standalone) ===== */
+  .type-sample-group { display: flex; flex-direction: column; gap: 20px; min-width: 400px; }
+  .type-sample-row { display: flex; align-items: baseline; gap: 20px; }
+  .type-sample-meta { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); min-width: 48px; flex-shrink: 0; letter-spacing: 0.04em; }
+  .type-sample-text { color: var(--text); line-height: 1.25; }
+
+  /* ===== note (sticky) ===== */
+  .canvas-note { background: var(--note-bg); border: 1px solid var(--note-border); border-radius: var(--radius-md); padding: 16px 18px; min-width: 200px; max-width: 300px; box-shadow: var(--shadow-sm); transition: box-shadow var(--transition-normal), transform var(--transition-fast); }
+  .canvas-note:hover { box-shadow: var(--shadow-md); }
+  .canvas-note .note-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); opacity: 0.7; margin-bottom: 8px; }
+  .canvas-note .note-body { font-size: 13px; line-height: 1.65; color: var(--text-secondary); }
+
+  /* ===== design page ===== */
+  .design-page { background: #fff; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-lg); transition: box-shadow var(--transition-normal); }
+  .design-page:hover { box-shadow: 0 16px 56px rgba(0,0,0,0.5), 0 6px 16px rgba(0,0,0,0.35); }
+  .design-page .page-content { width: 100%; height: 100%; overflow: hidden; }
+  .page-label { position: absolute; bottom: -32px; left: 0; font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--text-tertiary); white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .page-label .label-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); opacity: 0.6; }
+
+  /* ===== diagram ===== */
+  .canvas-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .canvas-diagram .diagram-content { width: 100%; height: 100%; padding: 20px; }
+
+  /* ===== zoom controls ===== */
+  .zoom-controls { position: fixed; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 1px; z-index: 100; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
+  .zoom-btn { width: 36px; height: 36px; background: transparent; border: none; color: var(--text-secondary); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background var(--transition-fast), color var(--transition-fast); }
+  .zoom-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .zoom-btn:active { background: rgba(255,255,255,0.03); }
+  .zoom-label { min-width: 50px; height: 36px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+
+  /* ===== coord indicator ===== */
+  .coord-indicator { position: fixed; bottom: 28px; left: 24px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em; color: var(--text-tertiary); z-index: 100; padding: 4px 10px; background: rgba(17,17,16,0.85); border: 1px solid var(--border); border-radius: var(--radius-sm); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+  /* ===== keyboard hint ===== */
+  .kbd-hint { position: fixed; top: 20px; right: 24px; z-index: 100; font-size: 10px; color: var(--text-tertiary); display: flex; gap: 12px; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
+  .canvas-viewport:hover ~ .kbd-hint { opacity: 1; }
+  .kbd-hint kbd { font-family: var(--font-mono); padding: 2px 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; font-size: 10px; }
+
+  /* ═══════════════════════════════════════════════
+     Row 3 frame styles — prefix "ed-", fully isolated
+     Tokens mirror the prototype CSS exactly.
+     ═══════════════════════════════════════════════ */
+  .ed-page {
+    --ed-bg:#f5f4ed; --ed-surface:#faf9f5; --ed-sand:#e8e6dc; --ed-deep:#30302e;
+    --ed-ink:#141413; --ed-ink2:#3d3d3a; --ed-ink3:#504e49; --ed-ink4:#6b6a64;
+    --ed-accent:#1B365D; --ed-accent2:#2D5A8A; --ed-seal:#9F2D2D;
+    --ed-tint1:#EEF2F7; --ed-tint2:#E4ECF5; --ed-tint3:#D0DCE9;
+    --ed-ok:#2D6A4F; --ed-okT:#E9F0EA; --ed-warn:#A16207; --ed-warnT:#F3EBD9; --ed-dgrT:#F4E4E0;
+    --ed-line:#e8e6dc; --ed-line2:#e5e3d8; --ed-line3:#d8d5c6; --ed-hover:#f1efe5;
+    --ed-serif:"Songti SC","STSong","Source Han Serif SC","SimSun",Georgia,serif;
+    --ed-ui:-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    --ed-mono:"SF Mono","Menlo","Consolas",monospace;
+    width:100%; height:100%; background:var(--ed-bg); color:var(--ed-ink);
+    font-family:var(--ed-ui); font-size:13px; line-height:1.6;
+    display:flex; flex-direction:column; overflow:hidden; position:relative;
+  }
+  .ed-page .tnum { font-variant-numeric: tabular-nums; }
+  .ed-serif { font-family: var(--ed-serif); }
+  .ed-mono { font-family: var(--ed-mono); font-size: 11px; letter-spacing: .02em; }
+  .ed-mast { display:flex; align-items:baseline; justify-content:space-between; padding:13px 26px 0; flex:none; }
+  .ed-brand { font-family:var(--ed-serif); font-size:22px; font-weight:600; letter-spacing:3px; }
+  .ed-bsub { font-family:var(--ed-mono); font-size:10px; color:var(--ed-ink4); margin-left:9px; }
+  .ed-mstat { font-size:10px; color:var(--ed-ink3); font-variant-numeric: tabular-nums; }
+  .ed-nav { display:flex; gap:19px; padding:11px 26px 0; font-size:12.5px; color:var(--ed-ink2); border-bottom:1px solid var(--ed-line3); padding-bottom:10px; flex:none; }
+  .ed-nav span { padding-bottom:8px; }
+  .ed-nav .on { color:var(--ed-accent); font-weight:600; border-bottom:2px solid var(--ed-accent); }
+  .ed-body { flex:1; padding:16px 26px 18px; overflow:hidden; }
+  .ed-vh { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:12px; }
+  .ed-vh h1 { font-family:var(--ed-serif); font-size:23px; font-weight:600; letter-spacing:2px; line-height:1.3; }
+  .ed-vh .lede { color:var(--ed-ink3); font-size:11.5px; margin-top:3px; max-width:760px; }
+  .ed-vh .meta { font-size:10.5px; color:var(--ed-ink4); text-align:right; line-height:1.8; font-variant-numeric: tabular-nums; }
+  .ed-stamp { display:inline-flex; align-items:center; font-size:11px; line-height:1; padding:4px 8px; border:1px solid var(--ed-line3); border-radius:3px; color:var(--ed-ink2); letter-spacing:1px; white-space:nowrap; }
+  .ed-stamp.accent { color:var(--ed-accent); border-color:#b9c6d8; }
+  .ed-stamp.warn { color:var(--ed-warn); border-color:#d8c9a3; background:var(--ed-warnT); }
+  .ed-stamp.danger { color:var(--ed-seal); border-color:#d9b8b1; background:var(--ed-dgrT); }
+  .ed-stamp.ok { color:var(--ed-ok); border-color:#b9cdbf; background:var(--ed-okT); }
+  .ed-stamp.muted { color:var(--ed-ink4); border-color:var(--ed-line3); }
+  .ed-tbar { display:flex; align-items:center; gap:20px; padding:8px 0 10px; border-bottom:1px solid var(--ed-line3); margin-bottom:4px; font-size:11.5px; color:var(--ed-ink3); }
+  .ed-tbar .seg { display:flex; gap:14px; }
+  .ed-tbar .sg { color:var(--ed-ink3); padding-bottom:4px; }
+  .ed-tbar .sg.on { color:var(--ed-accent); font-weight:600; border-bottom:2px solid var(--ed-accent); }
+  .ed-tbar .grow { flex:1; }
+  .ed-stagehead { display:flex; align-items:baseline; gap:10px; padding:9px 0 6px; border-bottom:1px solid var(--ed-line3); }
+  .ed-stagehead .no { font-family:var(--ed-serif); font-size:13px; color:var(--ed-accent); letter-spacing:1px; }
+  .ed-stagehead .nm { font-family:var(--ed-serif); font-size:16px; font-weight:600; letter-spacing:2px; }
+  .ed-stagehead .mt { margin-left:auto; font-size:10.5px; color:var(--ed-ink4); font-variant-numeric: tabular-nums; }
+  .ed-card { background:var(--ed-surface); border:1px solid var(--ed-line); border-radius:10px; padding:10px 15px 11px; margin-top:9px; }
+  .ed-card .l1 { display:flex; align-items:center; gap:9px; }
+  .ed-card .bidid { font-family:var(--ed-mono); font-size:10.5px; color:var(--ed-ink3); }
+  .ed-card .prio { margin-left:auto; font-family:var(--ed-serif); font-size:12px; font-weight:600; letter-spacing:1px; }
+  .ed-card .nm { font-family:var(--ed-serif); font-size:14px; font-weight:600; margin-top:3px; letter-spacing:.5px; }
+  .ed-card .mt { margin-top:4px; font-size:10.5px; color:var(--ed-ink3); display:flex; gap:13px; font-variant-numeric: tabular-nums; }
+  .ed-card .mt .warn { color:var(--ed-warn); font-weight:600; }
+  .ed-card .marks { margin-top:7px; display:flex; gap:9px; }
+  .ed-mark { font-size:10.5px; display:inline-flex; gap:5px; align-items:center; color:var(--ed-seal); }
+  .ed-mark.warn { color:var(--ed-warn); }
+  .ed-s9row { display:flex; align-items:center; gap:12px; padding:9px 2px; border-bottom:1px solid var(--ed-line2); font-size:12px; color:var(--ed-ink3); }
+  .ed-empty { padding:11px 2px; color:var(--ed-ink4); font-size:11.5px; border-bottom:1px dashed var(--ed-line); }
+  .ed-ruler { display:flex; border-bottom:1px solid var(--ed-line3); margin:12px 0 6px; }
+  .ed-ruler .rs { flex:1; padding:7px 2px 6px; border-bottom:3px solid transparent; min-width:0; }
+  .ed-ruler .rn { font-family:var(--ed-serif); font-size:11px; color:var(--ed-ink4); display:block; letter-spacing:1px; }
+  .ed-ruler .rt { font-size:10px; color:var(--ed-ink4); display:block; white-space:nowrap; overflow:hidden; }
+  .ed-ruler .rs.done { border-bottom-color:var(--ed-ink2); }
+  .ed-ruler .rs.done .rn { color:var(--ed-ink2); } .ed-ruler .rs.done .rt { color:var(--ed-ink3); }
+  .ed-ruler .rs.cur { border-bottom-color:var(--ed-accent); }
+  .ed-ruler .rs.cur .rn, .ed-ruler .rs.cur .rt { color:var(--ed-accent); font-weight:600; }
+  .ed-ruler .rs.next { border-bottom-color:var(--ed-seal); }
+  .ed-ruler .rs.next .rn { color:var(--ed-seal); }
+  .ed-ghint { font-size:10.5px; color:var(--ed-seal); display:flex; gap:6px; align-items:center; margin-top:6px; }
+  .ed-ghint.ok { color:var(--ed-ink3); }
+  .ed-grid { display:grid; grid-template-columns:250px 1fr; gap:34px; margin-top:14px; align-items:start; }
+  .ed-secttl { font-family:var(--ed-serif); font-size:13.5px; font-weight:600; letter-spacing:2px; padding-bottom:6px; border-bottom:1px solid var(--ed-line3); margin-bottom:9px; display:flex; justify-content:space-between; align-items:baseline; }
+  .ed-secttl .n { font-family:var(--ed-mono); font-size:9.5px; color:var(--ed-ink4); font-weight:400; letter-spacing:0; }
+  .ed-kv { display:flex; gap:9px; font-size:11.5px; padding:4px 0; border-bottom:1px solid var(--ed-line2); }
+  .ed-kv dt { color:var(--ed-ink4); flex:none; width:52px; font-size:10.5px; }
+  .ed-kv dd { color:var(--ed-ink2); }
+  .ed-tl { display:flex; gap:9px; align-items:baseline; padding:5px 0; border-bottom:1px solid var(--ed-line2); font-size:11.5px; font-variant-numeric: tabular-nums; }
+  .ed-tl .lb { color:var(--ed-ink3); flex:none; width:58px; font-size:10.5px; }
+  .ed-tl .dt { font-family:var(--ed-mono); font-size:10.5px; }
+  .ed-tl .ct { margin-left:auto; color:var(--ed-ink4); font-size:10.5px; }
+  .ed-tl.warn .ct { color:var(--ed-warn); font-weight:600; }
+  .ed-sec { margin-bottom:14px; }
+  .ed-sechd { font-family:var(--ed-serif); font-size:14px; font-weight:600; letter-spacing:2px; border-bottom:1px solid var(--ed-line3); padding-bottom:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:baseline; }
+  .ed-sechd .n { font-family:var(--ed-serif); font-size:11px; color:var(--ed-accent); }
+  .ed-sechd .m { font-size:10px; color:var(--ed-ink4); font-family:var(--ed-ui); font-weight:400; letter-spacing:0; }
+  .ed-defrow { display:grid; grid-template-columns:52px 1fr 74px 66px; gap:10px; padding:6px 0; border-bottom:1px solid var(--ed-line2); font-size:11.5px; align-items:baseline; }
+  .ed-defrow .lv.b { color:var(--ed-seal); font-weight:600; } .ed-defrow .lv.m { color:var(--ed-warn); } .ed-defrow .lv.i { color:var(--ed-ink4); }
+  .ed-defrow .tx { color:var(--ed-ink2); }
+  .ed-defrow .lc { font-family:var(--ed-mono); font-size:10px; color:var(--ed-ink4); }
+  .ed-defrow .st { text-align:right; font-size:10.5px; white-space:nowrap; }
+  .ed-defrow .st.fx { color:var(--ed-ok); } .ed-defrow .st.op { color:var(--ed-seal); } .ed-defrow .st.fk { color:var(--ed-warn); }
+  .ed-chips { display:flex; gap:3px; margin:8px 0 6px; }
+  .ed-ch { width:22px; height:7px; border-radius:2px; background:var(--ed-sand); border:1px solid var(--ed-line3); }
+  .ed-ch.on { background:var(--ed-accent); border-color:var(--ed-accent); }
+  .ed-mtrio { display:flex; gap:30px; margin:10px 0 6px; }
+  .ed-mtrio .mv { font-family:var(--ed-serif); font-size:21px; font-weight:600; color:var(--ed-accent); font-variant-numeric: tabular-nums; line-height:1.2; }
+  .ed-mtrio .ml { font-size:10px; color:var(--ed-ink4); }
+  .ed-artrow { display:grid; grid-template-columns:1fr 92px 96px 58px; gap:10px; padding:5px 0; border-bottom:1px solid var(--ed-line2); font-size:11.5px; align-items:baseline; }
+  .ed-artrow .an { font-family:var(--ed-mono); font-size:10.5px; color:var(--ed-ink2); }
+  .ed-artrow .ap { color:var(--ed-ink3); font-size:10.5px; } .ed-artrow .at { font-family:var(--ed-mono); font-size:9.5px; color:var(--ed-ink4); }
+  .ed-refrow { display:flex; gap:10px; padding:6px 0; border-bottom:1px solid var(--ed-line2); font-size:11.5px; align-items:baseline; }
+  .ed-refrow .ru { margin-left:auto; font-size:10.5px; color:var(--ed-ink4); font-variant-numeric: tabular-nums; }
+  .ed-gap { background:var(--ed-warnT); border:1px solid #e3d5b4; border-radius:8px; padding:7px 12px; font-size:11.5px; color:var(--ed-warn); display:flex; gap:8px; margin-top:8px; }
+  .ed-quote { border-left:2px solid var(--ed-accent); padding:2px 0 2px 13px; margin:4px 0; }
+  .ed-quote p { font-family:var(--ed-serif); font-size:12.5px; color:var(--ed-ink2); line-height:1.75; }
+  .ed-quote .src { margin-top:5px; font-family:var(--ed-mono); font-size:10px; color:var(--ed-ink4); }
+  .ed-actions { display:flex; gap:9px; align-items:center; margin:12px 0 2px; }
+  .ed-btn { font-size:11.5px; padding:6px 12px; border-radius:8px; border:1px solid transparent; display:inline-flex; align-items:center; gap:6px; }
+  .ed-btn.p { background:var(--ed-accent); color:#f5f4ed; }
+  .ed-btn.s { background:var(--ed-sand); color:var(--ed-ink2); border-color:#dcd9cb; }
+  .ed-btn.g { color:var(--ed-accent); border-color:#b9c6d8; }
+  .ed-btn.dis { background:var(--ed-accent); color:#f5f4ed; opacity:.42; }
+  .ed-seal { color:var(--ed-seal); transform:rotate(-4deg); display:inline-flex; }
+  .ed-overlay { position:absolute; inset:0; background:rgba(48,48,46,.44); display:flex; align-items:center; justify-content:center; }
+  .ed-modal { background:var(--ed-surface); border:1px solid #dcd9c8; border-radius:14px; width:560px; max-height:82%; overflow:hidden; box-shadow:0 12px 48px rgba(0,0,0,.14); }
+  .ed-modal .mhd { padding:16px 22px 11px; border-bottom:1px solid var(--ed-line2); display:flex; justify-content:space-between; align-items:flex-start; }
+  .ed-modal .mttl { font-family:var(--ed-serif); font-size:16px; font-weight:600; letter-spacing:1px; }
+  .ed-modal .msub { font-family:var(--ed-mono); font-size:10px; color:var(--ed-ink4); margin-top:2px; }
+  .ed-modal .mbody { padding:14px 22px; font-size:11.5px; }
+  .ed-gcheck { display:flex; gap:9px; padding:8px 0; border-bottom:1px solid var(--ed-line2); align-items:flex-start; }
+  .ed-gcheck .gi { flex:none; margin-top:1px; font-size:12px; line-height:1; }
+  .ed-gcheck .gi.pass { color:var(--ed-ok); } .ed-gcheck .gi.fail { color:var(--ed-seal); } .ed-gcheck .gi.pend { color:var(--ed-warn); }
+  .ed-gcheck .gt { flex:1; }
+  .ed-gcheck .gd { font-size:10.5px; color:var(--ed-seal); margin-top:2px; }
+  .ed-gsum { margin-top:10px; padding:9px 13px; border-radius:8px; font-size:11px; display:flex; gap:8px; }
+  .ed-gsum.bad { background:var(--ed-dgrT); color:var(--ed-seal); border:1px solid #ddc0ba; }
+  .ed-gsum.ok { background:var(--ed-okT); color:var(--ed-ok); border:1px solid #c5d6cb; }
+  .ed-modal .mfoot { padding:12px 22px 16px; border-top:1px solid var(--ed-line2); display:flex; gap:9px; justify-content:flex-end; align-items:center; }
+  .ed-preview { background:var(--ed-bg); border:1px dashed #cfccb9; border-radius:8px; padding:12px 14px; font-family:var(--ed-mono); font-size:10px; line-height:1.7; white-space:pre-wrap; color:var(--ed-ink2); max-height:320px; overflow:hidden; }
+  .ed-var { display:flex; gap:9px; font-size:10.5px; padding:3px 0; border-bottom:1px dashed var(--ed-line2); }
+  .ed-var dt { flex:none; width:96px; color:var(--ed-ink4); } .ed-var dd { font-family:var(--ed-mono); color:var(--ed-ink2); }
+  .ed-hl { background:var(--ed-surface); border:1px solid var(--ed-line); border-radius:14px; padding:20px 24px 18px; position:relative; box-shadow:0 4px 24px rgba(0,0,0,.05); }
+  .ed-hl::before { content:""; position:absolute; left:24px; top:0; width:50px; height:2px; background:var(--ed-accent); }
+  .ed-hl .kick { display:flex; gap:10px; align-items:center; color:var(--ed-seal); font-size:10.5px; letter-spacing:2px; margin-bottom:8px; }
+  .ed-hl h2 { font-family:var(--ed-serif); font-size:20px; font-weight:600; line-height:1.45; }
+  .ed-hl p { color:var(--ed-ink3); font-size:11.5px; margin-top:7px; line-height:1.75; max-width:820px; }
+  .ed-hl .hlx { display:flex; gap:9px; margin-top:13px; align-items:center; }
+  .ed-brow { display:flex; gap:13px; align-items:flex-start; padding:11px 2px; border-bottom:1px solid var(--ed-line2); }
+  .ed-brow .bt { font-size:11.5px; }
+  .ed-brow .bm { font-size:10.5px; color:var(--ed-ink4); margin-top:3px; display:flex; gap:10px; }
+  .ed-brow .ba { margin-left:auto; display:flex; gap:8px; align-items:center; flex:none; }
+  .ed-tabs { display:flex; gap:22px; border-bottom:1px solid var(--ed-line3); font-size:12.5px; color:var(--ed-ink3); font-family:var(--ed-serif); }
+  .ed-tabs .on { color:var(--ed-accent); font-weight:600; border-bottom:2px solid var(--ed-accent); padding-bottom:8px; }
+  .ed-tabs span { padding-bottom:8px; }
+  .ed-tabs .cnt { font-family:var(--ed-mono); font-size:9.5px; color:var(--ed-ink4); margin-left:4px; }
+  .ed-tbl { width:100%; border-collapse:collapse; font-size:11.5px; }
+  .ed-tbl th { text-align:left; font-weight:500; color:var(--ed-ink3); font-size:10.5px; letter-spacing:1px; border-bottom:1px solid var(--ed-line3); padding:7px 12px 6px 0; }
+  .ed-tbl td { padding:8px 12px 8px 0; border-bottom:1px solid var(--ed-line2); color:var(--ed-ink2); vertical-align:top; }
+  .ed-tbl .cs { font-family:var(--ed-serif); font-size:12.5px; color:var(--ed-ink); }
+  .ed-tbl .sub { font-size:10px; color:var(--ed-ink4); margin-top:1px; font-family:var(--ed-mono); }
+  .ed-chip { display:inline-block; font-size:10.5px; padding:2px 6px; border-radius:2px; white-space:nowrap; }
+  .ed-chip.ok { color:var(--ed-ok); background:var(--ed-okT); } .ed-chip.warn { color:var(--ed-warn); background:var(--ed-warnT); }
+  .ed-lead { border-bottom:1px solid var(--ed-line2); padding:13px 2px; display:flex; gap:20px; }
+  .ed-lead .ttl { font-family:var(--ed-serif); font-size:14.5px; font-weight:600; }
+  .ed-lead .nt { font-size:10.5px; color:var(--ed-ink4); margin-top:4px; display:flex; gap:10px; align-items:center; }
+  .ed-lead .act { margin-top:9px; display:flex; gap:8px; }
+  .ed-lead .sc { text-align:center; flex:none; width:74px; }
+  .ed-lead .sc .sn { font-family:var(--ed-serif); font-size:27px; font-weight:600; color:var(--ed-accent); font-variant-numeric: tabular-nums; line-height:1; }
+  .ed-lead .sc .sl { font-size:9.5px; color:var(--ed-ink4); margin-top:3px; }
+  .ed-glabel { font-family:var(--ed-serif); font-size:13.5px; font-weight:600; letter-spacing:2px; padding-bottom:6px; border-bottom:1px solid var(--ed-line3); margin:16px 0 2px; display:flex; gap:10px; align-items:baseline; }
+  .ed-glabel .n { font-size:10px; color:var(--ed-ink4); font-family:var(--ed-ui); font-weight:400; letter-spacing:0; }
+  .ed-paper { background:var(--ed-surface); border:1px solid var(--ed-line); border-radius:14px; padding:30px 38px 26px; box-shadow:0 4px 24px rgba(0,0,0,.05); }
+  .ed-paper .pdate { display:flex; gap:12px; align-items:baseline; padding-bottom:10px; border-bottom:3px double var(--ed-line3); font-size:11.5px; color:var(--ed-ink3); letter-spacing:2px; }
+  .ed-paper .pdate .iss { margin-left:auto; font-family:var(--ed-mono); font-size:10px; color:var(--ed-ink4); letter-spacing:.02em; }
+  .ed-paper h2 { font-family:var(--ed-serif); font-size:25px; font-weight:600; letter-spacing:1px; line-height:1.4; margin:18px 0 7px; }
+  .ed-paper .sub { font-size:11.5px; color:var(--ed-ink3); line-height:1.8; }
+  .ed-kd { margin:18px 0 4px; padding:12px 16px; background:var(--ed-tint1); border:1px solid var(--ed-tint3); border-radius:10px; }
+  .ed-kd h4 { font-family:var(--ed-serif); font-size:12.5px; letter-spacing:3px; color:var(--ed-accent); margin-bottom:7px; }
+  .ed-kd .ki { display:flex; gap:10px; padding:5px 0; border-bottom:1px solid var(--ed-tint3); font-size:11px; color:var(--ed-ink2); line-height:1.7; }
+  .ed-kd .ki:last-child { border-bottom:0; }
+  .ed-kd .kn { font-family:var(--ed-serif); color:var(--ed-accent); flex:none; }
+  .ed-xd h4 { font-family:var(--ed-serif); font-size:12.5px; letter-spacing:3px; margin:16px 0 4px; }
+  .ed-xd .pi { font-size:11.5px; color:var(--ed-ink2); line-height:1.85; margin-top:6px; }
+  .ed-signoff { margin-top:18px; padding-top:10px; border-top:1px solid var(--ed-line2); font-size:10.5px; color:var(--ed-ink4); line-height:1.8; }
+  .ed-trig { display:flex; gap:9px; margin:9px 0 4px; }
+  .ed-logw { border:1px solid var(--ed-line); border-radius:10px; background:var(--ed-surface); padding:8px 0; }
+  .ed-lrow { display:flex; gap:12px; padding:4px 14px; font-family:var(--ed-mono); font-size:10.5px; border-bottom:1px solid #eeede3; }
+  .ed-lrow:last-child { border-bottom:0; }
+  .ed-lrow .lt { color:var(--ed-ink4); flex:none; width:64px; }
+  .ed-lrow .ll { flex:none; width:38px; }
+  .ed-lrow .ll.i { color:var(--ed-accent2); } .ed-lrow .ll.w { color:var(--ed-warn); }
+  .ed-lrow .lm { color:var(--ed-ink2); }
+  .ed-sectitle { font-family:var(--ed-serif); font-size:14px; font-weight:600; letter-spacing:2px; margin:14px 0 7px; display:flex; gap:10px; align-items:baseline; }
+  .ed-sectitle .n { font-family:var(--ed-mono); font-size:9.5px; color:var(--ed-ink4); font-weight:400; letter-spacing:0; }
+</style>
+</head>
+<body>
+
+<div class="canvas-viewport" id="viewport">
+  <div class="canvas-world" id="world"></div>
+</div>
+
+<div class="zoom-controls">
+  <button class="zoom-btn" id="zoomOut" aria-label="">&#8722;</button>
+  <div class="zoom-label" id="zoomLabel">100%</div>
+  <button class="zoom-btn" id="zoomIn" aria-label="">+</button>
+  <button class="zoom-btn" id="zoomReset" title="" aria-label="">&#8962;</button>
+</div>
+
+<div class="coord-indicator" id="coordIndicator">0, 0</div>
+
+<div class="kbd-hint" id="kbdHint"></div>
+
+<script>
+(() => {
+  // ═══════════════════════════════════════════════════════════
+  // UI_STRINGS：全量中文化（画布 + 页面文案）
+  // ═══════════════════════════════════════════════════════════
+  const UI_STRINGS = {
+    docTitle: '投标工作台 · 方案B「编辑部」· 无限画布',
+    zoom: { zoomIn: '放大', zoomOut: '缩小', reset: '复位视图' },
+    kbdHints: [['滚动', '平移'], ['\u2318 滚动', '缩放'], ['\u2318Z', '撤销']],
+    sections: { context: '01 项目背景', designSystem: '02 设计系统', deliverables: '03 设计稿' }
+  };
+
+  document.title = UI_STRINGS.docTitle;
+  document.getElementById('zoomIn').setAttribute('aria-label', UI_STRINGS.zoom.zoomIn);
+  document.getElementById('zoomOut').setAttribute('aria-label', UI_STRINGS.zoom.zoomOut);
+  document.getElementById('zoomReset').setAttribute('aria-label', UI_STRINGS.zoom.reset);
+  document.getElementById('kbdHint').innerHTML = UI_STRINGS.kbdHints
+    .map(([keys, action]) => `<span><kbd>${keys}</kbd> ${action}</span>`)
+    .join('');
+
+  const viewport = document.getElementById('viewport');
+  const world = document.getElementById('world');
+  const zoomLabel = document.getElementById('zoomLabel');
+  const coordIndicator = document.getElementById('coordIndicator');
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* ===== canvas state ===== */
+  let panX = 0, panY = 0, zoom = 1;
+  const MIN_ZOOM = 0.05, MAX_ZOOM = 8;
+
+  function updateTransform() {
+    world.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
+    zoomLabel.textContent = Math.round(zoom * 100) + '%';
+    updateGrid();
+  }
+
+  /* ===== dot grid ===== */
+  function updateGrid() {
+    const g = 40 * zoom;
+    const ox = panX % g, oy = panY % g;
+    viewport.style.backgroundImage = `radial-gradient(circle, var(--grid-color) 0.8px, transparent 0.8px)`;
+    viewport.style.backgroundSize = `${g}px ${g}px`;
+    viewport.style.backgroundPosition = `${ox}px ${oy}px`;
+  }
+
+  /* ===== panning ===== */
+  let isPanning = false, panSX, panSY;
+
+  viewport.addEventListener('pointerdown', (e) => {
+    if (e.target === viewport || e.target === world) {
+      isPanning = true;
+      panSX = e.clientX - panX;
+      panSY = e.clientY - panY;
+      viewport.classList.add('panning');
+      viewport.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    }
+  });
+  viewport.addEventListener('pointermove', (e) => {
+    if (!isPanning) return;
+    panX = e.clientX - panSX;
+    panY = e.clientY - panSY;
+    updateTransform();
+  });
+  viewport.addEventListener('pointerup', () => {
+    isPanning = false;
+    viewport.classList.remove('panning');
+  });
+
+  /* ===== wheel: trackpad scroll = pan, pinch/ctrl+scroll = zoom ===== */
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = viewport.getBoundingClientRect();
+
+    if (e.ctrlKey || e.metaKey) {
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const wx = (mx - panX) / zoom, wy = (my - panY) / zoom;
+      const factor = e.deltaY > 0 ? 0.95 : 1.05;
+      zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * factor));
+      panX = mx - wx * zoom;
+      panY = my - wy * zoom;
+    } else {
+      const hasX = Math.abs(e.deltaX) > 0.5;
+      if (hasX || Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.3) {
+        panX -= e.deltaX;
+        panY -= e.deltaY;
+      } else {
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        const wx = (mx - panX) / zoom, wy = (my - panY) / zoom;
+        const factor = e.deltaY > 0 ? 0.95 : 1.05;
+        zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * factor));
+        panX = mx - wx * zoom;
+        panY = my - wy * zoom;
+      }
+    }
+    updateTransform();
+  }, { passive: false });
+
+  /* ===== zoom buttons ===== */
+  function zoomAt(factor) {
+    const r = viewport.getBoundingClientRect();
+    const cx = r.width / 2, cy = r.height / 2;
+    const wx = (cx - panX) / zoom, wy = (cy - panY) / zoom;
+    zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * factor));
+    panX = cx - wx * zoom;
+    panY = cy - wy * zoom;
+    updateTransform();
+  }
+  document.getElementById('zoomIn').onclick = () => zoomAt(1.25);
+  document.getElementById('zoomOut').onclick = () => zoomAt(0.8);
+  document.getElementById('zoomReset').onclick = () => { zoom = 1; panX = 0; panY = 0; updateTransform(); };
+  document.getElementById('zoomReset').title = UI_STRINGS.zoom.reset;
+
+  /* ===== coord indicator ===== */
+  viewport.addEventListener('pointermove', (e) => {
+    if (isPanning) return;
+    const r = viewport.getBoundingClientRect();
+    coordIndicator.textContent = `${Math.round((e.clientX - r.left - panX) / zoom)}, ${Math.round((e.clientY - r.top - panY) / zoom)}`;
+  });
+
+  /* ===== touch gestures ===== */
+  let lastPinchDist = null, lastPinchCenter = null;
+
+  viewport.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      const t0 = e.touches[0], t1 = e.touches[1];
+      lastPinchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      lastPinchCenter = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  viewport.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 2) return;
+    e.preventDefault();
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const center = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+    if (lastPinchDist > 0) {
+      const r = viewport.getBoundingClientRect();
+      const mx = center.x - r.left, my = center.y - r.top;
+      const wx = (mx - panX) / zoom, wy = (my - panY) / zoom;
+      zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * Math.pow(dist / lastPinchDist, 0.6)));
+      panX = mx - wx * zoom;
+      panY = my - wy * zoom;
+    }
+    if (lastPinchCenter) {
+      panX += center.x - lastPinchCenter.x;
+      panY += center.y - lastPinchCenter.y;
+    }
+    lastPinchDist = dist;
+    lastPinchCenter = center;
+    updateTransform();
+  }, { passive: false });
+
+  viewport.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) { lastPinchDist = null; lastPinchCenter = null; }
+  });
+
+  /* ===== undo ===== */
+  const undoStack = [];
+  function saveUndo() {
+    const s = [];
+    world.querySelectorAll('.canvas-el').forEach(el => {
+      s.push({ id: el.id, left: el.style.left, top: el.style.top });
+    });
+    undoStack.push({ panX, panY, zoom, assets: s });
+    if (undoStack.length > 60) undoStack.shift();
+  }
+  function undo() {
+    if (!undoStack.length) return;
+    const st = undoStack.pop();
+    panX = st.panX; panY = st.panY; zoom = st.zoom;
+    st.assets.forEach(a => {
+      const el = document.getElementById(a.id);
+      if (el) { el.style.left = a.left; el.style.top = a.top; }
+    });
+    updateTransform();
+  }
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+  });
+
+  /* ===== draggable ===== */
+  function makeDraggable(el) {
+    let dragging = false, sx, sy, ox, oy;
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      el.classList.add('dragging');
+      saveUndo();
+      sx = e.clientX; sy = e.clientY;
+      ox = parseFloat(el.style.left); oy = parseFloat(el.style.top);
+      el.setPointerCapture(e.pointerId);
+      e.stopPropagation();
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      el.style.left = (ox + (e.clientX - sx) / zoom) + 'px';
+      el.style.top = (oy + (e.clientY - sy) / zoom) + 'px';
+    });
+    el.addEventListener('pointerup', () => {
+      if (dragging) { dragging = false; el.classList.remove('dragging'); }
+    });
+  }
+
+  /* ===== unique id ===== */
+  let _id = 0;
+  function uid(prefix) { return (prefix || 'el') + '-' + (++_id); }
+
+  /* ===== API: addSection ===== */
+  function addSection(rowY, label) {
+    const parts = label.split(' ');
+    const num = parts[0] || '';
+    const rest = parts.slice(1).join(' ');
+    const el = document.createElement('div');
+    el.className = 'section-header';
+    el.style.left = '60px';
+    el.style.top = rowY + 'px';
+    el.innerHTML = `<span class="section-line"></span><span class="section-num">${num}</span><span class="section-label">${rest}</span>`;
+    world.appendChild(el);
+    return rowY;
+  }
+
+  /* ===== API: addTitle ===== */
+  function addTitle(x, y, text, options = {}) {
+    const el = document.createElement('div');
+    el.className = 'canvas-title';
+    el.id = uid('title');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.fontSize = (options.fontSize || 48) + 'px';
+    if (options.fontWeight) el.style.fontWeight = options.fontWeight;
+    if (options.color) el.style.color = options.color;
+    if (options.maxWidth) el.style.maxWidth = options.maxWidth + 'px';
+    if (options.fontFamily) el.style.fontFamily = options.fontFamily;
+    if (options.letterSpacing) el.style.letterSpacing = options.letterSpacing;
+    el.textContent = text;
+    world.appendChild(el);
+    return el;
+  }
+
+  /* ===== API: addText ===== */
+  function addText(x, y, text, options = {}) {
+    const el = document.createElement('div');
+    el.className = 'canvas-text canvas-el';
+    el.id = uid('text');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.fontSize = (options.fontSize || 14) + 'px';
+    if (options.color) el.style.color = options.color;
+    if (options.maxWidth) el.style.maxWidth = options.maxWidth + 'px';
+    el.textContent = text;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addTag ===== */
+  function addTag(x, y, label, options = {}) {
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('tag');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    const dotColor = options.color || 'var(--accent)';
+    el.innerHTML = `<div class="canvas-tag"><span class="tag-dot" style="background:${dotColor}"></span>${esc(label)}</div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addContextCard ===== */
+  function addContextCard(x, y, w, h, title, content) {
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('ctx');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.width = w + 'px';
+    if (h) el.style.height = h + 'px';
+    el.innerHTML = `<div class="context-card" style="width:100%;${h ? 'height:100%' : ''}">
+      <div class="card-head"><div class="head-indicator"></div><h3>${title}</h3></div>
+      <div class="card-content">${content}</div>
+    </div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addDesignSystemCard ===== */
+  function addDesignSystemCard(x, y, w, h, type, data) {
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('ds');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.width = w + 'px';
+    if (h) el.style.height = h + 'px';
+
+    let body = '';
+    if (type === 'color' && Array.isArray(data.colors)) {
+      body = `<div class="color-grid">${data.colors.map(c =>
+        `<div class="color-chip" style="background:${c.hex}"><span class="chip-label">${c.name || c.hex}</span></div>`
+      ).join('')}</div>`;
+    } else if (type === 'typography' && Array.isArray(data.samples)) {
+      body = `<div class="type-stack">${data.samples.map(s =>
+        `<div class="type-row"><span class="type-label">${s.label}</span><span class="type-sample" style="font-size:${s.size}px;font-weight:${s.weight || 400};${s.fontFamily ? 'font-family:' + s.fontFamily : ''}">${s.text || 'Aa'}</span></div>`
+      ).join('')}</div>`;
+    } else if (typeof data.html === 'string') {
+      body = data.html;
+    }
+
+    el.innerHTML = `<div class="ds-card" style="width:100%;${h ? 'height:100%' : ''}">
+      <div class="ds-head">${data.title || type}</div>
+      <div class="ds-body">${body}</div>
+    </div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addColorSwatch ===== */
+  function addColorSwatch(x, y, colors) {
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('swatch');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.innerHTML = `<div class="color-swatch-group">${colors.map(c =>
+      `<div class="swatch-item">
+        <div class="swatch-circle" style="background:${c.hex}"></div>
+        <div class="swatch-name">${c.name || ''}</div>
+        <div class="swatch-hex">${c.hex}</div>
+      </div>`
+    ).join('')}</div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addTypeSample ===== */
+  function addTypeSample(x, y, samples) {
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('typesample');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.innerHTML = `<div class="type-sample-group">${samples.map(s =>
+      `<div class="type-sample-row">
+        <span class="type-sample-meta">${s.label}<br>${s.size}px</span>
+        <span class="type-sample-text" style="font-size:${s.size}px;font-weight:${s.weight || 400};${s.fontFamily ? 'font-family:' + s.fontFamily : ''}">${s.text || 'The quick brown fox'}</span>
+      </div>`
+    ).join('')}</div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addPage ===== */
+  let _pageNum = 0;
+  function addPage(x, y, w, h, label, htmlContent) {
+    _pageNum++;
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('page');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.width = w + 'px';
+    el.style.height = (h + 40) + 'px';
+    el.innerHTML = `<div class="design-page" style="width:${w}px;height:${h}px;">
+      <div class="page-content">${htmlContent}</div>
+    </div>
+    <div class="page-label"><span class="label-num">${String(_pageNum).padStart(2,'0')}</span>${label}</div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addNote ===== */
+  function addNote(x, y, tag, text) {
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('note');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.innerHTML = `<div class="canvas-note">
+      <div class="note-tag">${tag}</div>
+      <div class="note-body">${text}</div>
+    </div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addDiagram ===== */
+  function addDiagram(x, y, w, h, htmlContent) {
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('diagram');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.innerHTML = `<div class="canvas-diagram" style="width:100%;height:100%;">
+      <div class="diagram-content">${htmlContent}</div>
+    </div>`;
+    world.appendChild(el);
+    makeDraggable(el);
+    return el;
+  }
+
+  /* ===== API: addArrow（引导线 + 箭头 + 小标签，装饰用不可拖拽） ===== */
+  function addArrow(x1, x2, y, label) {
+    const left = Math.min(x1, x2), w = Math.abs(x2 - x1);
+    const dir = x2 >= x1 ? 1 : -1;
+    const el = document.createElement('div');
+    el.className = 'canvas-el';
+    el.id = uid('arrow');
+    el.style.left = left + 'px';
+    el.style.top = y + 'px';
+    el.style.width = w + 'px';
+    el.style.height = '26px';
+    el.style.pointerEvents = 'none';
+    el.style.cursor = 'default';
+    const head = dir > 0
+      ? `<path d="M${w - 7} 15l6 5-6 5" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.8"/>`
+      : `<path d="M7 15l-6 5 6 5" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-opacity="0.8"/>`;
+    el.innerHTML = `<svg width="${w}" height="26" style="display:block;overflow:visible">
+        <line x1="0" y1="20" x2="${w}" y2="20" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.45"/>
+        ${head}
+      </svg>
+      <span style="position:absolute;left:50%;top:0;transform:translateX(-50%);font-size:11px;color:var(--accent);opacity:.9;background:var(--bg);padding:0 8px;white-space:nowrap;letter-spacing:.02em">${esc(label)}</span>`;
+    world.appendChild(el);
+    return el;
+  }
+
+  /* ===== Layout helpers (overlap prevention) ===== */
+  function below(el, gap) { if (gap === undefined) gap = 20; return parseFloat(el.style.top) + el.offsetHeight + gap; }
+  function rightOf(el, gap) { if (gap === undefined) gap = 20; return parseFloat(el.style.left) + el.offsetWidth + gap; }
+  function maxY(els, gap) { if (gap === undefined) gap = 20; return Math.max(...els.map(e => parseFloat(e.style.top) + e.offsetHeight)) + gap; }
+  function maxX(els, gap) { if (gap === undefined) gap = 20; return Math.max(...els.map(e => parseFloat(e.style.left) + e.offsetWidth)) + gap; }
+
+  /* ===== expose API ===== */
+  window.canvas = { addSection, addTitle, addText, addTag, addContextCard, addDesignSystemCard, addColorSwatch, addTypeSample, addPage, addNote, addDiagram, addArrow, below, rightOf, maxY, maxX,
+    setView: (x, y, z) => { panX = x; panY = y; zoom = z; updateTransform(); },
+    getViewportRect: () => viewport.getBoundingClientRect()
+  };
+})();
+</script>
+<script>
+(() => {
+  const C = window.canvas;
+  window.sealSvgEd = function(size, text){
+    const s = size || 56; const t = text || '签核';
+    return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 96 96" style="display:block">' +
+      '<rect x="5" y="5" width="86" height="86" rx="7" fill="none" stroke="currentColor" stroke-width="3"/>' +
+      '<rect x="11" y="11" width="74" height="74" rx="4" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>' +
+      '<text x="48" y="' + (t.length > 2 ? 46 : 60) + '" text-anchor="middle" font-family="Songti SC, STSong, SimSun, serif" font-weight="600" font-size="' + (t.length > 2 ? 30 : 38) + '" fill="currentColor">' + t.slice(0,2) + '</text>' +
+      (t.length > 2 ? '<text x="48" y="76" text-anchor="middle" font-family="Songti SC, STSong, SimSun, serif" font-size="24" fill="currentColor">' + t.slice(2) + '</text>' : '') +
+      '<g fill="currentColor" opacity=".5"><circle cx="22" cy="70" r="1.4"/><circle cx="74" cy="30" r="1.2"/><circle cx="70" cy="76" r="1.1"/><circle cx="28" cy="24" r="1.3"/><circle cx="82" cy="56" r="1"/><circle cx="16" cy="40" r="1.2"/></g></svg>';
+  };
+
+  /* ═══════════ Row 1 · 项目背景 ═══════════ */
+  C.addSection(40, '01 项目背景');
+
+  const r1Title = C.addTitle(100, 94, '投标工作台 · 方案B「编辑部」', { fontSize: 54, fontWeight: 600, fontFamily: 'var(--font-serif)', letterSpacing: '2px' });
+  const r1Desc = C.addText(100, C.below(r1Title, 16),
+    '是什么：Duke 的投标全生命周期工作台——数据消费与展示 + 人的审批入口 + 生产工单发生器（网络安全行业 · 单人 · 本机运行）。\n' +
+    '给谁：一个人用。晨间 5 分钟巡检，盘中盯稿与派单，阶段签核时落章。\n' +
+    '解决什么：把 S0-S9 十态、门禁、缺陷、素材与工单收进一张「纸本版面」——关键信息一眼读完，关键节点只有一处。',
+    { fontSize: 14, maxWidth: 560 });
+
+  const tagsY = C.below(r1Desc, 18);
+  const tagLabels = ['头版晨巡', '宋体层级', '墨蓝单点彩', '羊皮纸底', '签核印章', '单列版面'];
+  let lastTag = null;
+  tagLabels.forEach((t, i) => {
+    const el = C.addTag(i === 0 ? 100 : C.rightOf(lastTag, 8), tagsY, t);
+    lastTag = el;
+  });
+
+  const cardsY = C.below(lastTag, 30);
+  const card1 = C.addContextCard(100, cardsY, 300, null, '用户与场景', '<ul>' +
+    '<li>单人 · 本机 · 全链路留痕</li>' +
+    '<li>晨巡 5 分钟：今日必办 → 简报 → 商机</li>' +
+    '<li>盘中：深潜看缺陷 → 生成工单 → 回来消单</li>' +
+    '<li>低频高危：S5→S6 签核放行（L3）</li></ul>');
+  const card2 = C.addContextCard(420, cardsY, 348, null, '核心数据链路', '<div class="flow-line">' +
+    '<span class="flow-chip">数据面 ~/.bidmaster/</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">watcher 5s</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">看板投影</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">工单生成</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">人工复制启动</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">AI 会话执行</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">产物 status=final</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">门禁校验</span><span class="flow-arr">→</span>' +
+    '<span class="flow-chip">回写数据面</span></div>' +
+    '<p style="margin-top:8px;font-size:12px;color:var(--text-tertiary)">看板不拥有状态、不指挥会话、不生产语义——三条宪法在链路里可见。</p>');
+  const card3 = C.addContextCard(788, cardsY, 300, null, '本方案设计突破点', '<ul>' +
+    '<li><b style="color:var(--text)">头版晨巡</b>：今日必办如报纸头条，一眼读完</li>' +
+    '<li><b style="color:var(--text)">宋体承载层级</b>：标题 / 数字 / 引言宋体，正文 PingFang</li>' +
+    '<li><b style="color:var(--text)">签核印章仪式感</b>：放行那一刻落章，全站 ≤3 处</li></ul>');
+  const card4 = C.addContextCard(1108, cardsY, 300, null, '关键数字', '<ul>' +
+    '<li><span class="knum">7</span> 个视图（管线到系统）</li>' +
+    '<li><span class="knum">10</span> 态状态机（S0-S9）</li>' +
+    '<li><span class="knum">5</span> 个子智能体 + 主 Agent</li>' +
+    '<li><span class="knum">5</span> 种工单模板</li></ul>');
+
+  const notesY = C.maxY([card1, card2, card3, card4], 34);
+  const note1 = C.addNote(100, notesY, '数据基准', '演示数据基准 2026-09-11 09:12（自走演示时钟）；金额单位「万元」；本页是数据面的可重建投影。');
+  const note2 = C.addNote(374, notesY, '阅读提示', 'Row 2 看设计系统；Row 3 从左到右走一遍动线：管线 → 深潜 → 门禁 / 工单 → 必办 → 资产 → 商机 → 简报 → 系统 → 手机端。');
+  const note3 = C.addNote(648, notesY, '方案差异点', '与方案 A / C 的差异：暖纸编辑台——羊皮纸底 + 墨蓝单点彩 + 宋体承载层级 + 印章仪式；单列版面，阅读节奏优先。');
+
+  /* ═══════════ Row 2 · 设计系统 ═══════════ */
+  const r2 = C.maxY([card1, card2, card3, card4, note1, note2, note3], 96);
+  C.addSection(r2, '02 设计系统');
+
+  const dsLede = C.addText(100, r2 + 58, '编辑部 · 设计系统（与可交互原型同源 token：暖纸四阶墨色 + 墨蓝单点彩 + 印章红点缀）', { fontSize: 14, maxWidth: 720 });
+  const dsY = C.below(dsLede, 20);
+
+  /* 色板卡 */
+  const swatches = [
+    ['羊皮纸 bg', '#f5f4ed'], ['象牙 surface', '#faf9f5'], ['沙色 sand', '#e8e6dc'], ['深色容器 deep', '#30302e'],
+    ['墨 ink', '#141413'], ['墨·二号', '#3d3d3a'], ['墨·三号', '#504e49'], ['墨·四号', '#6b6a64'],
+    ['墨蓝 accent', '#1B365D'], ['浅墨蓝', '#2D5A8A'], ['印章红 seal', '#9F2D2D'], ['标签底一', '#EEF2F7'],
+    ['标签底二', '#E4ECF5'], ['标签底三', '#D0DCE9'], ['通过绿 ok', '#2D6A4F'], ['警示棕 warn', '#A16207']
+  ];
+  const colorCard = C.addDesignSystemCard(100, dsY, 640, null, 'custom', {
+    title: '色板 · 16 枚核心 token',
+    html: '<div class="ed-swatches">' + swatches.map(([n, h]) =>
+      '<div class="ed-swatch"><div class="sw" style="background:' + h + '"></div><div class="sw-name">' + n + '</div><div class="sw-hex">' + h + '</div></div>').join('') +
+      '</div><p style="margin-top:12px;font-size:11px;color:var(--text-tertiary);line-height:1.7">纸与墨构成 95% 面积；墨蓝覆盖 ≤5%；印章红仅用于签核与阻断语义。标签底用实色，禁 rgba 填充。</p>'
+  });
+
+  /* 字体卡 */
+  const typeSamples = [
+    ['标题', 40, '投标工作台', '"Songti SC","STSong","SimSun",serif', 600],
+    ['视图', 28, '今日必办', '"Songti SC","STSong","SimSun",serif', 600],
+    ['章节', 21, '勘误表 · 稿件与产出', '"Songti SC","STSong","SimSun",serif', 600],
+    ['数字', 19, '¥1,323 万 · 剩 5 天', '"Songti SC","STSong","SimSun",serif', 600],
+    ['正文', 14, '正文与控件文本以 PingFang 承载密集信息', '-apple-system,"PingFang SC","Microsoft YaHei",sans-serif', 400],
+    ['小字', 12, '表格 / 列表 / 元数据（墨四号）', '-apple-system,"PingFang SC","Microsoft YaHei",sans-serif', 400],
+    ['等宽', 12, '2026-GOLD-jishu · T-20260911-01', '"SF Mono","Menlo","Consolas",monospace', 400]
+  ];
+  const typeCard = C.addDesignSystemCard(764, dsY, 440, null, 'custom', {
+    title: '字体 · 8 档字号阶梯',
+    html: '<div class="ed-type-stack">' + typeSamples.map(([n, s, t, f, w]) =>
+      '<div class="ed-type-row"><span class="ed-type-meta">' + n + '<br>' + s + 'px</span><span class="ed-type-sample" style="font-size:' + s + 'px;font-family:' + f + ';font-weight:' + w + '">' + t + '</span></div>').join('') +
+      '<div class="ed-type-row"><span class="ed-type-meta">引言<br>16px</span><span class="ed-type-sample" style="font-size:16px;font-family:\'Songti SC\',\'STSong\',serif;font-weight:400;color:var(--text-secondary)">阶段 0 完成：42 项资质条件收敛为 6 项硬门槛……</span></div>' +
+      '</div><p style="margin-top:12px;font-size:11px;color:var(--text-tertiary);line-height:1.7">宋体承载层级（字重 500-600，不超纲）；正文用思源黑兜底栈保密集可读；数字一律 tabular-nums。</p>'
+  });
+
+  /* 组件卡 */
+  const compCard = C.addDesignSystemCard(1228, dsY, 420, null, 'custom', {
+    title: '组件 · 按钮 / 印章 / 状态戳 / 数字 / 输入',
+    html:
+      '<div class="ed-comp-label">按钮 · 主 / 次 / 禁用</div>' +
+      '<div class="ed-comp-row">' +
+        '<span class="ed-comp-btn primary">推进阶段</span>' +
+        '<span class="ed-comp-btn secondary">生成工单</span>' +
+        '<span class="ed-comp-btn disabled">确认推进</span>' +
+      '</div>' +
+      '<div class="ed-comp-label">印章 · 签核（方案视觉签名）</div>' +
+      '<div class="ed-comp-row"><span class="ed-seal-mini">' + window.sealSvgEd(58) + '</span>' +
+        '<span style="font-size:11.5px;color:var(--text-secondary)">落章即留痕 · 轻微旋转 -4°<br>用于：签核 / 已签核 / 归档合订</span></div>' +
+      '<div class="ed-comp-label">状态戳 · 待编 / 送审 / 已签发</div>' +
+      '<div class="ed-comp-row">' +
+        '<span class="ed-stamp-demo">待编</span>' +
+        '<span class="ed-stamp-demo" style="color:#A16207;border-color:#d8c9a3;background:#F3EBD9">送审</span>' +
+        '<span class="ed-stamp-demo" style="color:#2D6A4F;border-color:#b9cdbf;background:#E9F0EA">已签发</span>' +
+      '</div>' +
+      '<div class="ed-comp-label">宋体大数字 · tabular-nums</div>' +
+      '<div class="ed-comp-row"><span class="ed-num-demo">¥320 万</span>' +
+        '<span style="font-size:11px;color:var(--text-tertiary)">金额 / 倒计时 / 统计</span></div>' +
+      '<div class="ed-comp-label">输入框 · 细框式</div>' +
+      '<div class="ed-input-demo">输出路径 ~/.bidmaster/bids/2026-GOLD-jishu/out/</div>'
+  });
+
+  window.__row2Bottom = { r2, colorCard, typeCard, compCard };
+})();
+</script>
+<style>
+  /* 手机帧修饰 */
+  .ed-m .ed-mast{padding:11px 14px 0}
+  .ed-m .ed-brand{font-size:17px;letter-spacing:1px}
+  .ed-m .ed-bsub{display:none}
+  .ed-m .ed-mstat{font-size:9px}
+  .ed-m .ed-nav{gap:11px;font-size:11px;padding:9px 14px 0;padding-bottom:8px}
+  .ed-m .ed-nav span{padding-bottom:7px}
+  .ed-m .ed-body{padding:12px 14px}
+  .ed-m .ed-vh h1{font-size:19px;letter-spacing:1px}
+  .ed-m .ed-vh{flex-direction:column;align-items:flex-start;gap:5px}
+  .ed-m .ed-card .nm{font-size:12.5px}
+  .ed-m .ed-stagehead .nm{font-size:13.5px}
+  .ed-m .ed-tbar{gap:10px;font-size:10.5px}
+</style>
+<script>
+(() => {
+  const C = window.canvas;
+  const SEAL = window.sealSvgEd;
+  const pad2 = i => (i < 10 ? '0' : '') + i;
+  const NAVS = ['管线','深潜','今日必办','资产','商机','简报','系统'];
+  function edMast(active){
+    return '<div class="ed-mast"><div><span class="ed-brand">投标工作台</span><span class="ed-bsub">bid-master · BAW</span></div>' +
+      '<div class="ed-mstat">数据基准 2026-09-11 · 演示时钟 09:12:31 · 数据面已同步</div></div>' +
+      '<div class="ed-nav">' + NAVS.map(t => '<span' + (t === active ? ' class="on"' : '') + '>' + t + '</span>').join('') + '</div>';
+  }
+  function edPage(active, body, mod){ return '<div class="ed-page' + (mod ? ' ' + mod : '') + '">' + edMast(active) + '<div class="ed-body">' + body + '</div></div>'; }
+  function edRuler(curIdx){
+    const names = ['线索','预审','决策','解构','编制','审查','封标','开标','结果','归档'];
+    return '<div class="ed-ruler">' + names.map((n, i) => {
+      const cls = i < curIdx ? 'done' : i === curIdx ? 'cur' : (i === curIdx + 1 ? 'next' : '');
+      return '<span class="rs ' + cls + '"><span class="rn">' + pad2(i) + '</span><span class="rt">' + n + '</span></span>';
+    }).join('') + '</div>';
+  }
+  function ic(name){
+    if(name === 'block') return '<svg width="10" height="10" viewBox="0 0 24 24" style="flex:none"><circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M6.9 6.9l10.2 10.2" stroke="currentColor" stroke-width="2.6"/></svg>';
+    if(name === 'warn') return '<svg width="10" height="10" viewBox="0 0 24 24" style="flex:none"><path d="M12 3.8L21 19.5H3z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M12 10v4.4" stroke="currentColor" stroke-width="2.4"/></svg>';
+    if(name === 'check') return '<svg width="11" height="11" viewBox="0 0 24 24" style="flex:none"><path d="M4.5 12.8l4.6 4.6L19.5 6.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    if(name === 'clock') return '<svg width="11" height="11" viewBox="0 0 24 24" style="flex:none"><circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 7.4V12l3.1 2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+    return '<svg width="10" height="10" viewBox="0 0 24 24" style="flex:none"><path d="M7 3.8h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.8a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
+  }
+  const CARET = '<svg width="8" height="6" viewBox="0 0 10 6" style="vertical-align:1px;opacity:.55"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  function sealBox(size, text){ return '<span style="color:#9F2D2D;transform:rotate(-4deg);display:inline-flex">' + SEAL(size, text) + '</span>'; }
+  function bidCard(o){
+    return '<div class="ed-card"><div class="l1"><span class="bidid">' + o.id + '</span>' +
+      (o.second ? '<span class="ed-stamp muted" style="font-size:10px;padding:2px 6px">二手源</span>' : '') +
+      '<span class="prio" style="color:' + (o.prio === 'P0' ? '#9F2D2D' : o.prio === 'P1' ? '#1B365D' : '#6b6a64') + '">' + o.prio + '</span></div>' +
+      '<div class="nm">' + o.name + '</div>' +
+      '<div class="mt"><span>' + o.client + '</span><span>¥' + o.amt + ' 万</span><span' + (o.daysCls ? ' class="' + o.daysCls + '"' : '') + '>距' + o.dl + ' <b>' + o.days + '</b> 天</span><span>停留 <b>' + o.dwell + '</b> 天</span></div>' +
+      (o.marks ? '<div class="marks">' + o.marks.map(m => m === '卡点'
+        ? '<span class="ed-mark">' + ic('block') + ' 卡点</span>'
+        : m === '阻断缺陷'
+          ? '<span class="ed-mark">' + ic('warn') + ' 阻断缺陷 1</span>'
+          : m === '阻断缺陷5'
+            ? '<span class="ed-mark">' + ic('warn') + ' 阻断缺陷 1</span>'
+            : '<span class="ed-mark warn">' + ic('doc') + ' 素材缺口</span>').join('') + '</div>' : '') +
+      '</div>';
+  }
+  function defRow(lv, text, loc, st, stCls){
+    return '<div class="ed-defrow"><span class="lv ' + lv + '">' + (lv === 'b' ? '阻断' : lv === 'm' ? '一般' : '提示') + '</span>' +
+      '<span class="tx">' + text + '</span><span class="lc">' + loc + '</span><span class="st ' + stCls + '">' + st + '</span></div>';
+  }
+
+  const FRAME_W = 1440, FRAME_H = 900, GAP = 160;
+  const fx = i => 100 + i * (FRAME_W + GAP);
+
+  /* ═══════════ Row 3 · 设计稿 ═══════════ */
+  const r2b = window.__row2Bottom;
+  const r3 = C.maxY([r2b.colorCard, r2b.typeCard, r2b.compCard], 96);
+  C.addSection(r3, '03 设计稿');
+  const fLede = C.addText(100, r3 + 58, '十帧按链路从左到右：帧内为与可交互原型同源的静态高保真呈现（1440×900，手机帧 390×844）；细线箭头标注跳转关系。', { fontSize: 14, maxWidth: 780 });
+  const framesY = C.below(fLede, 26);
+
+  /* ── 01 管线漏斗 ── */
+  const f01 = edPage('管线',
+    '<div class="ed-vh"><div><h1>管线</h1><div class="lede">S0 - S9 十态 · 单一事实源在数据面，本页是可随时重建的投影。点卡片进深潜；「卡点」点开看门禁未过原因。</div></div>' +
+    '<div class="meta">报面共 8 标（在投 7 · 已归档 1）· 合计 ¥1323 万<br>当期筛选 8 标 · 合计 ¥1323 万</div></div>' +
+    '<div class="ed-tbar"><div class="seg"><span class="sg on">全部</span><span class="sg">P0</span><span class="sg">P1</span><span class="sg">P2</span></div><span>客户 全部客户 ' + CARET + '</span><span>排序 按截止 ' + CARET + '</span><span class="grow"></span><span>停留天数自进入该阶段起算</span></div>' +
+    '<div class="ed-stagehead"><span class="no">01</span><span class="nm">预审</span><span class="mt">1 标 · ¥75 万</span></div>' +
+    bidCard({ id:'2026-nanshan-sec', name:'红队攻防服务采购', client:'南山证券', amt:75, prio:'P2', dl:'报名', days:8, dwell:1 }) +
+    '<div class="ed-stagehead"><span class="no">02</span><span class="nm">决策</span><span class="mt">2 标 · ¥254 万</span></div>' +
+    bidCard({ id:'2026-szse-zhongbao', name:'网络安全重保协防服务采购', client:'某证券交易所', amt:156, prio:'P1', dl:'决策', days:7, dwell:4, daysCls:'warn', marks:['卡点'] }) +
+    bidCard({ id:'2026-dgbank-attack', name:'网络攻防演习保障项目', client:'东莞银行', amt:98, prio:'P1', second:true, dl:'决策', days:11, dwell:5 }) +
+    '<div class="ed-stagehead"><span class="no">03</span><span class="nm">解构</span><span class="mt">1 标 · ¥280 万</span></div>' +
+    bidCard({ id:'2026-GOLD-jishu', name:'安全技术支持服务采购', client:'某证券通信机构', amt:280, prio:'P0', dl:'封标', days:28, dwell:3, marks:['素材缺口'] }) +
+    '<div class="ed-stagehead"><span class="no">05</span><span class="nm">审查</span><span class="mt">1 标 · ¥320 万</span></div>' +
+    bidCard({ id:'2026-nfh-v14', name:'数据安全评估与技术服务（修订）', client:'农发行', amt:320, prio:'P0', dl:'封标', days:14, dwell:2, marks:['卡点','阻断缺陷'] }) +
+    '<div class="ed-stagehead"><span class="no">09</span><span class="nm">归档</span><span class="mt">1 标 · ¥64 万</span></div>' +
+    '<div class="ed-s9row">' + sealBox(20, '已合订') + '<span class="ed-mono">2026-baybank-bcp</span><span class="ed-serif" style="font-weight:600;color:var(--ed-ink2)">业务连续性 BCP 演练保障</span><span style="color:var(--ed-ink4)">湾区银行 · ¥64 万</span><span class="ed-stamp ok" style="margin-left:auto">已合订 08-28</span></div>');
+
+  /* ── 02 单标深潜（某证券通信机构） ── */
+  const deepHeader01 = '<div class="ed-vh"><div><div style="font-size:10.5px;color:var(--ed-ink4);letter-spacing:2px;display:flex;gap:9px;align-items:center">单标深潜 · 专题页 <span class="ed-stamp danger">P0</span><span class="ed-stamp accent">S3 解构</span></div>' +
+    '<h1 style="margin-top:7px">安全技术支持服务采购</h1>' +
+    '<div class="lede" style="display:flex;gap:15px;margin-top:7px;font-size:10.5px;font-variant-numeric:tabular-nums">bid_id <span class="ed-mono">2026-GOLD-jishu</span><span>客户 某证券通信机构</span><span>¥280 万</span><span>负责人 Duke</span><span>停留 3 天</span></div></div>' +
+    '<div class="meta">门禁 就绪 · 可推进<br>产物 5 项已登记</div></div>';
+  const f02 = edPage('深潜',
+    deepHeader01 +
+    '<div class="ed-actions"><span class="ed-btn p">推进阶段</span><span class="ed-btn s">生成工单</span><span style="font-size:11px;color:var(--ed-ink4)">＋ 加人工待办</span></div>' +
+    edRuler(3) +
+    '<div class="ed-ghint ok">下一道门禁 S3 → S4（编制）· 全部检查已通过，可随时放行</div>' +
+    '<div class="ed-grid"><div>' +
+      '<div class="ed-secttl">元信息<span class="n">数据面投影</span></div>' +
+      '<div class="ed-kv"><dt>阶段</dt><dd>S3 解构 · 停留 3 天</dd></div>' +
+      '<div class="ed-kv"><dt>门禁</dt><dd style="color:var(--ed-ok)">就绪 · 可推进</dd></div>' +
+      '<div class="ed-kv"><dt>数据面</dt><dd class="ed-mono" style="font-size:10px">~/.bidmaster/bids/2026-GOLD-jishu/</dd></div>' +
+      '<div class="ed-secttl" style="margin-top:14px">关键节点<span class="n">倒计时</span></div>' +
+      '<div class="ed-tl"><span class="lb">答疑截止</span><span class="dt">09-16</span><span class="ct" style="color:var(--ed-warn);font-weight:600">剩 5 天</span></div>' +
+      '<div class="ed-tl"><span class="lb">保证金</span><span class="dt">09-25</span><span class="ct">剩 14 天</span></div>' +
+      '<div class="ed-tl"><span class="lb">封标</span><span class="dt">10-09 09:30</span><span class="ct">剩 28 天</span></div>' +
+    '</div><div>' +
+      '<div class="ed-sec"><div class="ed-sechd"><span><span class="n">一 · </span>勘误表</span><span class="m">auditor 对抗审查 · 按轮次</span></div>' +
+      '<div style="font-size:10.5px;color:var(--ed-ink3);display:flex;gap:10px;align-items:center;margin:4px 0"><span class="ed-stamp muted" style="font-size:10px;padding:3px 6px">r1 首轮审查</span><span>5 项 · 已修复 3 · 待处理 2</span></div>' +
+      defRow('m', 'ch02 术语表与规格单 §1.2 表述不一致', 'ch02', '已修复', 'fx') +
+      defRow('m', 'ch03 引用切片缺页码标注', 'ch03', '已修复', 'fx') +
+      defRow('m', 'ch04 服务时间节点与招标文件表述不一致', 'ch04', '已修复', 'fx') +
+      defRow('m', 'ch05 技术方案段落与前章重复', 'ch05', '待处理', 'op') +
+      defRow('m', 'ch06 服务响应时长未量化', 'ch06', '待处理', 'op') +
+      '<div style="display:flex;align-items:center;gap:12px;margin-top:8px;font-size:10.5px;color:var(--ed-ink4)"><span>locator 命中率 98.6%（抽查 60 条） · cite 违规 0</span><span class="ed-btn s" style="margin-left:auto">生成修复工单</span></div></div>' +
+      '<div class="ed-sec"><div class="ed-sechd"><span><span class="n">二 · </span>稿件与产出</span><span class="m">status = final 才计入</span></div>' +
+      '<div style="font-size:11px;color:var(--ed-ink3)">draft 已扩写 <b class="ed-serif" style="font-size:13px">7</b> / 12 章</div>' +
+      '<div class="ed-chips">' + Array.from({length:12}).map((_, i) => '<span class="ed-ch' + (i < 7 ? ' on' : '') + '"></span>').join('') + '</div>' +
+      '<div class="ed-mtrio"><div><div class="mv">0</div><div class="ml">cite 违规</div></div><div><div class="mv">98.6%</div><div class="ml">locator 命中率</div></div><div><div class="mv">11 / 12</div><div class="ml">字数达标 · 章</div></div></div>' +
+      '<div class="ed-artrow"><span class="an">draft ch01-ch07 <span style="font-family:var(--ed-ui);color:var(--ed-ink4)">逐章扩写</span></span><span class="ap">bid-writer</span><span class="at">09-10 16:42</span><span class="ed-stamp ok" style="font-size:9.5px;padding:2px 5px;justify-self:end">final</span></div>' +
+      '<div class="ed-artrow"><span class="an">audit-r1.json <span style="font-family:var(--ed-ui);color:var(--ed-ink4)">对抗审查 r1</span></span><span class="ap">bid-auditor</span><span class="at">09-10 18:02</span><span class="ed-stamp ok" style="font-size:9.5px;padding:2px 5px;justify-self:end">final</span></div>' +
+      '<div class="ed-artrow"><span class="an">locate-r1.json <span style="font-family:var(--ed-ui);color:var(--ed-ink4)">抽查定位 r1</span></span><span class="ap">bid-locator</span><span class="at">09-10 17:10</span><span class="ed-stamp ok" style="font-size:9.5px;padding:2px 5px;justify-self:end">final</span></div>' +
+    '</div></div></div>');
+
+  /* ── 03 门禁拦截态（农发行） ── */
+  const f03 = edPage('深潜',
+    '<div class="ed-vh"><div><div style="font-size:10.5px;color:var(--ed-ink4);letter-spacing:2px;display:flex;gap:9px;align-items:center">单标深潜 · 专题页 <span class="ed-stamp danger">P0</span><span class="ed-stamp accent">S5 审查</span><span class="ed-stamp warn">待签核</span></div>' +
+    '<h1 style="margin-top:7px">数据安全评估与技术服务（修订）</h1>' +
+    '<div class="lede" style="display:flex;gap:15px;margin-top:7px;font-size:10.5px">bid_id <span class="ed-mono">2026-nfh-v14</span><span>客户 农发行</span><span>¥320 万</span><span>停留 2 天</span></div></div>' +
+    '<div class="meta">门禁 被拦 · 存在未通过项<br>产物 4 项已登记</div></div>' +
+    '<div class="ed-actions"><span class="ed-btn dis">推进阶段</span><span class="ed-btn s">生成工单</span><span class="ed-btn g">签核</span></div>' +
+    edRuler(5) +
+    '<div class="ed-ghint">下一道门禁 S5 → S6（封标）· 存在未通过项，推进被拦</div>' +
+    '<div class="ed-grid"><div><div class="ed-secttl">元信息<span class="n">数据面投影</span></div>' +
+      '<div class="ed-kv"><dt>阶段</dt><dd>S5 审查 · 停留 2 天</dd></div>' +
+      '<div class="ed-kv"><dt>门禁</dt><dd style="color:var(--ed-seal)">被拦 · 阻断缺陷 1 条</dd></div>' +
+      '<div class="ed-kv"><dt>签核</dt><dd style="color:var(--ed-warn)">待签发（L3）</dd></div></div>' +
+      '<div><div class="ed-sechd"><span><span class="n">一 · </span>勘误表</span><span class="m">r2 复核 · 阻断 1 / 一般 2 / 提示 4</span></div>' +
+      defRow('b', '商务偏离表未逐条响应 · 第 7 条服务响应偏离（修复中）', '商务标', '修复中', 'fk') +
+      defRow('m', '人员简历未附证书编号占位', '附件', '待处理', 'op') +
+      defRow('m', '培训方案章节缺交付物清单', 'ch09', '待处理', 'op') +
+      defRow('i', '封面日期待更新为递交日', '封面', '提示', 'fx') + '</div></div>' +
+    '<div class="ed-overlay"><div class="ed-modal" style="width:560px">' +
+      '<div class="mhd"><div><div class="mttl">门禁校验 · S5 → S6</div><div class="msub">2026-nfh-v14 · 农发行 · 完成条件 = 门禁清单原文</div></div>' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" style="color:var(--ed-ink4);flex:none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>' +
+      '<div class="mbody">' +
+      '<div class="ed-gcheck"><span class="gi fail">' + ic('block') + '</span><span class="gt">auditor 阻断级 = 0<div class="gd">1 条未关闭：商务偏离表未逐条响应 · 第 7 条服务响应偏离</div></span></div>' +
+      '<div class="ed-gcheck"><span class="gi pass">' + ic('check') + '</span><span class="gt">locator 命中率 ≥ 95%（当前 98.6%）</span></div>' +
+      '<div class="ed-gcheck"><span class="gi pend">' + ic('clock') + '</span><span class="gt">人工签核（L3）<div class="gd" style="color:var(--ed-warn)">待你签发</div></span></div>' +
+      '<div class="ed-gsum bad">' + ic('block') + '<span>存在 1 项未通过 · 推进被禁用；处理后可重跑校验。卡点见上方红标条目。</span></div>' +
+      '</div>' +
+      '<div class="mfoot"><span class="ed-btn" style="color:#9F2D2D;border-color:#d9b8b1;margin-right:auto">生成修复工单</span><span class="ed-btn s">取消</span><span class="ed-btn dis">确认推进</span></div>' +
+    '</div></div>');
+
+  /* ── 04 工单生成态 ── */
+  const f04 = edPage('深潜',
+    deepHeader01 +
+    '<div class="ed-actions"><span class="ed-btn p">推进阶段</span><span class="ed-btn s">生成工单</span></div>' +
+    edRuler(3) +
+    '<div class="ed-ghint ok">下一道门禁 S3 → S4（编制）· 全部检查已通过</div>' +
+    '<div class="ed-grid"><div><div class="ed-secttl">元信息<span class="n">数据面投影</span></div>' +
+      '<div class="ed-kv"><dt>阶段</dt><dd>S3 解构 · 停留 3 天</dd></div>' +
+      '<div class="ed-kv"><dt>门禁</dt><dd style="color:var(--ed-ok)">就绪 · 可推进</dd></div></div>' +
+      '<div><div class="ed-sechd"><span>二 · 稿件与产出</span><span class="m">draft 已扩写 7 / 12 章</span></div>' +
+      '<div class="ed-chips">' + Array.from({length:12}).map((_, i) => '<span class="ed-ch' + (i < 7 ? ' on' : '') + '"></span>').join('') + '</div>' +
+      '<div class="ed-artrow"><span class="an">draft ch01-ch07</span><span class="ap">bid-writer</span><span class="at">09-10 16:42</span><span class="ed-stamp ok" style="font-size:9.5px;padding:2px 5px;justify-self:end">final</span></div></div></div>' +
+    '<div class="ed-overlay"><div class="ed-modal" style="width:620px">' +
+      '<div class="mhd"><div><div class="mttl">生成工单</div><div class="msub">变量自动填充 · 文本真实拼装 · 衔接靠人工复制启动</div></div>' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" style="color:var(--ed-ink4);flex:none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>' +
+      '<div class="mbody">' +
+      '<div style="font-size:10.5px;color:var(--ed-ink3);letter-spacing:1px;margin-bottom:5px">模板</div>' +
+      '<div class="ed-input-demo" style="max-width:none;display:flex;justify-content:space-between;margin-bottom:11px">新标分析 · 承接 主 Agent ' + CARET + '</div>' +
+      '<dl style="margin-bottom:11px">' +
+      '<div class="ed-var"><dt>bid_id</dt><dd>2026-GOLD-jishu</dd></div>' +
+      '<div class="ed-var"><dt>当前阶段</dt><dd>S3 解构 · 缺陷计数 阻断 0 / 一般 5 / 提示 0</dd></div>' +
+      '<div class="ed-var"><dt>ticket_id</dt><dd style="color:var(--ed-accent)">T-20260911-01（完成后回填 manifest）</dd></div></dl>' +
+      '<div style="font-size:10.5px;color:var(--ed-ink3);letter-spacing:1px;margin-bottom:5px">工单文本预览</div>' +
+      '<div class="ed-preview">ticket_id：T-20260911-01（执行完成后回填至产物 manifest）\n模板：新标分析 · 承接：主 Agent · 数据基准 2026-09-11\n标的：2026-GOLD-jishu（某证券通信机构 · 安全技术支持服务采购）\n\n【任务目标】\n对 2026-GOLD-jishu 执行阶段 0 解构，产出 phase0.json 与规格单 spec.json。\n\n【输入路径】\n~/.bidmaster/bids/2026-GOLD-jishu/inbox/\n\n【完成条件（= 门禁清单原文）】\n① hits 关键词对账 100%\n② 阶段产物齐全（phase0 / spec）\n\n【回填要求】产物 manifest 标注 ticket_id 与 producer。</div>' +
+      '</div>' +
+      '<div class="mfoot"><span class="ed-btn s">关闭</span><span class="ed-btn g">复制文本</span><span class="ed-btn p">存入队列</span></div>' +
+    '</div></div>');
+
+  /* ── 05 今日必办 ── */
+  const f05 = edPage('今日必办',
+    '<div class="ed-vh"><div><h1>今日必办</h1><div class="lede">头版晨巡：alerts.json 与 consistency 的当日合集，处理与忽略均留痕，可撤销。</div></div>' +
+    '<div class="meta">数据基准 2026-09-11 09:12<br>版面巡视 6 项 · 待处理 6 项</div></div>' +
+    '<div style="display:flex;gap:26px;align-items:baseline;margin:2px 0 14px">' +
+    '<span><span class="ed-serif" style="font-size:27px;font-weight:600;color:var(--ed-seal)">1</span> <span style="font-size:10.5px;color:var(--ed-ink4)">阻断</span></span>' +
+    '<span><span class="ed-serif" style="font-size:27px;font-weight:600;color:var(--ed-warn)">2</span> <span style="font-size:10.5px;color:var(--ed-ink4)">临期</span></span>' +
+    '<span><span class="ed-serif" style="font-size:27px;font-weight:600;color:var(--ed-ink2)">3</span> <span style="font-size:10.5px;color:var(--ed-ink4)">提醒</span></span></div>' +
+    '<div class="ed-hl"><div class="kick"><span class="ed-stamp danger">阻断</span><span>头版 · 今日头条</span></div>' +
+    '<h2>农发行 S5→S6 签核阻塞</h2>' +
+    '<p>阻断级缺陷 1 条未关闭（商务偏离表未逐条响应 · 第 7 条服务响应偏离），放行被拦，封标在望。</p>' +
+    '<div class="hlx"><span class="ed-btn p">去处理 · 进深潜</span><span class="ed-btn s">处理</span><span style="font-size:11px;color:var(--ed-ink4)">忽略</span><span style="font-size:10.5px;color:var(--ed-ink4);margin-left:auto">关联 农发行 · 09-10 18:02 门禁校验被拦</span></div></div>' +
+    '<div style="margin-top:14px">' +
+    ['<span class="ed-stamp warn">临期</span>|某证券通信机构答疑截止 09-16（剩 5 天）|某证券通信机构 · 截止 09-16 · 建议：提交答疑澄清函',
+     '<span class="ed-stamp warn">临期</span>|鹏城证券保证金凭证待归档|鹏城证券 · 截止 09-12（剩 1 天）· 建议：登记并归档凭证',
+     '<span class="ed-stamp muted">提醒</span>|人员冲突：王工两标现场档期重叠|某证券通信机构 / 某证券交易所 · 冲突窗口 09-20 → 09-21',
+     '<span class="ed-stamp muted">提醒</span>|证照临期：ISO/IEC 27001 剩 47 天|资产 · CERT-001 · 到期 10-28'
+    ].map(r => { const [s, t, m] = r.split('|');
+      return '<div class="ed-brow"><div style="flex:none;padding-top:2px">' + s + '</div><div style="flex:1"><div class="bt">' + t + '</div><div class="bm"><span>' + m + '</span></div></div>' +
+        '<div class="ba"><span class="ed-btn s" style="font-size:10.5px">打开标的</span><span class="ed-btn s" style="font-size:10.5px">处理</span><span style="font-size:10.5px;color:var(--ed-ink4)">忽略</span></div></div>';
+    }).join('') + '</div>');
+
+  /* ── 06 资产台账 ── */
+  const f06 = edPage('资产',
+    '<div class="ed-vh"><div><h1>资产台账</h1><div class="lede">四卷书目：证照 / 人员 / 案例 / 方案。细线紧排，点击行看详情抽屉；临期条目高亮提醒。</div></div>' +
+    '<div class="meta">来源 kb/index/*.json（索引即契约）<br>预警提前期 60 天 · 参数可调</div></div>' +
+    '<div class="ed-tabs" style="margin-bottom:10px"><span class="on">证照卷 <span class="cnt">12</span></span><span>人员卷 <span class="cnt">5</span></span><span>案例卷 <span class="cnt">4</span></span><span>方案卷 <span class="cnt">3</span></span></div>' +
+    '<div class="ed-tbar"><div class="seg"><span class="sg on">全部</span><span class="sg">有效</span><span class="sg">临期</span></div><span class="grow"></span><span>证书 2026-10-28 前到期的为临期</span></div>' +
+    '<table class="ed-tbl" style="margin-top:6px"><thead><tr><th style="width:330px">证书 / 资质</th><th>类型</th><th>发证机构</th><th>有效期至</th><th>状态</th><th>在投占用</th></tr></thead><tbody>' +
+    [['ISO/IEC 27001 信息安全管理体系认证','CERT-001','体系认证','BSI 英标认证','2026-10-28','剩 47 天',true,'临期','warn','某证券通信机构 / 农发行'],
+     ['ISO 20000 IT 服务管理体系认证','CERT-002','体系认证','BSI 英标认证','2027-03-15','',false,'有效','ok','某证券通信机构'],
+     ['CCRC 信息安全服务资质（安全工程类一级）','CERT-003','服务资质一级','中国网络安全审查技术与认证中心','2027-06-30','',false,'有效','ok','—'],
+     ['信息安全服务资质（风险评估一级）','CERT-004','服务资质一级','中国信息安全测评中心','2027-01-12','',false,'有效','ok','—'],
+     ['CMMI 成熟度三级','CERT-005','成熟度评估','CMMI Institute','2027-09-01','',false,'有效','ok','—'],
+     ['ITSS 信息技术服务标准二级','CERT-006','服务标准','中国电子工业标准化技术协会','2026-12-05','剩 85 天',false,'有效','ok','—'],
+     ['涉密信息系统集成资质（乙级）','CERT-009','涉密资质','国家保密局','2026-11-30','剩 80 天',false,'有效','ok','—']
+    ].map(r => '<tr><td><div class="cs">' + r[0] + '</div><div class="sub">' + r[1] + '</div></td><td>' + r[2] + '</td><td>' + r[3] + '</td>' +
+      '<td style="font-variant-numeric:tabular-nums">' + r[4] + (r[5] ? '<div style="font-size:10px;color:' + (r[6] ? 'var(--ed-warn)' : 'var(--ed-ink4)') + '">' + r[5] + '</div>' : '') + '</td>' +
+      '<td><span class="ed-chip ' + r[8] + '">' + r[7] + '</span></td><td>' + r[9] + '</td></tr>').join('') +
+    '</tbody></table>' +
+    '<div style="display:flex;gap:10px;align-items:center;margin-top:13px"><span class="ed-btn p">缺口登记</span><span style="font-size:10.5px;color:var(--ed-ink4)">登记后进入待补清单，补齐后归档进索引</span></div>');
+
+  /* ── 07 商机 ── */
+  const f07 = edPage('商机',
+    '<div class="ed-vh"><div><h1>商机</h1><div class="lede">来件待编：scout 打分与逐字引文在此过目；升级即入库进管线，丢弃须写明理由。</div></div>' +
+    '<div class="meta">待确认 5 条 · 拒绝区 1 条<br>M3 自动升级：评分 ≥ 80 触发待确认</div></div>' +
+    '<div class="ed-tabs" style="margin-bottom:6px"><span class="on">待确认 <span class="cnt">5</span></span><span>已处理 <span class="cnt">0</span></span><span>拒绝区 <span class="cnt">1</span></span></div>' +
+    '<div class="ed-glabel">M3 自动升级 · 待确认<span class="n">1 条 · 确认后直接入库</span></div>' +
+    '<div class="ed-lead" style="align-items:flex-start"><div style="flex:1">' +
+    '<div class="ttl">国银金租 · 数据安全评估服务</div>' +
+    '<div class="nt"><span class="ed-stamp ok" style="font-size:10px;padding:3px 6px">纳入</span><span>M3 自动升级待确认 · 评分 ≥ 80 触发</span></div>' +
+    '<div style="margin-top:8px;background:var(--ed-bg);border:1px solid var(--ed-line);border-radius:8px;padding:9px 13px">' +
+    '<div class="ed-serif" style="font-size:12px;color:var(--ed-ink2);line-height:1.8">“……现对数据安全评估服务进行公开招标，预算金额 85 万元……”</div>' +
+    '<div style="font-size:10px;color:var(--ed-ink4);margin-top:5px">来源：中国金融采购网 · 逐字引文</div></div>' +
+    '<div class="act"><span class="ed-btn p">确认升级</span><span class="ed-btn" style="color:#9F2D2D;border-color:#d9b8b1">驳回</span></div>' +
+    '</div><div class="sc"><div class="sn">88</div><div class="sl">scout 评分</div></div></div>' +
+    '<div class="ed-glabel">常规来件<span class="n">4 条 · 人工升级或丢弃</span></div>' +
+    ['招商局金融 · 安全运营外包|纳入|86','鹏城银行 · 密码应用安全性评估|观察|79 · 金额缺失','东莞农商行 · 等保测评|观察|72']
+    .map(r => { const [t, rec, sc] = r.split('|');
+      return '<div class="ed-lead" style="padding:11px 2px"><div style="flex:1"><div class="ttl">' + t + '</div>' +
+        '<div class="nt"><span class="ed-stamp ' + (rec === '纳入' ? 'ok' : 'warn') + '" style="font-size:10px;padding:3px 6px">' + rec + '</span><span>' + sc + '</span></div>' +
+        '<div class="act"><span class="ed-btn p">升级为 bid</span><span class="ed-btn" style="color:#9F2D2D;border-color:#d9b8b1">丢弃</span></div></div>' +
+        '<div class="sc"><div class="sn">' + sc.split(' ')[0] + '</div><div class="sl">scout 评分</div></div></div>';
+    }).join(''));
+
+  /* ── 08 每日简报 ── */
+  const f08 = edPage('简报',
+    '<div class="ed-vh"><div><h1>每日简报</h1><div class="lede">digest_stats 脚本保底、语义增强可选；快读三条，详读全文，落款标明来源。</div></div>' +
+    '<div class="meta">生成来源：脚本保底 + 语义增强<br>数据基准 2026-09-11 09:12</div></div>' +
+    '<div style="display:flex;gap:10px;margin-bottom:12px;align-items:center"><span class="ed-stamp" style="border:0;color:var(--ed-accent);font-weight:600">今日简报</span><span style="font-size:11.5px;color:var(--ed-ink3)">昨日简报</span><span class="grow" style="flex:1"></span><span class="ed-btn s">重新生成</span><span class="ed-btn g">复制 Markdown</span></div>' +
+    '<div class="ed-paper">' +
+    '<div class="pdate"><span>2026年9月11日</span><span>星期五</span><span class="iss">第 248 期 · 数据基准 2026-09-11</span></div>' +
+    '<h2>两处门禁待通：农发行缺陷未清，某证券通信机构已具备放行条件</h2>' +
+    '<p class="sub">在投 7 标、金额合计 ¥1259 万（另 1 标已归档）；今日必办 6 项（阻断 1 / 临期 2 / 提醒 3）。scout 上午新增 4 条线索，国银金租 88 分触发自动升级待确认。</p>' +
+    '<div class="ed-kd"><h4>快读 · 三条</h4>' +
+    '<div class="ki"><span class="kn">一</span><span>农发行 S5→S6 门禁被拦：auditor 阻断级缺陷 1 条未关闭（商务偏离表未逐条响应 · 第 7 条服务响应偏离），修复后重跑 r2 复核即可重送。</span></div>' +
+    '<div class="ki"><span class="kn">二</span><span>某证券通信机构 S3→S4 检查全通过：hits 关键词对账 100%（收录 42 / 排除 17），可随时放行推进至 S4 编制（draft 已至 7 / 12 章）。</span></div>' +
+    '<div class="ki"><span class="kn">三</span><span>scout 完成打分：新增 4 条线索，2 纳入 / 2 观察；国银金租 88 分待确认 M3 自动升级。</span></div></div>' +
+    '<div class="ed-xd"><h4>详读 · 全文</h4>' +
+    '<div class="ed-serif" style="font-size:12px;font-weight:600;margin-top:8px">风险与卡点</div>' +
+    '<p class="pi">门禁被拦两处：农发行（阻断缺陷未关闭）、某证券交易所（阶段 0 产物缺 lessons_applied）。素材缺口一处：某证券通信机构评分点 3.2 应急响应能力无素材指针；人员档期冲突一处：王工 09-20 / 09-21 两标现场重叠。</p></div>' +
+    '<div class="ed-signoff">生成 09:00 · digest_stats.py 脚本保底 · 语义增强已开 · 数据基准 2026-09-11 09:12 · 第 248 期</div>' +
+    '</div>');
+
+  /* ── 09 系统 ── */
+  const f09 = edPage('系统',
+    '<div class="ed-vh"><div><h1>系统</h1><div class="lede">附录页：名册、基线、工单、日志、参数与提案。手动触发均为确定性脚本，全部留痕。</div></div>' +
+    '<div class="meta">数据面 watcher 5s 轮询 · 单写者纪律<br>看板不生产语义，仅跑确定性脚本</div></div>' +
+    '<div class="ed-sectitle">手动触发<span class="n">确定性脚本 · 全部留痕</span></div>' +
+    '<div class="ed-trig"><span class="ed-btn s">立即抓取</span><span class="ed-btn s">生成 digest</span><span class="ed-btn s">跑一致性</span><span class="ed-btn s">收割 inbox</span><span style="font-size:10.5px;color:var(--ed-ink4);align-self:center">就绪 · 上次巡检 10:05 由 watcher 自动完成</span></div>' +
+    '<div class="ed-tabs" style="margin:12px 0 6px"><span class="on">智能体名册</span><span>Skill 与基线</span><span>工单队列</span><span>运行日志</span><span>参数配置</span><span>提案流</span></div>' +
+    '<table class="ed-tbl"><thead><tr><th style="width:130px">角色</th><th>模型</th><th>权限</th><th>最近运行</th><th>契约符合率</th><th>职责</th></tr></thead><tbody>' +
+    [['主 Agent','GLM-5.3','全权','09-10 18:40','—','语义主链路 · 阶段推进'],
+     ['bid-scout','Flash','只读 + 暂存','09-11 10:05','98.5%','标讯初筛打分'],
+     ['bid-writer','主档','读写 draft','09-10 16:42','—','按规格单逐章扩写'],
+     ['bid-locator','Flash','只读','09-10 17:10','—','P0 条目二次定位抽查'],
+     ['bid-auditor','Flash','只读','09-10 18:02','—','对抗审查（六类检查表）'],
+     ['bid-archivist','Flash','建议权','09-06','—','归档提案（supersession / 脱敏）']
+    ].map(r => '<tr><td class="cs">' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td style="font-family:var(--ed-mono);font-size:10.5px">' + r[3] + '</td><td style="font-variant-numeric:tabular-nums;' + (r[4] !== '—' ? 'color:var(--ed-ok)' : 'color:var(--ed-ink4)') + '">' + r[4] + '</td><td>' + r[5] + '</td></tr>').join('') +
+    '</tbody></table>' +
+    '<div class="ed-sectitle">运行日志<span class="n">新条目实时置顶 · 可过滤级别</span></div>' +
+    '<div class="ed-logw">' +
+    [['10:05','INFO','i','scout：打分完成 · 2 纳入 / 2 观察'],
+     ['10:00','INFO','i','capture：抓取 14 渠道 · 新增线索 4 条'],
+     ['09:12','WARN','w','watcher：数据面 1 项产物 invalid-json（保留指纹待查）'],
+     ['09:00','INFO','i','digest：digest_stats 生成 · 语义增强完成']
+    ].map(r => '<div class="ed-lrow"><span class="lt">' + r[0] + '</span><span class="ll ' + r[2] + '">' + r[1] + '</span><span class="lm">' + r[3] + '</span></div>').join('') +
+    '</div>');
+
+  /* ── 10 手机端 · 管线 ── */
+  const f10 = edPage('管线',
+    '<div class="ed-vh" style="margin-bottom:8px"><div><h1>管线</h1><div class="lede" style="font-size:10.5px">S0 - S9 十态 · 点卡片进深潜。</div></div>' +
+    '<div class="meta" style="text-align:left">报面 8 标（在投 7 · 已归档 1）· ¥1323 万</div></div>' +
+    '<div class="ed-tbar"><div class="seg"><span class="sg on">全部</span><span class="sg">P0</span><span class="sg">P1</span><span class="sg">P2</span></div></div>' +
+    '<div class="ed-stagehead" style="padding-top:7px"><span class="no">02</span><span class="nm">决策</span><span class="mt">2 标 · ¥254 万</span></div>' +
+    bidCard({ id:'2026-szse-zhongbao', name:'网络安全重保协防服务采购', client:'某证券交易所', amt:156, prio:'P1', dl:'决策', days:7, dwell:4, daysCls:'warn', marks:['卡点'] }) +
+    '<div class="ed-stagehead"><span class="no">03</span><span class="nm">解构</span><span class="mt">1 标 · ¥280 万</span></div>' +
+    bidCard({ id:'2026-GOLD-jishu', name:'安全技术支持服务采购', client:'某证券通信机构', amt:280, prio:'P0', dl:'封标', days:28, dwell:3, marks:['素材缺口'] }),
+    'ed-m');
+
+  C.addPage(fx(0), framesY, FRAME_W, FRAME_H, '01 管线漏斗', f01);
+  C.addPage(fx(1), framesY, FRAME_W, FRAME_H, '02 单标深潜（某证券通信机构）', f02);
+  C.addPage(fx(2), framesY, FRAME_W, FRAME_H, '03 深潜 · 门禁拦截态（农发行）', f03);
+  C.addPage(fx(3), framesY, FRAME_W, FRAME_H, '04 深潜 · 工单生成态', f04);
+  C.addPage(fx(4), framesY, FRAME_W, FRAME_H, '05 今日必办 · 头版', f05);
+  C.addPage(fx(5), framesY, FRAME_W, FRAME_H, '06 资产台账 · 目录页', f06);
+  C.addPage(fx(6), framesY, FRAME_W, FRAME_H, '07 商机 · 来件', f07);
+  C.addPage(fx(7), framesY, FRAME_W, FRAME_H, '08 每日简报 · 报纸页', f08);
+  C.addPage(fx(8), framesY, FRAME_W, FRAME_H, '09 系统 · 附录页', f09);
+  C.addPage(fx(9), framesY, 390, 844, '10 手机端 · 管线（390×844）', f10);
+
+  /* ── 引导线（相邻跳转） ── */
+  const aY = framesY + 445;
+  const adj = [
+    [0, '点击标的卡'],
+    [1, '门禁校验'],
+    [2, '修复工单'],
+    [3, '回看板'],
+    [4, '资产反查']
+  ];
+  adj.forEach(([i, label]) => C.addArrow(fx(i) + FRAME_W + 22, fx(i + 1) - 22, aY, label));
+  C.addArrow(fx(7) + FRAME_W + 22, fx(8) - 22, aY, '生成与留痕');
+  C.addArrow(fx(8) + FRAME_W + 22, fx(9) - 22, aY, '移动端适配');
+
+  /* ── 回跳引导线（栏下长线） ── */
+  const bottom = framesY + FRAME_H + 46;
+  C.addArrow(fx(4) + 30, fx(1) + FRAME_W - 30, bottom + 66, '今日必办 · 去处理 → 关联跳转深潜（点击即可达）');
+  C.addArrow(fx(6) + 30, fx(0) + FRAME_W - 30, bottom + 126, '商机 · 升级为 bid → 管线新增标的（入库）');
+
+  /* 帧下小注 */
+  C.addText(fx(0), bottom + 8, '帧下细注：01 → 02 点击标的卡；带卡点标的弹卡点清单。', { fontSize: 11, color: 'rgba(232,230,227,0.4)' });
+  C.addText(fx(1), bottom + 8, '02 顶部可切换 8 个标的；操作触发 03 / 04 弹层。', { fontSize: 11, color: 'rgba(232,230,227,0.4)' });
+  C.addText(fx(3), bottom + 8, '04 存入队列后 → 09 系统 · 工单队列对账消单。', { fontSize: 11, color: 'rgba(232,230,227,0.4)' });
+
+  /* ── 底部便签 ── */
+  const noteY = bottom + 190;
+  C.addNote(100, noteY, '数据基准', '全部截图与数据基于 2026-09-11 09:12 演示时钟；金额单位万元；可交互原型与画布同源 token。');
+  C.addNote(374, noteY, '方案间差异', '本方案（编辑部）：暖纸浅色 + 墨蓝单点彩 + 宋体层级 + 签核印章；与方案 A（指挥舱）的暗色硬核、方案 C（仪器台）的精密仪表气质形成三向差异。');
+  C.addNote(648, noteY, '交付对照', '可交互原型：V1 投标工作台-方案B-可交互原型.html（7 视图全覆盖）；本画布：方案B-无限画布.html。');
+
+  /* ── 初始视图：首屏看 Row 1 ── */
+  C.setView(48, 6, 1);
+})();
+</script>
+</body>
+</html>

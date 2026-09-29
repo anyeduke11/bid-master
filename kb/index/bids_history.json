@@ -1,0 +1,82 @@
+{
+  "_meta": {
+    "domain": "bids_history",
+    "version": 1,
+    "desc": "三标历史（源自 lingxi-claw 批次，2026-09-10 半自动初始化）",
+    "item_fields": [
+      "bid_id",
+      "client",
+      "project",
+      "stage_reached",
+      "result",
+      "lessons",
+      "file",
+      "fingerprint",
+      "sensitivity",
+      "updated_at"
+    ],
+    "updated_at": "2026-09-10T16:08:12+08:00",
+    "rule": "只存元数据与文件指针；证件号/证书编号/成本价等 L3 信息不落索引（设计§14）"
+  },
+  "items": [
+    {
+      "id": "2026-GOLD-jishu",
+      "client_alias": "某证券通信机构",
+      "project": "安全技术支持服务采购",
+      "stage_reached": "S3(阶段0-3)",
+      "result": null,
+      "lessons": [],
+      "secondary": false,
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/",
+      "fingerprint": "sha256:07108b47b0ecc067d4b615394f01504e7ceb62967d1f58a94a599d2766001813",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核（补 result/lessons）",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "2026-szse-zhongbao",
+      "client_alias": "某证券交易所",
+      "project": "网络安全重保协防服务采购",
+      "stage_reached": "S2(阶段0-2)",
+      "result": null,
+      "lessons": [],
+      "secondary": false,
+      "file": "kb/raw/past-bids/2026-szse-zhongbao/",
+      "fingerprint": null,
+      "sensitivity": "L2",
+      "status": "draft 待人工复核（补 result/lessons）",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "2026-dgbank-attack",
+      "client_alias": "东莞银行",
+      "project": "网络攻防演习保障项目",
+      "stage_reached": "S2(阶段0-2,二手源)",
+      "result": null,
+      "lessons": [],
+      "secondary": true,
+      "file": "kb/raw/past-bids/2026-dgbank-attack/",
+      "fingerprint": "sha256:3feb45a12fb2d26f317751e4a1fff19b9879bad827fce261409a52a78daf7e20",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核（补 result/lessons）",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    },
+    {
+      "id": "2026-smoke-arch",
+      "client_alias": "2026-smoke-arch",
+      "project": "",
+      "stage_reached": "S9",
+      "result": "win",
+      "lessons": [
+        "L-11",
+        "L-12",
+        "L-13"
+      ],
+      "file": "~/.bidmaster/bids/2026-smoke-arch/archive/",
+      "fingerprint": "sha256:8fbb9dcbfabae388738d02f0177a5f61fc8a95defa9317f73effba3615762742",
+      "sensitivity": "L2",
+      "status": "confirmed（apply_archive 登记）",
+      "updated_at": "2026-09-10T18:51:28+08:00"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+ "required": [
+  "bid_id",
+  "round",
+  "findings",
+  "stats",
+  "status"
+ ],
+ "properties": {
+  "bid_id": {
+   "type": "string"
+  },
+  "round": {
+   "type": "number"
+  },
+  "findings": {
+   "type": "array"
+  },
+  "stats": {
+   "type": "object"
+  },
+  "ticket_id": {
+   "type": "string"
+  },
+  "producer": {
+   "type": "string"
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "registered",
+    "final",
+    "confirmed"
+   ]
+  }
+ }
+}

@@ -1,0 +1,56 @@
+═══════════════════════════════════════════════════════════
+  投标看板 · 质量测试套件 (8 场景)
+═══════════════════════════════════════════════════════════
+
+【场景 1】5 个 playbook API 可用
+  ✅ playbook 数量 ≥ 5
+  ✅ pb-collect 在列表
+  ✅ pb-dongguan 在列表
+  ✅ pb-nfh 在列表
+  ✅ pb-unionpay 在列表
+  ✅ pb-new 在列表
+  ✅ pb-qualify 在列表
+  ✅ pb-delivery 在列表
+  ✅ pb-archive 在列表
+
+【场景 2】playbook 执行回写
+  ✅ pb-dongguan exec 200
+  ✅ 东莞银行 stage = 述标(pb-dongguan 终态)
+  ✅ 东莞银行 block 已清空
+  ✅ 东莞银行 human_todo 有项
+
+【场景 3】P0 告警 SSE 推送
+  ✅ SSE 收到 connected
+  ✅ SSE 收到 bid_updated
+  ✅ SSE 收到 p0_alert
+
+【场景 4】plan_end 自动计算
+  ✅ 新 bid 创建 201(POST 正确)
+  ✅ flow 有 13 个节点
+  ✅ sales-bid plan_end = 2026-12-01 (提前 30 天)
+  ✅ retro plan_end = 2027-03-01 (事后 60 天)
+  ✅ seal plan_end = 2026-12-31 (当天)
+
+【场景 5】reset 数据
+  ✅ reset 200
+  ✅ reset 后 6 个客户
+
+【场景 6】错误处理
+  ✅ 不存在 bid → 404
+  ✅ err 提示客户不存在
+  ✅ 缺 value 字段 → 400
+  ✅ err 提示 missing value
+  ✅ 重复 code → err(查 _create_bid 行为)
+
+【场景 7】100 并发 PATCH(不崩)
+  ✅ human_todo 数量 ≥ 100  actual=102
+  ✅ 服务仍存活
+
+【场景 8】SSE 端到端延迟
+  ✅ SSE 端到端延迟 < 500ms  actual=0.2849102020263672
+    实测: 0.3 ms
+
+═══════════════════════════════════════════════════════════
+  通过: 31/31  失败: 0
+  🎉 全部通过 — 16/16 PRD 任务验证完成
+═══════════════════════════════════════════════════════════

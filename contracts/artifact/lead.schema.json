@@ -1,0 +1,36 @@
+{
+ "required": [
+  "bid_id",
+  "recommend",
+  "evidence",
+  "reason",
+  "producer",
+  "status"
+ ],
+ "properties": {
+  "recommend": {
+   "type": "string",
+   "enum": [
+    "纳入",
+    "观察",
+    "排除",
+    "重复"
+   ]
+  },
+  "evidence": {
+   "type": "object"
+  },
+  "reason": {
+   "type": "string"
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "registered",
+    "final",
+    "confirmed"
+   ]
+  }
+ }
+}

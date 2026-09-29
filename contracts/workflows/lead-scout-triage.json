@@ -1,0 +1,39 @@
+{
+  "name": "lead-scout-triage",
+  "file": ".zcode/workflows/lead-scout-triage.dwf.ts",
+  "title": "标讯初筛流水线（S2 前 · 漏斗第一道闸）",
+  "version": 1,
+  "created": "2026-09-11",
+  "dev_ref": "DEV-0031",
+  "args": {
+    "limit": "number·默认 10（单批最多初筛条数）"
+  },
+  "actors": [
+    {
+      "actor_pattern": "bid-scout-第N条",
+      "agent_contract": "contracts/agents/bid-scout.json",
+      "agent_md": ".zcode/agents/bid-scout.md",
+      "skill": "skills/bid-scout/SKILL.md",
+      "model_tier": "lite",
+      "tools": "readonly",
+      "produces": "lead",
+      "gate": "rules/validate_leads.py 机检（evidence 非空/指纹去重/排除带原因/schema 必填），拦截行退回对应 scout，最多 2 轮"
+    },
+    {
+      "actor_pattern": "校准员",
+      "agent_contract": null,
+      "skill": "skills/bid-scout/SKILL.md（画像口径）",
+      "model_tier": "lite",
+      "tools": "none（只判尺度）",
+      "produces": null,
+      "gate": "三分类与分值尺度一致性复核，flag 行退回 scout 重看"
+    }
+  ],
+  "data_flow": "leads/raw/*.jsonl 增量（对照 leads.seen 判重）→ 并行打分 → 校准 → leads/scored-batch.jsonl（暂存，validate_leads --file 全量机检）",
+  "boundary": [
+    "只写 leads/scored-batch.jsonl 暂存区，不碰 bids/ 与 leads.seen",
+    "转正走人工 lead.promote（L3）",
+    "无联网工具：evidence 只对暂存文本逐字，原始来源页在线核实归人工",
+    "L3 红线不落盘；缺失字段一律 null 不编造"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "goal": "对 {bid_id} 执行五阶段语义主链路分析（当前 {stage}），产物落 {workspace}/data/",
+  "agent": "主 Agent（bid-master 主链路，单上下文）",
+  "skill": "/Users/duke/.agents/skills/bid-master/SKILL.md",
+  "inputs": [
+    "{workspace}/",
+    "{lessons}"
+  ],
+  "done_when": [
+    "data/ 下阶段产物齐全且 status=final",
+    "阶段 0 产物含 lessons_applied（引用有效 L-*）",
+    "关键词命中台账对账 100%（hits_recon.json）"
+  ],
+  "prompt": "【开工绑定】先 Read {skill}，严格按其工艺执行；读不到即回复「SKILL.md 缺失」。\n\n【任务】{goal}\n【输入】\n- 标工作区：{workspace}/\n- 开工必读：{lessons}\n【完成条件（=门禁清单原文）】\n{done_when}\n【回填】所有产物 manifest 回填 ticket_id={ticket_id}。"
+}

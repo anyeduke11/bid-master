@@ -1,0 +1,36 @@
+{
+ "required": [
+  "bid_id",
+  "result",
+  "checks",
+  "status"
+ ],
+ "properties": {
+  "bid_id": {
+   "type": "string"
+  },
+  "result": {
+   "type": "string",
+   "enum": [
+    "PASS",
+    "FAIL"
+   ]
+  },
+  "checks": {
+   "type": "array",
+   "minItems": 1
+  },
+  "recast_from": {
+   "type": "string"
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "registered",
+    "final",
+    "confirmed"
+   ]
+  }
+ }
+}

@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "domain": "people",
+    "version": 1,
+    "desc": "人员骨架（半自动只建指针，人工补齐）",
+    "item_fields": [
+      "id",
+      "name_alias",
+      "role",
+      "certs",
+      "years",
+      "file",
+      "fingerprint",
+      "sensitivity",
+      "updated_at"
+    ],
+    "updated_at": "2026-09-10T16:08:12+08:00",
+    "rule": "只存元数据与文件指针；证件号/证书编号/成本价等 L3 信息不落索引（设计§14）"
+  },
+  "items": [
+    {
+      "id": "P-001",
+      "name_alias": "项目经理（金标准演练标，真名待人工录入）",
+      "role": "项目经理",
+      "certs": [
+        "CISP(待核)",
+        "PMP(待核)"
+      ],
+      "years": null,
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_3_technical.txt",
+      "fingerprint": "sha256:51cd08fc82472b002267667f4e650450b0a206c7594c9774709b044e5cabfa3a",
+      "sensitivity": "L2",
+      "status": "draft 待人工复核（补真名/年限——真名属个人信息，入库前确认必要性）",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    }
+  ]
+}

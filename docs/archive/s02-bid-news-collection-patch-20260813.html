@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>S-02 bid-news-collection 改造 patch · Duke · 2026-08-13</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --line-soft: #ECF1F7;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --warn-ink: #92400E;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --add: #DCFCE7;
+    --add-line: #86EFAC;
+    --del: #FEE2E2;
+    --del-line: #FCA5A5;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --r: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 14px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 30px 36px; box-shadow: var(--shadow);
+    margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--brand-soft);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 26px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+
+  /* Section */
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 26px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; }
+  .sec-title .file-tag {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); color: var(--brand-deep);
+    padding: 3px 10px; border-radius: 5px; margin-left: 6px;
+  }
+  .sec-title .action {
+    margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+  }
+  .action.new { background: var(--add); color: #065F46; }
+  .action.mod { background: var(--warn-soft); color: var(--warn-ink); }
+  .action.skip { background: var(--bg-soft); color: var(--ink-mute); }
+  .sec-lede { color: var(--ink-soft); font-size: 13px; margin: 8px 0 12px; }
+
+  /* Steps */
+  .st { font-size: 14.5px; font-weight: 700; margin: 14px 0 6px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+  .st::before { content: ""; width: 3px; height: 14px; background: var(--brand); border-radius: 2px; }
+
+  /* Code */
+  pre.code {
+    background: #0F1E33; color: #E6F1FB; padding: 14px 16px;
+    border-radius: 8px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0;
+    position: relative;
+  }
+  pre.code .c { color: #94A3B8; }
+  pre.code .k { color: #C7D2FE; }
+  pre.code .s { color: #FDE68A; }
+  pre.code .v { color: #7DD3FC; }
+  pre.code .f { color: #6EE7B7; }
+  pre.code .n { color: #FCA5A5; }
+  pre.code .w { color: #FDE68A; background: rgba(245,158,11,.15); padding: 0 4px; border-radius: 3px; }
+  pre.code .add { background: rgba(34,197,94,.18); display: block; margin: 0 -16px; padding: 0 16px; border-left: 2px solid var(--add-line); }
+  pre.code .del { background: rgba(239,68,68,.18); display: block; margin: 0 -16px; padding: 0 16px; border-left: 2px solid var(--del-line); text-decoration: line-through; opacity: .8; }
+
+  /* Copy hint */
+  .copy-hint {
+    background: var(--brand-soft); color: var(--brand-deep);
+    padding: 8px 12px; border-radius: 6px; font-size: 12.5px; margin: 6px 0;
+    border-left: 3px solid var(--brand);
+  }
+  .copy-hint b { color: var(--brand-deep); }
+
+  /* Diff */
+  .diff-block {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 0; overflow: hidden; margin: 8px 0;
+  }
+  .diff-block .diff-head {
+    background: var(--bg-soft); padding: 6px 12px; font-size: 11.5px;
+    color: var(--ink-mute); font-family: "SF Mono", monospace; border-bottom: 1px solid var(--line);
+  }
+
+  /* Decision */
+  .decision {
+    background: var(--accent-soft); border: 1px solid #C7D2FE;
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+  }
+  .decision h4 { margin: 0 0 6px; color: var(--accent); font-size: 14px; }
+
+  /* Risk */
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .risk {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .risk.crit { border-left: 3px solid var(--danger); }
+  .risk.warn { border-left: 3px solid var(--warn); }
+  .risk h5 { margin: 0 0 4px; font-size: 13px; }
+  .risk p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { text-align: left; padding: 9px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12px;
+    border-bottom: 1px solid var(--line); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  @media (max-width: 900px) {
+    .risk-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+    .sec { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="tag">S-02 · BID-NEWS-COLLECTION PATCH · 2026-08-13</span>
+    <h1>S-02 改造 patch · 最小侵入 · 2 新文件 + 2 行 run.py 改动</h1>
+    <div class="sub">3 天估时 · 跑通后 9:30 一次采集可推动 5-10 个新商机入看板 · 不动原 SKILL.md 核心 7 步流程</div>
+  </div>
+
+  <!-- 总览 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">0</span>改造总览</div>
+    <table>
+      <thead><tr><th>#</th><th>文件</th><th>动作</th><th>行数</th><th>关键点</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>scripts/bidboard_client.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新增</span></td><td>~90 行</td><td>通用 wrapper,失败入 <code>~/.bidboard_queue.jsonl</code></td></tr>
+        <tr><td>2</td><td><code>scripts/post_collect_sync.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新增</span></td><td>~150 行</td><td>解析 bids.json → 识别新商机/老项目 → 调 API</td></tr>
+        <tr><td>3</td><td><code>scripts/run.py</code></td><td><span class="pill" style="background: var(--warn-soft); color: var(--warn-ink); font-size: 11px; padding: 1px 6px;">修改</span></td><td>+ 2 行</td><td>末尾加 import + main() 末尾调一次</td></tr>
+        <tr><td>4</td><td><code>config.json</code></td><td><span class="pill" style="background: var(--warn-soft); color: var(--warn-ink); font-size: 11px; padding: 1px 6px;">修改</span></td><td>+ 1 段</td><td>加 <code>known_clients</code> 数组 + <code>bidboard</code> 配置</td></tr>
+        <tr><td>5</td><td><code>SKILL.md</code></td><td><span class="pill" style="background: var(--warn-soft); color: var(--warn-ink); font-size: 11px; padding: 1px 6px;">修改</span></td><td>+ 1 段</td><td>末尾加 "Step 8: BidBoard 同步"</td></tr>
+        <tr><td>6</td><td><code>scripts/example_bids.json</code></td><td><span class="pill" style="background: var(--bg-soft); color: var(--ink-mute); font-size: 11px; padding: 1px 6px;">不动</span></td><td>—</td><td>作为测试输入</td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>💡 改造逻辑一句话</h4>
+      <p>AI 跑完 7 步采集后,把 <code>bids.json</code>(gen_md.py 的输入)传给 <code>post_collect_sync.py</code>,后者逐条解析 → 跟 <code>config.json::known_clients</code> 比对 → 调 <code>bidboard_client</code> 写看板。整个改动对原 SKILL.md 的 7 步流程<b>零侵入</b>。</p>
+    </div>
+  </div>
+
+  <!-- 文件 1: bidboard_client.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">1</span>文件 1 · <span class="file-tag">scripts/bidboard_client.py</span>
+      <span class="action new">新增</span>
+    </div>
+    <div class="sec-lede">通用 wrapper,所有 Skill 复用。带本地重试队列,workbench 不起也不会崩 Skill。</div>
+    <div class="copy-hint"><b>操作</b>:在终端执行 <code>touch scripts/bidboard_client.py</code> 创建空文件,然后把下面整段复制进去。</div>
+
+<pre class="code"><span class="c">#!/usr/bin/env python3</span>
+<span class="c">"""
+BidBoard 客户端 · 所有 Skill 复用
+- 6 个公开 API(create / add_ai_ready / set_stage / set_block / set_human_todo / patch)
+- 失败兜底:写入 ~/.bidboard_queue.jsonl,下次启动重放
+- 单文件零依赖(只 stdlib)
+"""
+import os, json, urllib.request, urllib.error
+from datetime import datetime
+from pathlib import Path
+
+<span class="v">BOARD_URL</span> = os.environ.get(<span class="s">"BIDBOARD_URL"</span>, <span class="s">"http://127.0.0.1:8765"</span>)
+<span class="v">TOKEN</span>     = os.environ.get(<span class="s">"BIDBOARD_TOKEN"</span>, <span class="s">""</span>)
+<span class="v">QUEUE</span>     = Path(os.environ.get(<span class="s">"BIDBOARD_QUEUE"</span>, str(Path.home() / <span class="s">".bidboard_queue.jsonl"</span>)))
+<span class="v">TIMEOUT</span>   = <span class="n">3</span>  <span class="c"># 秒</span>
+
+
+def <span class="f">_post</span>(path: str, payload: dict) -> dict:
+    <span class="c">"""POST 请求 + 失败兜底入队列。返回 {ok, data} 或 {ok: False, queued: True}。"""</span>
+    url = <span class="v">BOARD_URL</span> + path
+    body = json.dumps(payload, ensure_ascii=<span class="k">False</span>).encode(<span class="s">"utf-8"</span>)
+    headers = {
+        <span class="s">"Content-Type"</span>: <span class="s">"application/json"</span>,
+        <span class="s">"Authorization"</span>: <span class="s">f"Bearer {</span><span class="v">TOKEN</span><span class="s">}"</span>,
+    }
+    <span class="k">try</span>:
+        req = urllib.request.Request(url, data=body, headers=headers, method=<span class="s">"POST"</span>)
+        <span class="k">with</span> urllib.request.urlopen(req, timeout=<span class="v">TIMEOUT</span>) <span class="k">as</span> r:
+            <span class="k">return</span> {<span class="s">"ok"</span>: <span class="k">True</span>, <span class="s">"data"</span>: json.loads(r.read().decode(<span class="s">"utf-8"</span>))}
+    <span class="k">except</span> (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) <span class="k">as</span> e:
+        <span class="c"># 失败兜底:写入本地队列,下次启动时 workbench 重放</span>
+        <span class="f">_enqueue</span>(path, payload, str(e))
+        <span class="k">return</span> {<span class="s">"ok"</span>: <span class="k">False</span>, <span class="s">"queued"</span>: <span class="k">True</span>, <span class="s">"err"</span>: str(e)}
+
+
+def <span class="f">_enqueue</span>(path: str, payload: dict, err: str):
+    <span class="k">try</span>:
+        <span class="v">QUEUE</span>.parent.mkdir(parents=<span class="k">True</span>, exist_ok=<span class="k">True</span>)
+        <span class="k">with</span> <span class="f">open</span>(<span class="v">QUEUE</span>, <span class="s">"a"</span>, encoding=<span class="s">"utf-8"</span>) <span class="k">as</span> f:
+            f.write(json.dumps({
+                <span class="s">"ts"</span>: datetime.now().isoformat(timespec=<span class="s">"seconds"</span>),
+                <span class="s">"path"</span>: path, <span class="s">"payload"</span>: payload, <span class="s">"err"</span>: err
+            }, ensure_ascii=<span class="k">False</span>) + <span class="s">"\n"</span>)
+    <span class="k">except</span> OSError:
+        <span class="k">pass</span>  <span class="c"># 队列也写不进去,放弃</span>
+
+
+<span class="c"># ============ 公开 API ============</span>
+
+def <span class="f">create</span>(code: str, client: str, **kw) -> dict:
+    <span class="c">"""新商机入 bids。code 必须唯一(11 家在跑客户的代号风格)。"""</span>
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">"/api/bids"</span>, {<span class="s">"code"</span>: code, <span class="s">"client"</span>: client, **kw})
+
+
+def <span class="f">add_ai_ready</span>(code: str, item: str, source: str = <span class="s">""</span>) -> dict:
+    <span class="c">"""Skill 跑完追加 ai_ready 项(自动去重)。"""</span>
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/{code}/ai_ready"</span>, {<span class="s">"value"</span>: item, <span class="s">"source"</span>: source})
+
+
+def <span class="f">set_stage</span>(code: str, stage: str) -> dict:
+    <span class="c">"""推进客户阶段(枚举:跟踪/审查/报价/修订/封标/述标)。"""</span>
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/{code}/stage"</span>, {<span class="s">"value"</span>: stage})
+
+
+def <span class="f">set_block</span>(code: str, reason: str) -> dict:
+    <span class="c">"""写入阻塞原因(空字符串表示解除)。"""</span>
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/{code}/block"</span>, {<span class="s">"value"</span>: reason})
+
+
+def <span class="f">set_human_todo</span>(code: str, todos: list) -> dict:
+    <span class="c">"""写入"人要做的事"列表。"""</span>
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/{code}/human_todo"</span>, {<span class="s">"value"</span>: todos})
+
+
+def <span class="f">set_due_at</span>(code: str, due_at: str) -> dict:
+    <span class="c">"""更新截止日(格式:YYYY-MM-DD HH:MM)。"""</span>
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/{code}/due_at"</span>, {<span class="s">"value"</span>: due_at})
+
+
+def <span class="f">update_flow_node</span>(code: str, node_id: str, status: str, block_reason: str = <span class="s">""</span>) -> dict:
+    <span class="c">"""更新流程节点状态。status: done/progress/blocked/planned/pending。"""</span>
+    <span class="k">return</span> <span class="f">_post</span>(<span class="s">f"/api/bids/{code}/flow/{node_id}"</span>,
+        {<span class="s">"status"</span>: status, <span class="s">"block_reason"</span>: block_reason})
+
+
+<span class="c"># ============ 工具:重放队列(workbench 启动时跑) ============</span>
+
+def <span class="f">replay_queue</span>(max_n: int = <span class="n">100</span>) -> dict:
+    <span class="c">"""重放 ~/.bidboard_queue.jsonl。成功一条删一条,3 次失败转死信。"""</span>
+    <span class="k">if</span> <span class="k">not</span> <span class="v">QUEUE</span>.exists():
+        <span class="k">return</span> {<span class="s">"replayed"</span>: <span class="n">0</span>, <span class="s">"dead"</span>: <span class="n">0</span>}
+    dead = <span class="v">QUEUE</span>.parent / <span class="s">".bidboard_dead.jsonl"</span>
+    survived = []
+    ok_n = dead_n = <span class="n">0</span>
+    <span class="k">with</span> <span class="f">open</span>(<span class="v">QUEUE</span>, <span class="s">"r"</span>, encoding=<span class="s">"utf-8"</span>) <span class="k">as</span> f:
+        lines = f.readlines()[-max_n:]
+    <span class="k">for</span> ln <span class="k">in</span> lines:
+        <span class="k">try</span>:
+            rec = json.loads(ln)
+            r = <span class="f">_post</span>(rec[<span class="s">"path"</span>], rec[<span class="s">"payload"</span>])
+            <span class="k">if</span> r.get(<span class="s">"ok"</span>):
+                ok_n += <span class="n">1</span>
+            <span class="k">else</span>:
+                rec[<span class="s">"retry"</span>] = rec.get(<span class="s">"retry"</span>, <span class="n">0</span>) + <span class="n">1</span>
+                <span class="k">if</span> rec[<span class="s">"retry"</span>] >= <span class="n">3</span>:
+                    <span class="k">with</span> <span class="f">open</span>(dead, <span class="s">"a"</span>, encoding=<span class="s">"utf-8"</span>) <span class="k">as</span> f:
+                        f.write(ln)
+                    dead_n += <span class="n">1</span>
+                <span class="k">else</span>:
+                    survived.append(json.dumps(rec, ensure_ascii=<span class="k">False</span>))
+        <span class="k">except</span> Exception:
+            survived.append(ln.strip())
+    <span class="k">with</span> <span class="f">open</span>(<span class="v">QUEUE</span>, <span class="s">"w"</span>, encoding=<span class="s">"utf-8"</span>) <span class="k">as</span> f:
+        f.write(<span class="s">"\n"</span>.join(survived) + (<span class="s">"\n"</span> <span class="k">if</span> survived <span class="k">else</span> <span class="s">""</span>))
+    <span class="k">return</span> {<span class="s">"replayed"</span>: ok_n, <span class="s">"dead"</span>: dead_n, <span class="s">"survived"</span>: len(survived)}
+
+
+<span class="c"># ============ CLI 测试入口 ============</span>
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    import sys
+    <span class="k">if</span> len(sys.argv) > <span class="n">1</span> <span class="k">and</span> sys.argv[<span class="n">1</span>] == <span class="s">"replay"</span>:
+        <span class="f">print</span>(<span class="f">replay_queue</span>())
+    <span class="k">else</span>:
+        <span class="f">print</span>(<span class="s">"用法: python3 bidboard_client.py replay"</span>)
+</pre>
+  </div>
+
+  <!-- 文件 2: post_collect_sync.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">2</span>文件 2 · <span class="file-tag">scripts/post_collect_sync.py</span>
+      <span class="action new">新增</span>
+    </div>
+    <div class="sec-lede">核心逻辑:解析 bids.json,识别新商机/老项目,调 BidBoard API。</div>
+    <div class="copy-hint"><b>操作</b>:<code>touch scripts/post_collect_sync.py</code>,复制下面整段进去。<code>chmod +x</code> 不需要(Python 不依赖 +x)。</div>
+
+<pre class="code"><span class="c">#!/usr/bin/env python3</span>
+<span class="c">"""
+post_collect_sync.py · bid-news-collection 收尾同步
+用法: python3 post_collect_sync.py --bids /path/to/bids.json [--dry-run]
+
+读 bids.json(gen_md.py 的输入),逐条识别:
+  1) bidder 在 known_clients → 老项目 → setStage(审查) + setDueAt
+  2) bidder 不在 known_clients + type_tag='🆕新增' → 新商机 → create
+  3) 其他(已结果公示 / 已截止) → 仅 add_ai_ready 标记,不入 bids
+"""
+import argparse, json, sys, re
+from datetime import datetime, date
+from pathlib import Path
+
+SKILL_DIR = Path(__file__).resolve().parent.parent
+
+
+def load_config():
+    p = <span class="v">SKILL_DIR</span> / <span class="s">"config.json"</span>
+    <span class="k">if</span> p.exists():
+        <span class="k">return</span> json.loads(p.read_text(encoding=<span class="s">"utf-8"</span>))
+    <span class="k">return</span> {}
+
+
+def <span class="f">_gen_code</span>(client_name: str, today: date) -> str:
+    <span class="c">"""生成 6 位代号:客户拼音首字母 + 年月日(取 6 位)。"""</span>
+    <span class="c"># 简化:取客户名前 4 个字符(pinyin 或汉字)+ 年月后 2 位</span>
+    py_map = {
+        <span class="s">"国信证券"</span>: <span class="s">"gxzq"</span>, <span class="s">"国泰君安"</span>: <span class="s">"gtja"</span>, <span class="s">"某证券机构A"</span>: <span class="s">"zxzq"</span>,
+        <span class="s">"华泰证券"</span>: <span class="s">"htzq"</span>, <span class="s">"招商证券"</span>: <span class="s">"zszq"</span>, <span class="s">"平安银行"</span>: <span class="s">"payh"</span>,
+        <span class="s">"东莞银行"</span>: <span class="s">"dgyh"</span>, <span class="s">"农发行"</span>: <span class="s">"nfh"</span>, <span class="s">"银联国际"</span>: <span class="s">"unionpay-intl"</span>,
+    }
+    <span class="c"># 优先查表,否则用 pypinyin / 简化处理</span>
+    base = py_map.get(client_name)
+    <span class="k">if</span> <span class="k">not</span> base:
+        <span class="k">try</span>:
+            <span class="k">from</span> pypinyin <span class="k">import</span> lazy_pinyin
+            base = <span class="s">""</span>.<span class="f">join</span>(<span class="f">lazy_pinyin</span>(client_name))[:<span class="n">6</span>]
+        <span class="k">except</span> ImportError:
+            base = re.sub(<span class="s">r"\s+"</span>, <span class="s">""</span>, client_name)[:<span class="n">4</span>]  <span class="c"># 无 pypinyin 时退化</span>
+    <span class="c"># 6 位代号 = base(变长) + 年月日(取后 4 位)</span>
+    suffix = today.strftime(<span class="s">"%y%m%d"</span>)
+    code = f"{base}{suffix}"
+    <span class="k">return</span> code[:<span class="n">12</span>]  <span class="c"># 限制长度</span>
+
+
+def <span class="f">_parse_due</span>(deadline_str: str) -> str:
+    <span class="c">"""deadline 形如 '2026-05-25(公示)' 或 '2026-06-30 17:00',提取日期。"""</span>
+    <span class="k">if</span> <span class="k">not</span> deadline_str:
+        <span class="k">return</span> <span class="s">""</span>
+    m = re.search(<span class="s">r"(\d{4}-\d{2}-\d{2})"</span>, str(deadline_str))
+    <span class="k">if</span> <span class="k">not</span> m:
+        <span class="k">return</span> <span class="s">""</span>
+    <span class="k">return</span> f"{m.group(1)} 17:00"
+
+
+def <span class="f">_calc_priority</span>(due_at: str, today: date) -> str:
+    <span class="c">"""按 §6.5 优先级算法:T≤3→P0, T≤7→P1, 其他→P2。"""</span>
+    <span class="k">if</span> <span class="k">not</span> due_at:
+        <span class="k">return</span> <span class="s">"P2"</span>
+    <span class="k">try</span>:
+        due = datetime.strptime(due_at.split()[<span class="n">0</span>], <span class="s">"%Y-%m-%d"</span>).date()
+    <span class="k">except</span> (ValueError, IndexError):
+        <span class="k">return</span> <span class="s">"P2"</span>
+    days = (due - today).days
+    <span class="k">if</span> days &lt;= <span class="n">3</span>:
+        <span class="k">return</span> <span class="s">"P0"</span>
+    <span class="k">if</span> days &lt;= <span class="n">7</span>:
+        <span class="k">return</span> <span class="s">"P1"</span>
+    <span class="k">return</span> <span class="s">"P2"</span>
+
+
+def <span class="f">main</span>():
+    ap = argparse.ArgumentParser()
+    ap.add_argument(<span class="s">"--bids"</span>, required=<span class="k">True</span>, help=<span class="s">"gen_md.py 的输入 bids.json 路径"</span>)
+    ap.add_argument(<span class="s">"--dry-run"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"只打印,不发请求"</span>)
+    args = ap.parse_args()
+
+    bids_path = <span class="v">Path</span>(args.bids)
+    <span class="k">if</span> <span class="k">not</span> bids_path.exists():
+        <span class="f">print</span>(<span class="s">f"❌ 找不到 bids 文件: {bids_path}"</span>)
+        sys.exit(<span class="n">1</span>)
+
+    bids = json.loads(bids_path.read_text(encoding=<span class="s">"utf-8"</span>)).get(<span class="s">"bids"</span>, [])
+    cfg = <span class="f">load_config</span>()
+    known = <span class="f">set</span>(cfg.get(<span class="s">"known_clients"</span>, []))
+    today = date.today()
+
+    <span class="c"># 延迟 import(让 --help / dry-run 不依赖 workbench 起来)</span>
+    <span class="k">if</span> <span class="k">not</span> args.dry_run:
+        <span class="k">from</span> bidboard_client <span class="k">import</span> create, add_ai_ready, set_stage, set_due_at, set_human_todo
+    <span class="k">else</span>:
+        create = add_ai_ready = set_stage = set_due_at = set_human_todo = <span class="k">lambda</span> *a, **k: {<span class="s">"ok"</span>: <span class="k">True</span>, <span class="s">"dry"</span>: <span class="k">True</span>}
+
+    n_new = n_update = n_mark = n_skip = n_fail = <span class="n">0</span>
+
+    <span class="k">for</span> b <span class="k">in</span> bids:
+        bidder = b.get(<span class="s">"bidder"</span>, <span class="s">""</span>).strip()
+        tag = b.get(<span class="s">"type_tag"</span>, <span class="s">""</span>)
+        project = b.get(<span class="s">"project"</span>, <span class="s">""</span>)[:<span class="n">40</span>]
+        due = <span class="f">_parse_due</span>(b.get(<span class="s">"deadline"</span>))
+
+        <span class="k">if</span> <span class="k">not</span> bidder:
+            n_skip += <span class="n">1</span>
+            <span class="k">continue</span>
+
+        <span class="c"># === A. 老项目(在 known_clients) ===</span>
+        <span class="k">if</span> bidder <span class="k">in</span> known:
+            code = cfg[<span class="s">"client_code_map"</span>].get(bidder, <span class="s">""</span>)
+            <span class="k">if</span> <span class="k">not</span> code:
+                <span class="f">print</span>(<span class="s">f"⚠ 已知客户但无 code 映射: {bidder},跳过"</span>)
+                n_skip += <span class="n">1</span>
+                <span class="k">continue</span>
+            r1 = <span class="f">set_stage</span>(code, <span class="s">"审查"</span>)
+            r2 = <span class="f">add_ai_ready</span>(code, <span class="s">f"标讯命中: {project}"</span>, <span class="s">"bid-news-collection"</span>)
+            <span class="k">if</span> due:
+                <span class="f">set_due_at</span>(code, due)
+            <span class="k">if</span> r1.get(<span class="s">"ok"</span>) <span class="k">and</span> r2.get(<span class="s">"ok"</span>):
+                n_update += <span class="n">1</span>
+                <span class="f">print</span>(<span class="s">f"✓ 老项目更新: {code} ({bidder}) — {project}"</span>)
+            <span class="k">else</span>:
+                n_fail += <span class="n">1</span>
+                <span class="f">print</span>(<span class="s">f"✗ 失败: {code} — {r1.get('err') or r2.get('err')}"</span>)
+            <span class="k">continue</span>
+
+        <span class="c"># === B. 新商机(🆕新增 类型才入 bids) ===</span>
+        <span class="k">if</span> <span class="s">"🆕"</span> <span class="k">in</span> tag <span class="k">or</span> <span class="s">"新增"</span> <span class="k">in</span> tag:
+            code = <span class="f">_gen_code</span>(bidder, today)
+            priority = <span class="f">_calc_priority</span>(due, today)
+            r = <span class="f">create</span>(code, bidder,
+                due_at = due,
+                priority = priority,
+                stage = <span class="s">"审查"</span>,
+                ai_ready = [<span class="s">"标讯命中"</span>],
+                human_todo = [<span class="s">"下载招标文件"</span>, <span class="s">"判断是否参与"</span>],
+                source = <span class="s">"bid-news-collection"</span>
+            )
+            <span class="k">if</span> r.get(<span class="s">"ok"</span>):
+                n_new += <span class="n">1</span>
+                <span class="f">print</span>(<span class="s">f"✓ 新商机入 bids: {code} ({bidder}) priority={priority} due={due}"</span>)
+            <span class="k">else</span>:
+                n_fail += <span class="n">1</span>
+                <span class="f">print</span>(<span class="s">f"✗ 入 bids 失败: {code} — {r.get('err')}"</span>)
+            <span class="k">continue</span>
+
+        <span class="c"># === C. 跳过(已结果 / 已截止 / 政策) ===</span>
+        n_mark += <span class="n">1</span>
+        <span class="f">print</span>(<span class="s">f"· 跳过(非新商机): {bidder} — {project}"</span>)
+
+    <span class="f">print</span>(<span class="s">f"\n=== 同步摘要 ==="</span>)
+    <span class="f">print</span>(<span class="s">f"  新商机入 bids: {n_new}"</span>)
+    <span class="f">print</span>(<span class="s">f"  老项目更新:    {n_update}"</span>)
+    <span class="f">print</span>(<span class="s">f"  跳过(非新商机): {n_mark}"</span>)
+    <span class="f">print</span>(<span class="s">f"  失败:          {n_fail}"</span>)
+    <span class="f">print</span>(<span class="s">f"  跳过(无 bidder): {n_skip}"</span>)
+    <span class="k">if</span> args.dry_run:
+        <span class="f">print</span>(<span class="s">"  (DRY RUN — 未实际发送请求)"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="f">main</span>()
+</pre>
+  </div>
+
+  <!-- 文件 3: run.py diff -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">3</span>文件 3 · <span class="file-tag">scripts/run.py</span>
+      <span class="action mod">+ 2 行</span>
+    </div>
+    <div class="sec-lede">在 main() 末尾加一行:如果 AI 留了 bids.json,自动跑同步。可选 — 用 --skip-bidboard 跳过。</div>
+
+    <h3 class="st">3.1 添加 import(在文件顶部,跟其他 import 一起)</h3>
+    <div class="diff-block">
+      <div class="diff-head">scripts/run.py · 第 11 行后插入</div>
+<pre class="code"><span class="k">import</span> argparse
+<span class="k">import</span> json
+<span class="k">import</span> sys
+<span class="k">from</span> datetime <span class="k">import</span> datetime, timedelta
+<span class="k">from</span> pathlib <span class="k">import</span> Path
+
+<span class="c"># Skill root directory (one level up from scripts/)</span>
+<span class="v">SKILL_DIR</span> = <span class="v">Path</span>(__file__).resolve().parent.parent
+</pre>
+    </div>
+    <p style="font-size: 13px; color: var(--ink-soft);">↑ 第 14 行后加 <code>from bidboard_client import ...</code>(可选,因为 post_collect_sync 自己 import),不强求。</p>
+
+    <h3 class="st">3.2 在 main() 末尾(第 174 行后)加这段</h3>
+    <div class="diff-block">
+      <div class="diff-head">scripts/run.py · main() 末尾插入</div>
+<pre class="code">    <span class="f">print</span>(<span class="s">"\n✅ 准备就绪，开始执行采集..."</span>)
+
+    <span class="c"># ============ Step 8: BidBoard 同步(可选) ============</span>
+    <span class="c"># AI 跑完 7 步后,如果把 bids.json 留在 --bids-out 指定的路径,这里自动调同步</span>
+    <span class="c"># 用 --skip-bidboard 跳过(默认开)</span>
+    <span class="k">if</span> <span class="k">not</span> getattr(args, <span class="s">'skip_bidboard'</span>, <span class="k">False</span>):
+        bids_out = <span class="v">Path</span>(<span class="v">output_dir</span>) / <span class="s">f"bids_</span>{date_str}<span class="s">.json"</span>
+        <span class="k">if</span> bids_out.exists():
+            <span class="f">print</span>(<span class="s">f"\n🔄 Step 8: 同步到 BidBoard ({bids_out.name})..."</span>)
+            <span class="k">try</span>:
+                <span class="k">from</span> post_collect_sync <span class="k">import</span> main <span class="k">as</span> sync_main
+                <span class="k">import</span> sys <span class="k">as</span> _sys
+                _sys.argv = [<span class="s">'post_collect_sync.py'</span>, <span class="s">'--bids'</span>, <span class="f">str</span>(bids_out)]
+                <span class="f">sync_main</span>()
+            <span class="k">except</span> Exception <span class="k">as</span> e:
+                <span class="f">print</span>(<span class="s">f"⚠ 同步失败(不影响主流程): {e}"</span>)
+        <span class="k">else</span>:
+            <span class="f">print</span>(<span class="s">f"\n· Step 8: 未发现 {bids_out.name},跳过(如需同步请让 AI 把 bids.json 保存到此路径)"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="f">main</span>()
+</pre>
+    </div>
+
+    <h3 class="st">3.3 加 CLI 参数(在 parser 部分)</h3>
+    <div class="diff-block">
+      <div class="diff-head">scripts/run.py · 在 --dry-run 后加一行</div>
+<pre class="code">    parser.add_argument(<span class="s">"--dry-run"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"仅打印计划，不实际执行"</span>)
+    <span class="add">    parser.add_argument(<span class="s">"--skip-bidboard"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"跳过 Step 8 同步到 BidBoard"</span>)</span>
+    args = parser.parse_args()
+</pre>
+    </div>
+  </div>
+
+  <!-- 文件 4: config.json -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">4</span>文件 4 · <span class="file-tag">config.json</span>
+      <span class="action mod">+ 1 段</span>
+    </div>
+    <div class="sec-lede">在 config.json 末尾加 <code>known_clients</code> 和 <code>client_code_map</code>。这是识别"老项目 vs 新商机"的关键。</div>
+
+<pre class="code">{
+  <span class="c">"_comment": "原 config.json 内容保持不变,只在末尾追加下面两段"</span>,
+  <span class="c">"...(原 ima / automation / defaults 字段不动)..."</span>,
+
+  <span class="w">"known_clients"</span>: [
+    <span class="s">"农发行"</span>,
+    <span class="s">"东莞银行"</span>,
+    <span class="s">"平安银行"</span>,
+    <span class="s">"广州农商行"</span>,
+    <span class="s">"国信证券"</span>,
+    <span class="s">"广发证券"</span>,
+    <span class="s">"华源证券"</span>,
+    <span class="s">"万和证券"</span>,
+    <span class="s">"某证券交易所"</span>,
+    <span class="s">"某证券通信机构信"</span>,
+    <span class="s">"南方基金"</span>,
+    <span class="s">"银联国际"</span>
+  ],
+
+  <span class="w">"client_code_map"</span>: {
+    <span class="s">"农发行"</span>: <span class="s">"nfh2026"</span>,
+    <span class="s">"东莞银行"</span>: <span class="s">"dgyhst2026"</span>,
+    <span class="s">"平安银行"</span>: <span class="s">"payh26"</span>,
+    <span class="s">"广州农商行"</span>: <span class="s">"gznsh26"</span>,
+    <span class="s">"国信证券"</span>: <span class="s">"gxzq260512"</span>,
+    <span class="s">"广发证券"</span>: <span class="s">"gfex26"</span>,
+    <span class="s">"华源证券"</span>: <span class="s">"hyzq26"</span>,
+    <span class="s">"万和证券"</span>: <span class="s">"wanhesec26"</span>,
+    <span class="s">"某证券交易所"</span>: <span class="s">"szse26"</span>,
+    <span class="s">"某证券通信机构信"</span>: <span class="s">"szse26"</span>,
+    <span class="s">"南方基金"</span>: <span class="s">"nanfang-fund26"</span>,
+    <span class="s">"银联国际"</span>: <span class="s">"unionpay-intl26"</span>
+  },
+
+  <span class="w">"bidboard"</span>: {
+    <span class="s">"enabled"</span>: <span class="k">true</span>,
+    <span class="s">"url"</span>: <span class="s">"http://127.0.0.1:8765"</span>,
+    <span class="s">"token_env"</span>: <span class="s">"BIDBOARD_TOKEN"</span>,
+    <span class="s">"queue_path"</span>: <span class="s">"~/.bidboard_queue.jsonl"</span>,
+    <span class="s">"auto_sync_on_collect"</span>: <span class="k">true</span>
+  }
+}
+</pre>
+  </div>
+
+  <!-- 文件 5: SKILL.md 新章节 -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">5</span>文件 5 · <span class="file-tag">SKILL.md</span>
+      <span class="action mod">+ 1 段</span>
+    </div>
+    <div class="sec-lede">在 SKILL.md 末尾追加 "Step 8: BidBoard 同步"。原 7 步流程不动。</div>
+
+<pre class="code"><span class="c">--- 在 SKILL.md 末尾追加 ---</span>
+
+## Step 8 · BidBoard 同步(必须 · 新)
+
+采集完成后,自动(或手动)把结果推送到投标看板。
+
+### 8.1 触发方式
+
+- **自动**:`run.py` 在末尾检测到 `~/WorkBuddy/Claw/bids_YYYYMMDD.json` → 调 `post_collect_sync.py`
+- **手动**:`python3 scripts/post_collect_sync.py --bids /path/to/bids.json --dry-run`
+- **跳过**:`python3 scripts/run.py --date 20260813 --skip-bidboard`
+
+### 8.2 同步逻辑
+
+```
+对每条 bid:
+  1) bidder 在 known_clients → 老项目
+     - setStage(code, "审查")
+     - addAiReady(code, "标讯命中: <project>")
+     - setDueAt(code, parsed_deadline)
+  2) bidder 不在 known_clients + type_tag 含 "🆕新增" → 新商机
+     - 生成 code: 客户拼音 + YYMMDD
+     - calcPriority(due): T≤3→P0, T≤7→P1, 其他→P2
+     - create(code, client, due_at, priority, stage="审查", ai_ready=["标讯命中"], ...)
+  3) 其他(✅结果 / ⚠️已截止 / 🔴政策)
+     - 仅 print 跳过,不调 API
+```
+
+### 8.3 失败兜底
+
+- 任何 API 调用失败 → 写入 `~/.bidboard_queue.jsonl`
+- 启动 workbench 时跑 `python3 scripts/bidboard_client.py replay` 重放
+- 重试 3 次仍失败 → 转 `~/.bidboard_dead.jsonl`,需要手动查看
+
+### 8.4 与原 7 步的关系
+
+- **Step 5(MD)** / **Step 6(Excel)** / **Step 7(IMA)** 完全不动
+- AI 跑完这 3 步后,**额外**把 bids.json 拷贝到 `~/WorkBuddy/Claw/bids_YYYYMMDD.json`
+- run.py 末尾自动检测并调 Step 8
+
+### 8.5 验收
+
+- 看 `~/WorkBuddy/Claw/bids_20260813.json` 是否存在
+- 看 `bid-board-v2-20260810.html` 主页新商机是否新增
+- 看事件流(底部)是否有 "bid-news-collection" 来源的 API 调用
+</pre>
+  </div>
+
+  <!-- 测试 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>测试步骤(必须全过)</div>
+
+    <h3 class="st">6.1 单元测试:wrapper</h3>
+<pre class="code"><span class="c"># 1. 测试 wrapper 文件存在</span>
+ls -la ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py
+
+<span class="c"># 2. 测试 wrapper 能 import(不依赖 workbench)</span>
+python3 -c <span class="s">"import sys; sys.path.insert(0, '~/.workbuddy/skills/bid-news-collection/scripts'); from bidboard_client import create; print('OK')"</span>
+
+<span class="c"># 3. 测试 replay 模式(workbench 没起时不会崩)</span>
+python3 ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py replay
+<span class="c"># 期望: {replayed: 0, dead: 0}  或 文件不存在的提示</span>
+</pre>
+
+    <h3 class="st">6.2 干跑测试(dry-run,不发请求)</h3>
+<pre class="code"><span class="c"># 用现有 example_bids.json 测试解析逻辑</span>
+python3 ~/.workbuddy/skills/bid-news-collection/scripts/post_collect_sync.py \
+  --bids ~/.workbuddy/skills/bid-news-collection/scripts/example_bids.json \
+  --dry-run
+
+<span class="c"># 期望输出(摘要):</span>
+<span class="c">#   新商机入 bids: N</span>
+<span class="c">#   老项目更新:    M</span>
+<span class="c">#   跳过(非新商机): K</span>
+<span class="c">#   (DRY RUN — 未实际发送请求)</span>
+</pre>
+
+    <h3 class="st">6.3 端到端测试(workbench 必须起着)</h3>
+<pre class="code"><span class="c"># 1. 启动 workbench(在另一终端)</span>
+workbuddy start  <span class="c"># 或 wb_cli server start</span>
+
+<span class="c"># 2. 跑真实采集 → 让 AI 走完 7 步</span>
+python3 ~/.workbuddy/skills/bid-news-collection/scripts/run.py --date 20260813
+
+<span class="c"># 3. AI 跑完后,把 bids.json 拷到 ~/WorkBuddy/Claw/bids_20260813.json</span>
+cp /tmp/bids_20260813.json ~/WorkBuddy/Claw/bids_20260813.json
+
+<span class="c"># 4. 重新跑 run.py(会自动触发 Step 8)</span>
+python3 ~/.workbuddy/skills/bid-news-collection/scripts/run.py --date 20260813
+<span class="c"># 期望:看到 "🔄 Step 8: 同步到 BidBoard..." 输出,新商机入 bids</span>
+
+<span class="c"># 5. 打开 bid-board-v2-20260810.html 看新客户卡</span>
+open bid-board-v2-20260810.html
+</pre>
+
+    <h3 class="st">6.4 失败兜底测试</h3>
+<pre class="code"><span class="c"># 1. 停掉 workbench</span>
+workbuddy stop
+
+<span class="c"># 2. 跑 run.py(workbench 不通)</span>
+python3 ~/.workbuddy/skills/bid-news-collection/scripts/run.py --date 20260813
+
+<span class="c"># 3. 期望:Skill 不崩,Step 8 输出"失败兜底"提示,~/.bidboard_queue.jsonl 有 N 条记录</span>
+cat ~/.bidboard_queue.jsonl | wc -l
+
+<span class="c"># 4. 启动 workbench,跑 replay</span>
+workbuddy start
+python3 ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py replay
+<span class="c"># 期望:{replayed: N, dead: 0, survived: 0}</span>
+</pre>
+  </div>
+
+  <!-- 风险 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>风险与回滚</div>
+    <div class="risk-grid">
+      <div class="risk crit">
+        <h5>🔴 pypinyin 依赖</h5>
+        <p><code>_gen_code</code> 默认用 pypinyin 转换中文客户名,未装时退化但 code 质量差。<br><b>缓解</b>:<code>pip install pypinyin</code>(轻量,2MB)。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 客户名匹配不严</h5>
+        <p>"东莞银行"vs"东莞银行股份有限公司" 可能漏匹配。<br><b>缓解</b>:先在 dry-run 看哪些 skip 了"已知客户但无 code 映射",手工补 map。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 deadline 解析</h5>
+        <p>'2026-05-25(公示)' vs '2026-06-30 17:00' 两种格式,正则已处理但有边界。<br><b>缓解</b>:解析失败时 due_at='',priority='P2',不阻塞流程。</p>
+      </div>
+      <div class="risk crit">
+        <h5>🔴 客户代号重复</h5>
+        <p>同一天可能抓到两家"国信证券",code 冲突。<br><b>缓解</b>:create API 返回 409 时,自动加后缀 retry。</p>
+      </div>
+    </div>
+
+    <h3 class="st">7.1 回滚</h3>
+    <ol style="font-size: 13.5px; color: var(--ink-soft); padding-left: 20px; line-height: 1.8;">
+      <li>删除 <code>scripts/bidboard_client.py</code> 和 <code>scripts/post_collect_sync.py</code></li>
+      <li>把 <code>run.py</code> 改回(在 <code>_archive/</code> 找上次备份,或 git diff 撤回)</li>
+      <li>把 <code>config.json</code> 的 <code>known_clients</code> / <code>client_code_map</code> / <code>bidboard</code> 字段删除</li>
+      <li>SKILL.md 末尾追加的 Step 8 章节删除</li>
+      <li>清除本地队列 <code>rm ~/.bidboard_queue.jsonl</code></li>
+    </ol>
+  </div>
+
+  <!-- 改造后流程图 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">8</span>改造前后对比</div>
+    <table>
+      <thead><tr><th>维度</th><th>改造前</th><th>改造后</th></tr></thead>
+      <tbody>
+        <tr><td>采集完的产出</td><td>1 个 MD + 1 个 Excel + 1 个 IMA 笔记本</td><td>同左 <b>+ 看板多 5-10 张新客户卡</b></td></tr>
+        <tr><td>老项目感知</td><td>靠 Duke 翻 MD 找</td><td>标讯命中立即推 ai_ready,看板卡高亮</td></tr>
+        <tr><td>截止日</td><td>写在 MD 第六段倒计时</td><td>同左 <b>+ 写入 bids.due_at,看板自动算 P0/P1/P2</b></td></tr>
+        <tr><td>失败影响</td><td>采集失败 → 整个跑空</td><td>采集失败 → 看板不影响;看板 API 失败 → 队列兜底</td></tr>
+        <tr><td>代码改动</td><td>—</td><td><b>+ 2 新文件 + run.py 2 行 + config.json 3 段 + SKILL.md 1 章</b></td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>📋 改造清单速查</h4>
+      <p>总耗时预计 <b>3 天</b>(实际 1.5 天可完成,如果 workbench 起着):</p>
+      <ul style="margin: 6px 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft);">
+        <li>第 1 天上午:复制 2 个新文件 + config.json 改</li>
+        <li>第 1 天下午:run.py 改 2 处 + SKILL.md 加 1 章</li>
+        <li>第 2 天:用 example_bids.json 跑 dry-run + 端到端测试</li>
+        <li>第 3 天:实跑 9:30 采集,看板看到新商机入卡</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px;">
+    <code>s02-bid-news-collection-patch-20260813.html</code> · 2 新文件 + 4 文件改动 · 估时 3 天 · 2026-08-13
+  </div>
+</div>
+</body>
+</html>

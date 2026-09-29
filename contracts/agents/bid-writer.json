@@ -1,0 +1,11 @@
+{
+ "name": "bid-writer",
+ "model": "custom:builtin%3Abigmodel-individual-coding-plan:GLM-5.3",
+ "readonly": false,
+ "trigger": "主 Agent 派发（分章并行）",
+ "skill": "/Users/duke/bid-master/skills/bid-write/SKILL.md",
+ "produces": [
+  "draft"
+ ],
+ "note": "无联网；引用只走规格单白名单"
+}

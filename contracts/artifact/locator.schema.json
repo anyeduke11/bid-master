@@ -1,0 +1,29 @@
+{
+ "required": [
+  "bid_id",
+  "hit_rate",
+  "samples",
+  "status"
+ ],
+ "properties": {
+  "bid_id": {
+   "type": "string"
+  },
+  "hit_rate": {
+   "type": "number"
+  },
+  "samples": {
+   "type": "array",
+   "minItems": 1
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "registered",
+    "final",
+    "confirmed"
+   ]
+  }
+ }
+}

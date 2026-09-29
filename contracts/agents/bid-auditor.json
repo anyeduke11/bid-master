@@ -1,0 +1,11 @@
+{
+ "name": "bid-auditor",
+ "model": "custom:builtin%3Abigmodel-individual-coding-plan:GLM-5.3-Flash",
+ "readonly": true,
+ "trigger": "阶段门/工单 audit-round",
+ "skill": "/Users/duke/bid-master/skills/bid-audit/SKILL.md",
+ "produces": [
+  "audit"
+ ],
+ "note": "对抗审查，组合判定（LLM+verify_audit 机检）"
+}

@@ -1,0 +1,11 @@
+{
+ "name": "bid-locator",
+ "model": "custom:builtin%3Abigmodel-individual-coding-plan:GLM-5.3-Flash",
+ "readonly": true,
+ "trigger": "主 Agent（阶段产物落盘后）",
+ "skill": "/Users/duke/bid-master/skills/bid-locate/SKILL.md",
+ "produces": [
+  "locator"
+ ],
+ "note": "只读三件套"
+}

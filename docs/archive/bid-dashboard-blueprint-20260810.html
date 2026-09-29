@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>投标看板方案 · Duke</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --accent: #6366F1;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --ok: #10B981;
+    --p0: #FEE2E2;
+    --p0-ink: #991B1B;
+    --p1: #FEF3C7;
+    --p1-ink: #92400E;
+    --p2: #DBEAFE;
+    --p2-ink: #1E40AF;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 15px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 32px 36px; box-shadow: var(--shadow);
+    margin-bottom: 24px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -60px; top: -60px;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.18), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--p2);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 28px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14.5px; }
+  .hero .thesis {
+    margin-top: 18px; background: white; border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    padding: 12px 16px; border-radius: 8px; font-size: 14px;
+  }
+
+  /* Section */
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 26px 30px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .sec h2 { font-size: 20px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  .sec h2 .n {
+    background: var(--brand); color: white; width: 26px; height: 26px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .sec .lede { color: var(--ink-soft); font-size: 13.5px; margin: 4px 0 18px; }
+
+  /* ====== 看板 Mockup ====== */
+  .dash {
+    background: #0F1E33; border-radius: 14px; padding: 18px 20px;
+    color: #E6F1FB; box-shadow: 0 12px 40px rgba(15,30,51,.18);
+    font-family: "SF Pro SC", "PingFang SC", -apple-system, sans-serif;
+  }
+  .dash .bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .dash .bar .title { font-size: 14px; font-weight: 600; letter-spacing: .04em; }
+  .dash .bar .title .dot { color: var(--ok); margin-right: 6px; }
+  .dash .bar .meta { font-size: 12px; color: #94A3B8; font-family: "SF Mono", monospace; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .stat .k { font-size: 11px; color: #94A3B8; letter-spacing: .08em; text-transform: uppercase; }
+  .stat .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .stat .v small { font-size: 12px; color: #94A3B8; font-weight: 500; margin-left: 4px; }
+  .stat.alert .v { color: #FCA5A5; }
+  .stat.warn .v { color: #FCD34D; }
+  .stat.ok .v { color: #6EE7B7; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .card {
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px; padding: 14px;
+  }
+  .card.p0 { border-left: 3px solid #EF4444; }
+  .card.p1 { border-left: 3px solid #F59E0B; }
+  .card.p2 { border-left: 3px solid #38BDF8; }
+  .card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .card .client { font-size: 15px; font-weight: 700; }
+  .card .code { font-size: 11px; color: #94A3B8; font-family: "SF Mono", monospace; }
+  .card .stage {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    font-weight: 600; margin-right: 4px;
+  }
+  .st-审查 { background: #1E3A8A; color: #BFDBFE; }
+  .st-报价 { background: #78350F; color: #FDE68A; }
+  .st-修订 { background: #831843; color: #FBCFE8; }
+  .st-封标 { background: #7F1D1D; color: #FECACA; }
+  .st-跟踪 { background: #374151; color: #D1D5DB; }
+  .st-述标 { background: #064E3B; color: #A7F3D0; }
+  .card .due { font-size: 12px; color: #94A3B8; }
+  .card .due b { color: #FCA5A5; }
+  .card .row { margin-top: 10px; }
+  .card .row .lbl { font-size: 11px; color: #94A3B8; letter-spacing: .04em; }
+  .card .row .val { font-size: 12.5px; margin-top: 2px; line-height: 1.5; }
+  .card .ai .val { color: #7DD3FC; }
+  .card .block .val { color: #FCA5A5; }
+  .card .decision .val { color: #FDE68A; font-weight: 600; }
+
+  .today {
+    background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.3);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .today h4 { margin: 0 0 8px; font-size: 12px; color: #C7D2FE; letter-spacing: .08em; text-transform: uppercase; }
+  .today ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.8; }
+  .today li b { color: #FDE68A; }
+  .today li code { font-family: "SF Mono", monospace; font-size: 12px; color: #7DD3FC; }
+
+  /* ====== 落地步骤 ====== */
+  .steps { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .step {
+    display: grid; grid-template-columns: 56px 1fr; gap: 16px;
+    padding: 16px 18px; border: 1px solid var(--line);
+    border-radius: 12px; background: white;
+  }
+  .step .badge {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--brand); color: white; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .step h3 { margin: 0 0 4px; font-size: 16px; }
+  .step p { margin: 4px 0 0; color: var(--ink-soft); font-size: 13.5px; }
+  .step .meta {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .step .meta span {
+    font-size: 11.5px; padding: 2px 8px; border-radius: 4px;
+    background: var(--bg-soft); color: var(--brand-deep);
+    font-family: "SF Mono", monospace;
+  }
+  .step pre {
+    background: #0F1E33; color: #7DD3FC; padding: 12px 14px; border-radius: 8px;
+    font-size: 12.5px; line-height: 1.6; margin: 10px 0 0;
+    font-family: "SF Mono", "Menlo", monospace; overflow-x: auto;
+  }
+  .step pre .c { color: #94A3B8; }
+  .step pre .k { color: #C7D2FE; }
+
+  /* ====== 字段定义表 ====== */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 10px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12.5px;
+    border-bottom: 1px solid var(--line); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+  td code { font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; color: var(--brand-deep); }
+  .who-ai { color: var(--brand-deep); font-weight: 600; }
+  .who-h { color: var(--ink-soft); font-weight: 600; }
+  .who-b { color: var(--accent); font-weight: 600; }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .p-p0 { background: var(--p0); color: var(--p0-ink); }
+  .p-p1 { background: var(--p1); color: var(--p1-ink); }
+  .p-p2 { background: var(--p2); color: var(--p2-ink); }
+  .p-ok { background: #D1FAE5; color: #065F46; }
+
+  /* 触发清单 */
+  .cron { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .cron .item {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    background: white;
+  }
+  .cron .item .t { font-size: 12px; color: var(--brand-deep); font-weight: 700;
+    font-family: "SF Mono", monospace; }
+  .cron .item .n { font-size: 14px; font-weight: 600; margin: 4px 0 2px; }
+  .cron .item .d { font-size: 12.5px; color: var(--ink-soft); }
+
+  .foot { text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 28px; }
+  @media (max-width: 900px) {
+    .grid, .cron { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .grid, .cron { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="tag">BID DASHBOARD · 投标看板方案</span>
+    <h1>每天 09:45 第一屏 · 投标看板如何跑通</h1>
+    <div class="sub">基于你已有的 workbench 127.0.0.1:8765,在 8 视图里加 1 个视图,不动后端。</div>
+    <div class="thesis">
+      <b>核心判断</b>:投标看板不靠"新系统",靠 <b>字段对齐 + 自动化触发 + 一屏呈现</b>。
+      你的 6 个客户、9:30 标讯采集、Agent 摄入层 <code>POST /api/ingest</code> 全部已经在,
+      只差" <b>把每件事归到一张卡上</b> "这一步。30 分钟字段定义 + 1 个视图 + 3 个 cron,一周内能跑。
+    </div>
+  </div>
+
+  <!-- SECTION 1: 看板长什么样 -->
+  <div class="sec">
+    <h2><span class="n">1</span>看板长什么样(mockup)</h2>
+    <div class="lede">一屏 6 个客户卡片 + 5 个汇总数字 + 1 个"今日动作"。打开就懂今天干什么。</div>
+
+    <div class="dash">
+      <div class="bar">
+        <div class="title"><span class="dot">●</span>投标看板 · BID BOARD</div>
+        <div class="meta">2026-08-11 09:45:00 · auto-refresh 5m · last-sync: bid-news-collection</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">在跑客户</div><div class="v">6<small>家</small></div></div>
+        <div class="stat alert"><div class="k">P0 紧急</div><div class="v">1<small>东莞 · T-2</small></div></div>
+        <div class="stat warn"><div class="k">P1 本周</div><div class="v">2<small>农发行/银联#1</small></div></div>
+        <div class="stat"><div class="k">P2 跟踪</div><div class="v">3<small>银联#2#3/平安</small></div></div>
+        <div class="stat ok"><div class="k">AI 就绪率</div><div class="v">87<small>% · 13/15 项</small></div></div>
+      </div>
+
+      <div class="grid">
+        <!-- 东莞 P0 -->
+        <div class="card p0">
+          <div class="head">
+            <div>
+              <div class="client">东莞银行</div>
+              <div class="code">dgyhst2026</div>
+            </div>
+            <div>
+              <span class="stage st-封标">封标</span>
+            </div>
+          </div>
+          <div class="due">截止 <b>T-2 · 08-13 17:00</b></div>
+          <div class="row ai"><div class="lbl">AI 就绪</div><div class="val">✓ 门禁脚本 / ✓ JSON 校验 / ✓ 格式</div></div>
+          <div class="row decision"><div class="lbl">你要做的</div><div class="val">1. 报价签字 / 2. 述标要点过一遍</div></div>
+          <div class="row block"><div class="lbl">阻塞</div><div class="val">报价表待终签</div></div>
+        </div>
+
+        <!-- 农发行 P1 -->
+        <div class="card p1">
+          <div class="head">
+            <div>
+              <div class="client">农发行</div>
+              <div class="code">nfh2026</div>
+            </div>
+            <div>
+              <span class="stage st-修订">修订</span>
+            </div>
+          </div>
+          <div class="due">截止 <b>T-5 · 08-16 18:00</b></div>
+          <div class="row ai"><div class="lbl">AI 就绪</div><div class="val">✓ 差异点比对 / ✓ 客户化段落 / ⏳ 案例库</div></div>
+          <div class="row decision"><div class="lbl">你要做的</div><div class="val">技术方案亮点段重写(2 小时)</div></div>
+          <div class="row block"><div class="lbl">阻塞</div><div class="val">—</div></div>
+        </div>
+
+        <!-- 银联 #1 P1 -->
+        <div class="card p1">
+          <div class="head">
+            <div>
+              <div class="client">银联国际 #1</div>
+              <div class="code">unionpay-intl26-1</div>
+            </div>
+            <div>
+              <span class="stage st-审查">审查</span>
+            </div>
+          </div>
+          <div class="due">截止 <b>T-9 · 08-20 17:00</b></div>
+          <div class="row ai"><div class="lbl">AI 就绪</div><div class="val">✓ 100+ 项检查表 / ⏳ 评分未出</div></div>
+          <div class="row decision"><div class="lbl">你要做的</div><div class="val">看评分 → 决定是否进入报价</div></div>
+          <div class="row block"><div class="lbl">阻塞</div><div class="val">—</div></div>
+        </div>
+
+        <!-- 银联 #2 P2 -->
+        <div class="card p2">
+          <div class="head">
+            <div>
+              <div class="client">银联国际 #2</div>
+              <div class="code">unionpay-intl26-2</div>
+            </div>
+            <div>
+              <span class="stage st-报价">报价</span>
+            </div>
+          </div>
+          <div class="due">截止 <b>T-9 · 08-20 17:00</b></div>
+          <div class="row ai"><div class="lbl">AI 就绪</div><div class="val">✓ BOM v0 / ⏳ 分包边界</div></div>
+          <div class="row decision"><div class="lbl">你要做的</div><div class="val">确认分包边界(谁做什么)</div></div>
+          <div class="row block"><div class="lbl">阻塞</div><div class="val">分包边界未明</div></div>
+        </div>
+
+        <!-- 银联 #3 P2 -->
+        <div class="card p2">
+          <div class="head">
+            <div>
+              <div class="client">银联国际 #3</div>
+              <div class="code">unionpay-intl26-3</div>
+            </div>
+            <div>
+              <span class="stage st-审查">审查</span>
+            </div>
+          </div>
+          <div class="due">截止 <b>T-9 · 08-20 17:00</b></div>
+          <div class="row ai"><div class="lbl">AI 就绪</div><div class="val">✓ 检查表就绪</div></div>
+          <div class="row decision"><div class="lbl">你要做的</div><div class="val">—</div></div>
+          <div class="row block"><div class="lbl">阻塞</div><div class="val">—</div></div>
+        </div>
+
+        <!-- 平安 P2 -->
+        <div class="card p2">
+          <div class="head">
+            <div>
+              <div class="client">平安银行</div>
+              <div class="code">payh26</div>
+            </div>
+            <div>
+              <span class="stage st-跟踪">跟踪</span>
+            </div>
+          </div>
+          <div class="due">截止 <b>— · 持续</b></div>
+          <div class="row ai"><div class="lbl">AI 就绪</div><div class="val">✓ 标讯监控中</div></div>
+          <div class="row decision"><div class="lbl">你要做的</div><div class="val">—</div></div>
+          <div class="row block"><div class="lbl">阻塞</div><div class="val">—</div></div>
+        </div>
+      </div>
+
+      <div class="today">
+        <h4>今日动作 · TODAY'S DECISIONS</h4>
+        <ul>
+          <li><b>10:00 前</b>:东莞银行报价表终签 → 触发封标门禁 (阻塞: <code>报价签字</code>)</li>
+          <li><b>14:00 前</b>:农发行 V1.4 技术亮点段重写 (AI 已出差异点比对)</li>
+          <li><b>16:00 前</b>:银联国际 #2 分包边界确认(拨 10 分钟对齐某网络安全服务商某网络安全服务商)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: 5 步落地 -->
+  <div class="sec">
+    <h2><span class="n">2</span>5 步落地 · 一周内能跑</h2>
+    <div class="lede">不动后端,不动数据库,只加一个视图 + 3 个 cron + 1 张表。</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="badge">1</div>
+        <div>
+          <h3>定 9 个字段(30 分钟)</h3>
+          <p>在 workbench 任务表里加 9 列(详见下方字段定义表)。</p>
+          <div class="meta">
+            <span>bids.client</span><span>bids.stage</span><span>bids.priority</span>
+            <span>bids.due_at</span><span>bids.ai_ready</span><span>bids.human_todo</span>
+            <span>bids.block</span><span>bids.last_sync</span><span>bids.code</span>
+          </div>
+          <pre><span class="c"># workbench.db 迁移</span>
+<span class="k">ALTER TABLE</span> bids <span class="k">ADD COLUMN</span> priority <span class="k">TEXT DEFAULT</span> 'P2';
+<span class="k">ALTER TABLE</span> bids <span class="k">ADD COLUMN</span> ai_ready <span class="k">TEXT</span>;     <span class="c">-- JSON 数组</span>
+<span class="k">ALTER TABLE</span> bids <span class="k">ADD COLUMN</span> human_todo <span class="k">TEXT</span>;  <span class="c">-- JSON 数组,≤2 条</span>
+<span class="k">ALTER TABLE</span> bids <span class="k">ADD COLUMN</span> block <span class="k">TEXT</span>;
+<span class="k">ALTER TABLE</span> bids <span class="k">ADD COLUMN</span> code <span class="k">TEXT</span>;       <span class="c">-- nfh2026 / dgyhst2026</span>
+<span class="k">ALTER TABLE</span> bids <span class="k">ADD COLUMN</span> last_sync <span class="k">TIMESTAMP</span>;</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="badge">2</div>
+        <div>
+          <h3>用 bid-news-collection 喂 1 个新任务(20 分钟)</h3>
+          <p>09:30 标讯跑完后,触发一个新的自动化 <code>bid-card-refresh</code>:把今天每个客户的状态(阶段、AI 就绪事项、阻塞)写到 bids 表。</p>
+          <div class="meta"><span>wb_cli</span><span>automations</span><span>bid-card-refresh</span></div>
+          <pre><span class="c"># 注册新自动化</span>
+wb_cli automation create \
+  --name bid-card-refresh \
+  --cron <span class="k">"30 9 * * 1-5"</span> \
+  --action <span class="k">"refresh_bid_cards"</span> \
+  --depends-on bid-news-collection
+
+<span class="c"># 动作:遍历每个客户 → 查 AI 任务状态 → 写 bids.ai_ready/human_todo/block</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="badge">3</div>
+        <div>
+          <h3>加 1 个视图(2 小时,前端)</h3>
+          <p>workbench 8 视图里加第 9 个: <b>投标看板 BID BOARD</b>。前端纯展示,数据走现有 <code>GET /api/bids</code>。</p>
+          <div class="meta"><span>SPA</span><span>/views/bid-board</span><span>GET /api/bids</span></div>
+          <pre><span class="c"># 视图组件</span>
+&lt;BidBoard :cards=<span class="k">"bids"</span> :stats=<span class="k">"stats"</span> :today=<span class="k">"todaysActions"</span> /&gt;
+
+<span class="c"># 后端接口(已存在,扩字段即可)</span>
+<span class="k">GET</span> /api/bids?status=active        <span class="c">→ 返回 9 字段</span>
+<span class="k">GET</span> /api/bids/:code/timeline      <span class="c">→ 客户时间线(可选)</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="badge">4</div>
+        <div>
+          <h3>配 3 个 cron(15 分钟)</h3>
+          <p>让看板有"信号",而不是静态截图。</p>
+          <div class="meta">
+            <span>09:30 标讯采集</span>
+            <span>09:45 看板刷新</span>
+            <span>17:00 当日归档</span>
+            <span>P0 实时推微信</span>
+          </div>
+          <pre><span class="c"># cron 配置</span>
+<span class="k">30 9 * * 1-5</span>  bid-news-collection        <span class="c"># 已存在</span>
+<span class="k">45 9 * * 1-5</span>  bid-card-refresh           <span class="c"># 新增</span>
+<span class="k">0 17 * * 1-5</span>  bid-daily-snapshot         <span class="c"># 新增,落执行档案</span>
+<span class="k">*/15 9-18 * * 1-5</span>  bid-p0-watcher          <span class="c"># 新增,任何 P0 状态变 → 微信</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="badge">5</div>
+        <div>
+          <h3>你只在两个时点看(规则化)</h3>
+          <p>看板不是常驻窗口,是 <b>两个时点的仪式</b>。</p>
+          <div class="meta">
+            <span>09:45 第一屏</span><span>21:00 收尾屏</span>
+          </div>
+          <pre><span class="c"># 09:45 第一屏(3 分钟)</span>
+- 看 5 个数字,在不在合理水位
+- 看 P0 / P1 客户卡,确认今日动作
+- 有阻塞 → 立刻处理;无阻塞 → 关闭看板,开干
+
+<span class="c"># 21:00 收尾屏(2 分钟)</span>
+- 看当日完成数 vs 计划
+- 看 P0 是否变更
+- 看 bid-daily-snapshot 落档(给周报用)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: 字段定义 -->
+  <div class="sec">
+    <h2><span class="n">3</span>9 个字段从哪来、谁填</h2>
+    <div class="lede">字段不堆,只填 9 个;每条字段都有明确数据源和负责人。</div>
+
+    <table>
+      <thead>
+        <tr><th style="width:14%">字段</th><th style="width:16%">示例</th><th style="width:18%">数据源</th><th style="width:14%">谁写</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>code</code></td>
+          <td>nfh2026</td>
+          <td>bid-news-collection</td>
+          <td><span class="who-ai">AI</span></td>
+          <td>客户代号,建任务时自动生成(基于 [客户]-[主题]-[YYYYMMDD])</td>
+        </tr>
+        <tr>
+          <td><code>client</code></td>
+          <td>农发行</td>
+          <td>客户主数据表</td>
+          <td><span class="who-h">人</span></td>
+          <td>从 11 家在跑客户中选,首次手动建,后续按 code 关联</td>
+        </tr>
+        <tr>
+          <td><code>stage</code></td>
+          <td><span class="pill p-p1">修订</span></td>
+          <td>人工进度 + AI 推断</td>
+          <td><span class="who-b">协同</span></td>
+          <td>枚举: 跟踪 / 审查 / 报价 / 修订 / 封标 / 述标 / 交付。AI 可基于任务流推断,人确认</td>
+        </tr>
+        <tr>
+          <td><code>priority</code></td>
+          <td><span class="pill p-p1">P1</span></td>
+          <td>AI 自动算</td>
+          <td><span class="who-ai">AI</span></td>
+          <td>P0: T ≤ 3 天 或 重大客户;P1: T ≤ 7 天;P2: 其他。每天 09:30 重算</td>
+        </tr>
+        <tr>
+          <td><code>due_at</code></td>
+          <td>2026-08-16 18:00</td>
+          <td>招标文件</td>
+          <td><span class="who-ai">AI</span></td>
+          <td>bid-file-review 抽取,人确认(防错)</td>
+        </tr>
+        <tr>
+          <td><code>ai_ready</code></td>
+          <td>["差异点比对", "客户化段落"]</td>
+          <td>workbench.run 表</td>
+          <td><span class="who-ai">AI</span></td>
+          <td>已就绪的 AI 产出(JSON 数组)。<b>真实数据</b>,不画饼</td>
+        </tr>
+        <tr>
+          <td><code>human_todo</code></td>
+          <td>["技术方案重写"]</td>
+          <td>AI 推断 + 人调整</td>
+          <td><span class="who-b">协同</span></td>
+          <td>≤ 2 条,只看今天必须人做的;AI 推断,人编辑</td>
+        </tr>
+        <tr>
+          <td><code>block</code></td>
+          <td>报价签字</td>
+          <td>AI 检测 + 人填</td>
+          <td><span class="who-b">协同</span></td>
+          <td>当前阻塞;无阻塞为空。空 = 绿,非空 = 红</td>
+        </tr>
+        <tr>
+          <td><code>last_sync</code></td>
+          <td>09:45:00</td>
+          <td>bid-card-refresh</td>
+          <td><span class="who-ai">AI</span></td>
+          <td>看板刷新时间;超过 1 小时没变 → 告警</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 4: 自动化触发清单 -->
+  <div class="sec">
+    <h2><span class="n">4</span>触发清单 · 让看板"活"起来</h2>
+    <div class="lede">看板不是截图,得有 4 类信号,不然就是死的。</div>
+
+    <div class="cron">
+      <div class="item">
+        <div class="t">CRON · 09:30 1-5</div>
+        <div class="n">① 标讯采集</div>
+        <div class="d"><b>已有</b>。bid-news-collection 拉 40+ 渠道,新商机落 bids 表,priority 默认 P2</div>
+      </div>
+      <div class="item">
+        <div class="t">CRON · 09:45 1-5</div>
+        <div class="n">② 看板刷新</div>
+        <div class="d"><b>新增</b>。bid-card-refresh 遍历所有 bids,重算 priority / 拉 ai_ready / 写 last_sync</div>
+      </div>
+      <div class="item">
+        <div class="t">CRON · 17:00 1-5</div>
+        <div class="n">③ 当日快照</div>
+        <div class="d"><b>新增</b>。bid-daily-snapshot 落执行档案,周五汇总成周报素材</div>
+      </div>
+      <div class="item">
+        <div class="t">EVENT · 实时</div>
+        <div class="n">④ P0 看门狗</div>
+        <div class="d"><b>新增</b>。任何 P0 客户 stage 变化 / block 出现 → 立即推微信(走 lark-im)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: 风险与门禁 -->
+  <div class="sec">
+    <h2><span class="n">5</span>3 个必须躲的坑</h2>
+    <div class="lede">看板做出来很爽,用不起来才亏。三个常见坑:</div>
+
+    <table>
+      <thead><tr><th style="width:18%">坑</th><th style="width:40%">症状</th><th>解法</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>字段假数据</b></td>
+          <td>ai_ready 写"全就绪",实际跑空的——看板绿,人救火</td>
+          <td>ai_ready <b>必须从 workbench.run 真实读</b>。<code>SELECT * FROM runs WHERE bid_code=? AND status='success'</code>。空就是空,别画饼</td>
+        </tr>
+        <tr>
+          <td><b>看板静默失败</b></td>
+          <td>09:30 自动化挂了,看板停更 3 天没人发现</td>
+          <td>last_sync 超 1 小时未变 → 微信告警。看板本身就是"信号源",不是装饰品</td>
+        </tr>
+        <tr>
+          <td><b>看板变信息墙</b></td>
+          <td>字段堆到 30 个,每卡片变成小报告——没人看</td>
+          <td>硬规则: <b>每卡片 ≤ 4 行</b>、<b>每客户今日动作 ≤ 2 条</b>。多就滚动到详情页</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="foot">
+    <code>bid-dashboard-blueprint-20260810.html</code> · 30 分钟字段 + 2 小时前端 + 15 分钟 cron = 一周内能跑
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,2 @@
+{"title": "某基金公司2026年Web应用渗透测试服务采购", "source_url": "https://example.com/t1", "fingerprint": "aa11", "published_at": "2026-09-08", "deadline": "2026-09-30", "amount": null, "score": 90, "recommend": "纳入", "evidence": {"quote": "某基金公司2026年Web应用渗透测试服务采购", "url": "https://example.com/t1"}, "reason": "画像强匹配", "producer": "bid-scout"}
+{"title": "某市局办公运维", "source_url": "https://example.com/t2", "fingerprint": "bb22", "score": 10, "recommend": "排除", "evidence": null, "reason": "行业与领域双维度不符", "producer": "bid-scout"}

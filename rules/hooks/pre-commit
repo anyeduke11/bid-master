@@ -1,0 +1,6 @@
+#!/bin/sh
+# BAW pre-commit：产物入 Git 前必过 make gate（与 set-stage 内嵌门禁同套确定性校验）
+# 安装：make install-hooks   （本文件版本化于 rules/hooks/，.git/hooks/ 中的是副本）
+# 设计依据：docs/baw-design-v3.md §10 "三处挂载：set-stage 内部 / 看板命令 / pre-commit"
+cd "$(git rev-parse --show-toplevel)" || exit 1
+exec make --no-print-directory gate

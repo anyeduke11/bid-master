@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "name": "声明式门禁规则（P1-3）",
+    "note": "本文件是门禁规则与生产者对齐的声明清单；set_stage 编排器按 from/to 选择 check 实现。字段语义同 contracts/gate-matrix.json",
+    "version": 1
+  },
+  "gates": [
+    {"from": "S2", "to": "S3", "checks": ["lessons_applied"], "human": "Go/No-Go 签名"},
+    {"from": "S3", "to": "S4", "checks": ["hits_recon_contract", "response_matrix_present"], "human": "定位抽查 20 条"},
+    {"from": "S4", "to": "S5", "checks": ["completeness_pass", "spec_coverage", "material_match", "verify_draft_pass"], "human": "素材确认"},
+    {"from": "S5", "to": "S6", "checks": ["audit_blocking_zero", "locator_rate", "verify_audit_pass", "sign_off"], "human": "封标放行签核（L3）"},
+    {"from": "S8", "to": "S9", "checks": ["proposal_confirmed", "desensitize_clean", "supersession_complete"], "human": "归档采纳确认"}
+  ]
+}

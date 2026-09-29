@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F1EA"/>
+      <stop offset="1" stop-color="#E8E2D3"/>
+    </linearGradient>
+    <linearGradient id="shield2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#0B7AB8"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(15,20,25,0.06)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <g transform="translate(80,90)">
+    <text font-family="'JetBrains Mono', monospace" font-size="14" letter-spacing="2" fill="#5C6470">DUKE / PORTFOLIO / 2026</text>
+  </g>
+  <g transform="translate(80,160)">
+    <text font-family="Georgia, serif" font-size="108" font-weight="500" letter-spacing="-3" fill="#0F1419">Duke</text>
+    <text y="100" font-family="Georgia, serif" font-size="48" font-weight="400" font-style="italic" fill="#0F1419">网络安全销售 × 独立产品构建者</text>
+    <text y="170" font-family="'Inter', sans-serif" font-size="22" fill="#5C6470">10 年金融安全 · bid-board · SecNews · 零依赖工具链</text>
+  </g>
+  <g transform="translate(1020,440)">
+    <path d="M0 0 L40 12 V60 C40 92 22 116 0 132 C-22 116 -40 92 -40 60 V12 Z" fill="url(#shield2)" transform="scale(1.2)"/>
+    <path d="M-18 8 L-4 22 L20 -10" fill="none" stroke="#0F1419" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" transform="scale(1.2)"/>
+  </g>
+  <g transform="translate(80,560)">
+    <text font-family="'JetBrains Mono', monospace" font-size="13" letter-spacing="1.5" fill="#5C6470">SHENZHEN · MACOS · REMOTE</text>
+  </g>
+</svg>

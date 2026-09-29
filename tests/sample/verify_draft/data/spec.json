@@ -1,0 +1,7 @@
+{
+  "scoring_points": [
+    {"id": "SP-T1", "chapter": "chT", "material_ptrs": ["kb/slices/demo.md#L1-L5"], "cites": ["P12", "P14"]},
+    {"id": "SP-T2", "chapter": "chT", "material_ptrs": [], "cites": ["P14"]}
+  ],
+  "chapters": [{"chapter": "chT", "word_min": 50, "word_max": 400}]
+}

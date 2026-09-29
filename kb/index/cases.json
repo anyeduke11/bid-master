@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "domain": "cases",
+    "version": 1,
+    "desc": "业绩案例占位（待人工从商务标拆条）",
+    "item_fields": [
+      "id",
+      "client_industry",
+      "client_alias",
+      "year",
+      "scene",
+      "amount_band",
+      "file",
+      "slices",
+      "fingerprint",
+      "sensitivity",
+      "updated_at"
+    ],
+    "updated_at": "2026-09-10T16:08:12+08:00",
+    "rule": "只存元数据与文件指针；证件号/证书编号/成本价等 L3 信息不落索引（设计§14）"
+  },
+  "items": [
+    {
+      "id": "CASE-001",
+      "client_alias": "某证券通信机构",
+      "industry": "证券通信",
+      "year": 2026,
+      "scene": [
+        "安全技术支持"
+      ],
+      "amount_band": null,
+      "file": "kb/raw/past-bids/2026-GOLD-jishu/bid_2_business.txt",
+      "fingerprint": "sha256:ad618820a629d9994b209545b204d2bc10fc3428b3a063fadfade7fb254d8cff",
+      "slices": [],
+      "sensitivity": "L2",
+      "status": "draft 待人工拆条（商务标业绩章节→逐案例切片）",
+      "updated_at": "2026-09-10T16:08:12+08:00"
+    }
+  ]
+}

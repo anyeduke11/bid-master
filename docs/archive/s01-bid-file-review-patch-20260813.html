@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>S-01 bid-file-review 改造 patch · Duke · 2026-08-13</title>
+<style>
+  :root {
+    --bg: #F0F7FF;
+    --bg-soft: #E6F1FB;
+    --card: #FFFFFF;
+    --line: #DCE7F2;
+    --ink: #0F1E33;
+    --ink-soft: #4A5A75;
+    --ink-mute: #7A8AA0;
+    --brand: #0EA5E9;
+    --brand-deep: #0369A1;
+    --brand-soft: #E0F2FE;
+    --accent: #6366F1;
+    --accent-soft: #EEF2FF;
+    --ok: #10B981;
+    --ok-soft: #D1FAE5;
+    --warn: #F59E0B;
+    --warn-soft: #FEF3C7;
+    --warn-ink: #92400E;
+    --danger: #EF4444;
+    --danger-soft: #FEE2E2;
+    --add: #DCFCE7;
+    --add-line: #86EFAC;
+    --shadow: 0 1px 2px rgba(15,30,51,.04), 0 8px 24px rgba(15,30,51,.06);
+    --r: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65; font-size: 14px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  .hero {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 30px 36px; box-shadow: var(--shadow);
+    margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(14,165,233,.15), transparent 70%);
+  }
+  .hero .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em;
+    color: var(--brand-deep); background: var(--brand-soft);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .hero h1 { font-size: 26px; margin: 12px 0 4px; font-weight: 700; }
+  .hero .sub { color: var(--ink-soft); font-size: 14px; }
+
+  .sec { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 26px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--bg-soft); }
+  .sec-title .n { background: var(--brand); color: white; width: 26px; height: 26px;
+    border-radius: 7px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; }
+  .sec-title .file-tag {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    background: var(--bg-soft); color: var(--brand-deep);
+    padding: 3px 10px; border-radius: 5px; margin-left: 6px;
+  }
+  .sec-title .action {
+    margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+  }
+  .action.new { background: var(--add); color: #065F46; }
+  .action.mod { background: var(--warn-soft); color: var(--warn-ink); }
+  .action.skip { background: var(--bg-soft); color: var(--ink-mute); }
+  .sec-lede { color: var(--ink-soft); font-size: 13px; margin: 8px 0 12px; }
+
+  .st { font-size: 14.5px; font-weight: 700; margin: 14px 0 6px; display: flex; align-items: center; gap: 8px; color: var(--ink); }
+  .st::before { content: ""; width: 3px; height: 14px; background: var(--brand); border-radius: 2px; }
+
+  pre.code {
+    background: #0F1E33; color: #E6F1FB; padding: 14px 16px;
+    border-radius: 8px; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0;
+  }
+  pre.code .c { color: #94A3B8; }
+  pre.code .k { color: #C7D2FE; }
+  pre.code .s { color: #FDE68A; }
+  pre.code .v { color: #7DD3FC; }
+  pre.code .f { color: #6EE7B7; }
+  pre.code .n { color: #FCA5A5; }
+  pre.code .w { color: #FDE68A; background: rgba(245,158,11,.15); padding: 0 4px; border-radius: 3px; }
+  pre.code .a { color: #6EE7B7; }
+  pre.code .b { color: #94A3B8; }
+
+  .copy-hint {
+    background: var(--brand-soft); color: var(--brand-deep);
+    padding: 8px 12px; border-radius: 6px; font-size: 12.5px; margin: 6px 0;
+    border-left: 3px solid var(--brand);
+  }
+  .copy-hint b { color: var(--brand-deep); }
+
+  .ip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .ip {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    padding: 10px 14px; border-radius: 6px;
+  }
+  .ip .label { font-size: 11px; color: var(--brand-deep); font-weight: 700; letter-spacing: .04em; }
+  .ip .where { font-size: 13px; font-weight: 600; margin: 2px 0; }
+  .ip .what { font-size: 12.5px; color: var(--ink-soft); }
+  .ip .what code { font-family: "SF Mono", monospace; font-size: 11.5px;
+    background: white; padding: 1px 5px; border-radius: 3px; color: var(--brand-deep); }
+
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .risk {
+    background: white; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .risk.crit { border-left: 3px solid var(--danger); }
+  .risk.warn { border-left: 3px solid var(--warn); }
+  .risk h5 { margin: 0 0 4px; font-size: 13px; }
+  .risk p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+
+  .decision {
+    background: var(--accent-soft); border: 1px solid #C7D2FE;
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+  }
+  .decision h4 { margin: 0 0 6px; color: var(--accent); font-size: 14px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { text-align: left; padding: 9px 12px; background: var(--bg-soft);
+    color: var(--brand-deep); font-weight: 700; font-size: 12px;
+    border-bottom: 1px solid var(--line); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFCFE; }
+
+  @media (max-width: 900px) {
+    .ip-grid, .risk-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 20px 14px 60px; }
+    .sec { padding: 18px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">S-01 · BID-FILE-REVIEW PATCH · 2026-08-13</span>
+    <h1>S-01 改造 patch · 不动 5 个现有 scripts · 只加 1 个同步脚本 + SKILL.md 改 5 处</h1>
+    <div class="sub">3 天估时 · 每个标书评审自动推动 5 次看板写入 · 失败兜底入本地队列</div>
+  </div>
+
+  <!-- 总览 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">0</span>改造总览</div>
+    <div class="sec-lede">关键设计:不动 1375 行的 generate_audit_xlsx.py / 1577 行的 ocr_bid_images.py(避免回归风险),所有集成点通过 <b>SKILL.md 指引 AI 在 5 个节点调 review_sync.py</b>。</div>
+
+    <table>
+      <thead><tr><th>#</th><th>文件</th><th>动作</th><th>行数</th><th>关键点</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>scripts/bidboard_client.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新增</span></td><td>~90 行</td><td>与 S-02 同款,直接复制</td></tr>
+        <tr><td>2</td><td><code>scripts/review_sync.py</code></td><td><span class="pill" style="background: var(--add); color: #065F46; font-size: 11px; padding: 1px 6px;">新增</span></td><td>~150 行</td><td>单次执行,接受 --stage/--code/--count/--critical 参数</td></tr>
+        <tr><td>3</td><td><code>SKILL.md</code></td><td><span class="pill" style="background: var(--warn-soft); color: var(--warn-ink); font-size: 11px; padding: 1px 6px;">改 5 处</span></td><td>+ ~50 行</td><td>5 个节点加 BidBoard 集成指引</td></tr>
+        <tr><td>4</td><td><code>scripts/ocr_bid_images.py</code></td><td><span class="pill" style="background: var(--bg-soft); color: var(--ink-mute); font-size: 11px; padding: 1px 6px;">不动</span></td><td>—</td><td>通过 SKILL.md 指引 AI 在 OCR 完成后调 review_sync,不动原代码</td></tr>
+        <tr><td>5</td><td><code>scripts/generate_audit_xlsx.py</code></td><td><span class="pill" style="background: var(--bg-soft); color: var(--ink-mute); font-size: 11px; padding: 1px 6px;">不动</span></td><td>—</td><td>同 4,SKILL.md 指引</td></tr>
+        <tr><td>6</td><td><code>scripts/generate_review_xlsx.py</code></td><td><span class="pill" style="background: var(--bg-soft); color: var(--ink-mute); font-size: 11px; padding: 1px 6px;">不动</span></td><td>—</td><td>同 4,SKILL.md 指引</td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>💡 改造核心思路</h4>
+      <p>bid-file-review 是 <b>"AI 直接读 SKILL.md 执行"</b> 的模式(没有 run.py)。所以改造 = <b>改 SKILL.md 给 AI 5 个新指令</b>,外加 1 个独立 wrapper 脚本。每个 wrapper 调 1 次 API 写看板,失败入队列。</p>
+      <p style="margin-top: 6px;"><b>关键:不动现有 5 个 scripts</b>。它们的 1375/1577 行代码已经在生产环境跑通,任何修改都引入回归风险。SKILL.md 指引 AI 在调这些脚本的<b>前后</b>调 review_sync.py 即可。</p>
+    </div>
+  </div>
+
+  <!-- 文件 1: bidboard_client.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">1</span>文件 1 · <span class="file-tag">scripts/bidboard_client.py</span>
+      <span class="action new">新增</span>
+    </div>
+    <div class="sec-lede">与 S-02 bid-news-collection 的 wrapper 完全一样。<b>直接复制 S-02 patch 文档里 §1 的代码</b>。</div>
+    <div class="copy-hint"><b>操作</b>:<code>cp ~/.workbuddy/skills/bid-news-collection/scripts/bidboard_client.py ~/.workbuddy/skills/bid-file-review/scripts/</code></div>
+  </div>
+
+  <!-- 文件 2: review_sync.py -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">2</span>文件 2 · <span class="file-tag">scripts/review_sync.py</span>
+      <span class="action new">新增</span>
+    </div>
+    <div class="sec-lede">单次执行,接受 5 类参数,任意时刻 AI 跑完评审流程后调一次。</div>
+    <div class="copy-hint"><b>操作</b>:<code>touch scripts/review_sync.py</code>,复制下面整段。</div>
+
+<pre class="code"><span class="c">#!/usr/bin/env python3</span>
+<span class="c">"""
+review_sync.py · bid-file-review 收尾同步
+用法:
+  # 5 类场景,任意时机调一次
+  python3 review_sync.py --stage audit        --code dgyhst2026
+  python3 review_sync.py --stage ocr          --code dgyhst2026 --count 12
+  python3 review_sync.py --stage review       --code dgyhst2026
+  python3 review_sync.py --stage report       --code dgyhst2026 --output /path/to/报告.md
+  python3 review_sync.py --stage critical     --code dgyhst2026 --reason "缺 ★条款响应"
+  python3 review_sync.py --stage done         --code dgyhst2026  # 全部完成,推 stage=修订
+
+每个 --stage 对应一个 BidBoard API 调用 + 一条事件日志。
+"""
+import argparse, json, sys
+from pathlib import Path
+
+SKILL_DIR = Path(__file__).resolve().parent.parent
+
+
+def <span class="f">main</span>():
+    ap = argparse.ArgumentParser(
+        description=<span class="s">"bid-file-review → BidBoard 同步"</span>,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(<span class="s">"--code"</span>, required=<span class="k">True</span>, help=<span class="s">"客户代号,如 dgyhst2026"</span>)
+    ap.add_argument(<span class="s">"--stage"</span>, required=<span class="k">True</span>,
+        choices=[<span class="s">"audit"</span>, <span class="s">"ocr"</span>, <span class="s">"review"</span>, <span class="s">"report"</span>, <span class="s">"critical"</span>, <span class="s">"done"</span>],
+        help=<span class="s">"评审阶段"</span>)
+    ap.add_argument(<span class="s">"--count"</span>, type=<span class="k">int</span>, help=<span class="s">"OCR 提取张数(仅 --stage ocr 用)"</span>)
+    ap.add_argument(<span class="s">"--reason"</span>, help=<span class="s">"废标原因(仅 --stage critical 用)"</span>)
+    ap.add_argument(<span class="s">"--output"</span>, help=<span class="s">"报告文件路径(仅 --stage report 用)"</span>)
+    ap.add_argument(<span class="s">"--dry-run"</span>, action=<span class="s">"store_true"</span>, help=<span class="s">"只打印,不发请求"</span>)
+    args = ap.parse_args()
+
+    <span class="c"># 延迟 import</span>
+    <span class="k">if</span> <span class="k">not</span> args.dry_run:
+        <span class="k">from</span> bidboard_client <span class="k">import</span> (
+            add_ai_ready, set_stage, set_block, set_human_todo
+        )
+    <span class="k">else</span>:
+        <span class="c"># dry-run 模式不调 API</span>
+        <span class="k">class</span> <span class="v">_Stub</span>:
+            <span class="k">def</span> <span class="f">__getattr__</span>(<span class="k">self</span>, name):
+                <span class="k">return</span> <span class="k">lambda</span> *a, **k: {<span class="s">"ok"</span>: <span class="k">True</span>, <span class="s">"dry"</span>: <span class="k">True</span>, <span class="s">"call"</span>: name}
+        add_ai_ready = set_stage = set_block = set_human_todo = <span class="v">_Stub</span>()
+
+    <span class="v">results</span> = []
+    <span class="v">code</span> = args.code
+
+    <span class="k">if</span> args.stage == <span class="s">"audit"</span>:
+        <span class="c"># 阶段零:招标审计通过</span>
+        r = <span class="f">add_ai_ready</span>(code, <span class="s">"招标审计通过(15 项)"</span>, <span class="s">"bid-file-review"</span>)
+        results.append((<span class="s">"audit"</span>, r))
+
+    <span class="k">elif</span> args.stage == <span class="s">"ocr"</span>:
+        <span class="c"># 步骤二:OCR 强制提取完成</span>
+        count = args.count <span class="k">or</span> <span class="n">0</span>
+        r = <span class="f">add_ai_ready</span>(code, <span class="s">f"OCR 提取 {count} 张图片"</span>, <span class="s">"bid-file-review"</span>)
+        results.append((<span class="s">"ocr"</span>, r))
+
+    <span class="k">elif</span> args.stage == <span class="s">"review"</span>:
+        <span class="c"># 步骤三~六:P1~P7 评审完</span>
+        r = <span class="f">add_ai_ready</span>(code, <span class="s">"100+ 项检查完成(P1~P7)"</span>, <span class="s">"bid-file-review"</span>)
+        results.append((<span class="s">"review"</span>, r))
+
+    <span class="k">elif</span> args.stage == <span class="s">"report"</span>:
+        <span class="c"># 步骤七:最终报告输出</span>
+        output = args.output <span class="k">or</span> <span class="s">""</span>
+        item = <span class="s">f"评审报告已生成"</span>
+        <span class="k">if</span> output:
+            item += <span class="s">f": {Path(output).name}"</span>
+        r = <span class="f">add_ai_ready</span>(code, item, <span class="s">"bid-file-review"</span>)
+        results.append((<span class="s">"report"</span>, r))
+        <span class="c"># 报告输出后,把 stage 推"修订",给 Duke 看</span>
+        r2 = <span class="f">set_stage</span>(code, <span class="s">"修订"</span>)
+        results.append((<span class="s">"stage→修订"</span>, r2))
+        <span class="c"># 提示人工做差异点比对</span>
+        r3 = <span class="f">set_human_todo</span>(code, [<span class="s">"审阅评审报告"</span>, <span class="s">"差异点比对"</span>])
+        results.append((<span class="s">"human_todo"</span>, r3))
+
+    <span class="k">elif</span> args.stage == <span class="s">"critical"</span>:
+        <span class="c"># 检测到废标条款 → 阻塞</span>
+        reason = args.reason <span class="k">or</span> <span class="s">"未指定"</span>
+        r = <span class="f">set_block</span>(code, <span class="s">f"废标风险: {reason}"</span>)
+        results.append((<span class="s">"block"</span>, r))
+        r2 = <span class="f">add_ai_ready</span>(code, <span class="s">f"⚠ 检测到废标条款: {reason}"</span>, <span class="s">"bid-file-review"</span>)
+        results.append((<span class="s">"critical"</span>, r2))
+
+    <span class="k">elif</span> args.stage == <span class="s">"done"</span>:
+        <span class="c"># 全部完成,清理阻塞,推 stage='封标'</span>
+        r = <span class="f">set_block</span>(code, <span class="s">""</span>)
+        results.append((<span class="s">"clear_block"</span>, r))
+        r2 = <span class="f">add_ai_ready</span>(code, <span class="s">"评审完成,可进入下一阶段"</span>, <span class="s">"bid-file-review"</span>)
+        results.append((<span class="s">"done"</span>, r2))
+
+    <span class="c"># 打印结果</span>
+    <span class="k">if</span> args.dry_run:
+        <span class="f">print</span>(<span class="s">"🔍 DRY RUN — 模拟执行:"</span>)
+    ok_n = fail_n = <span class="n">0</span>
+    <span class="k">for</span> name, r <span class="k">in</span> results:
+        <span class="k">if</span> r.get(<span class="s">"ok"</span>):
+            ok_n += <span class="n">1</span>
+            <span class="k">if</span> r.get(<span class="s">"dry"</span>):
+                <span class="f">print</span>(<span class="s">f"  · [DRY] {name}"</span>)
+            <span class="k">elif</span> r.get(<span class="s">"queued"</span>):
+                <span class="f">print</span>(<span class="s">f"  ⏳ {name}: 已入队列"</span>)
+            <span class="k">else</span>:
+                <span class="f">print</span>(<span class="s">f"  ✓ {name}: 成功"</span>)
+        <span class="k">else</span>:
+            fail_n += <span class="n">1</span>
+            <span class="f">print</span>(<span class="s">f"  ✗ {name}: {r.get('err')}"</span>)
+
+    <span class="f">print</span>(<span class="s">f"\n=== 同步完成: {ok_n} 成功, {fail_n} 失败 ==="</span>)
+    sys.exit(<span class="n">0</span> <span class="k">if</span> fail_n == <span class="n">0</span> <span class="k">else</span> <span class="n">1</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="f">main</span>()
+</pre>
+  </div>
+
+  <!-- 文件 3: SKILL.md 改 5 处 -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">3</span>文件 3 · <span class="file-tag">SKILL.md</span>
+      <span class="action mod">改 5 处</span>
+    </div>
+    <div class="sec-lede">在 SKILL.md 的 5 个关键节点末尾,加 <b>"## BidBoard 同步(必须)"</b> 章节,指引 AI 调 review_sync.py。</div>
+
+    <h3 class="st">3.1 集成点 A · 阶段零(招标审计)通过后</h3>
+    <div class="ip-grid">
+      <div class="ip">
+        <div class="label">位置</div>
+        <div class="where">SKILL.md §步骤一 末尾(第 119 行后)</div>
+        <div class="what">AI 完成 15 项核对单生成后调</div>
+      </div>
+      <div class="ip">
+        <div class="label">命令</div>
+        <div class="where">单条</div>
+        <div class="what"><code>python3 scripts/review_sync.py --stage audit --code &lt;code&gt;</code></div>
+      </div>
+    </div>
+
+    <div class="copy-hint"><b>插入位置</b>:第 119 行(<code>仅阶段零结论为"通过",方可进入后续阶段</code>)后,空一行,粘贴下面这段。</div>
+
+<pre class="code">## BidBoard 同步(必须 · 阶段零)
+
+阶段零 15 项核对单生成后,自动调 review_sync 推看板:
+
+```bash
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage audit \
+  --code "${bid_code}"   # 从用户传入的客户代号
+```
+
+**作用**:看板对应客户卡 ai_ready 数组追加 <code>"招标审计通过(15 项)"</code>。</pre>
+
+    <h3 class="st">3.2 集成点 B · 步骤二 OCR 强制提取完成后</h3>
+    <div class="ip-grid">
+      <div class="ip">
+        <div class="label">位置</div>
+        <div class="where">SKILL.md §2.2 OCR 末尾(第 152 行后)</div>
+        <div class="what">AI 跑完 <code>ocr_bid_images.py --docx</code> 后调</div>
+      </div>
+      <div class="ip">
+        <div class="label">命令</div>
+        <div class="where">带张数</div>
+        <div class="what"><code>--count N</code> 从 OCR JSON 读 N 张</div>
+      </div>
+    </div>
+
+    <div class="copy-hint"><b>插入位置</b>:第 152 行后,空一行,粘贴。</div>
+
+<pre class="code">## BidBoard 同步(必须 · OCR 完成后)
+
+`ocr_bid_images.py --docx` 跑完后,自动调 review_sync 推看板:
+
+```bash
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage ocr \
+  --code "${bid_code}" \
+  --count $(jq '. | length' ocr_result.json)   # 从 OCR JSON 读张数
+```
+
+**作用**:看板追加 <code>"OCR 提取 N 张图片"</code>。若张数 = 0,看板会标红(说明 PDF 内嵌图片丢失,需人工介入)。</pre>
+
+    <h3 class="st">3.3 集成点 C · 步骤三~六 P1~P7 评审完成</h3>
+    <div class="ip-grid">
+      <div class="ip">
+        <div class="label">位置</div>
+        <div class="where">SKILL.md §步骤三~六 末尾(第 216 行后)</div>
+        <div class="what">P1~P7 全部评审完调</div>
+      </div>
+      <div class="ip">
+        <div class="label">命令</div>
+        <div class="where">单条</div>
+        <div class="what"><code>--stage review</code></div>
+      </div>
+    </div>
+
+    <div class="copy-hint"><b>插入位置</b>:第 216 行(<code>问题清单自动输出(P7 阶段后自动触发)</code>)后,空一行,粘贴。</div>
+
+<pre class="code">## BidBoard 同步(必须 · P1~P7 评审完)
+
+P1~P7 7 阶段全部评审完,问题清单生成后,调 review_sync 推看板:
+
+```bash
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage review \
+  --code "${bid_code}"
+```
+
+**作用**:看板追加 <code>"100+ 项检查完成(P1~P7)"</code>。Duke 一眼看到此行就知道评审通过。</pre>
+
+    <h3 class="st">3.4 集成点 D · 步骤七 最终报告输出</h3>
+    <div class="ip-grid">
+      <div class="ip">
+        <div class="label">位置</div>
+        <div class="where">SKILL.md §7.2 报告生成末尾(第 232 行后)</div>
+        <div class="what">生成 {项目名}_评审报告.md 后调</div>
+      </div>
+      <div class="ip">
+        <div class="label">命令</div>
+        <div class="where">带 output</div>
+        <div class="what"><code>--output /path/to/报告.md</code></div>
+      </div>
+    </div>
+
+    <div class="copy-hint"><b>插入位置</b>:第 232 行(<code>汇总所有阶段评审结果,生成最终评审报告。</code>)后,空一行,粘贴。</div>
+
+<pre class="code">## BidBoard 同步(必须 · 最终报告输出)
+
+最终评审报告生成后,调 review_sync 推看板 + 推 stage="修订" + 提示人做差异点比对:
+
+```bash
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage report \
+  --code "${bid_code}" \
+  --output "${报告文件路径}"
+```
+
+**作用**:3 个 API 调用一次完成:
+1. <code>addAiReady(code, "评审报告已生成: X.md")</code>
+2. <code>setStage(code, "修订")</code> ← 客户从"审查"推到"修订"
+3. <code>setHumanTodo(code, ["审阅评审报告", "差异点比对"])</code> ← Duke 9:45 第一屏看到这条</pre>
+
+    <h3 class="st">3.5 集成点 E · 检测到废标条款(条件触发)</h3>
+    <div class="ip-grid">
+      <div class="ip">
+        <div class="label">位置</div>
+        <div class="where">SKILL.md §步骤三~六 任意阶段末尾</div>
+        <div class="what">检测出 ❌ 废标条款时调</div>
+      </div>
+      <div class="ip">
+        <div class="label">命令</div>
+        <div class="where">带 reason</div>
+        <div class="what"><code>--reason '...'</code> 简要说明</div>
+      </div>
+    </div>
+
+    <div class="copy-hint"><b>插入位置</b>:第 216 行(集成点 C)同一段末尾,<b>追加下面这段</b>(独立小节,不是替换 C)。</div>
+
+<pre class="code">## BidBoard 同步(条件触发 · 废标条款)
+
+在 P1~P7 任一阶段,如果检测出 <code>❌ 不合格</code>(特别是 ★ 条款未响应),<b>立即</b>调:
+
+```bash
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage critical \
+  --code "${bid_code}" \
+  --reason "★ 条款 X.Y 未响应"
+```
+
+**作用**:2 个 API 调用:
+1. <code>setBlock(code, "废标风险: ★ 条款 X.Y 未响应")</code> ← 看板红闪
+2. <code>addAiReady(code, "⚠ 检测到废标条款: ...")</code> ← 时间线留痕
+
+**P0 看门狗会立即推微信**(<code>p0-watcher</code> Skill 自动接,无需额外配置)。</pre>
+  </div>
+
+  <!-- 文件 4-6: 不动现有 scripts -->
+  <div class="sec">
+    <div class="sec-title">
+      <span class="n">4</span>文件 4-6 · <span class="file-tag">scripts/ocr_bid_images.py 等 5 个</span>
+      <span class="action skip">不动</span>
+    </div>
+    <div class="sec-lede"><b>核心决策</b>:这 5 个脚本已生产环境跑通(尤其 generate_audit_xlsx.py 1375 行 / ocr_bid_images.py 1577 行),任何修改都引入回归风险。</div>
+    <table>
+      <thead><tr><th>文件</th><th>行数</th><th>为何不动</th></tr></thead>
+      <tbody>
+        <tr><td><code>ocr_bid_images.py</code></td><td>1577</td><td>已稳定,改风险高;通过 SKILL.md 指引 AI 在调用它<b>之后</b>调 review_sync</td></tr>
+        <tr><td><code>generate_audit_xlsx.py</code></td><td>1375</td><td>同上,通过 SKILL.md 指引</td></tr>
+        <tr><td><code>generate_review_xlsx.py</code></td><td>953</td><td>同上</td></tr>
+        <tr><td><code>extract_image_metadata.py</code></td><td>317</td><td>辅助工具,无需集成</td></tr>
+        <tr><td><code>docx_link_extractor.py</code></td><td>196</td><td>辅助工具,无需集成</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size: 13px; color: var(--ink-soft); margin-top: 8px;">⚠ <b>升级路径</b>:P1 阶段(60 天后)如果看板数据稳定,可以考虑在 5 个脚本末尾追加 "auto_call_review_sync" hook。但 P0 不做。</p>
+  </div>
+
+  <!-- 测试 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">5</span>测试步骤(必须全过)</div>
+
+    <h3 class="st">5.1 单元测试:wrapper + review_sync 都能 import</h3>
+<pre class="code"><span class="c"># 1. 验证 wrapper 复制成功</span>
+ls -la ~/.workbuddy/skills/bid-file-review/scripts/bidboard_client.py
+python3 -c <span class="s">"import sys; sys.path.insert(0, '~/.workbuddy/skills/bid-file-review/scripts'); from bidboard_client import create; print('wrapper OK')"</span>
+
+<span class="c"># 2. 验证 review_sync 能跑(无 workbench 也能 --help)</span>
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py --help
+</pre>
+
+    <h3 class="st">5.2 dry-run 全部 5 个 stage(workbench 不起也行)</h3>
+<pre class="code"><span class="c"># 5 类 stage 各跑一次</span>
+for stage in audit ocr review report critical; do
+  python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+    --stage $stage --code dgyhst2026 --dry-run
+  echo "---"
+done
+
+<span class="c"># 期望:每个 stage 输出 "🔍 DRY RUN — 模拟执行",无报错</span>
+</pre>
+
+    <h3 class="st">5.3 端到端测试(workbench 必须起着)</h3>
+<pre class="code"><span class="c"># 1. 启动 workbench(另一终端)</span>
+workbuddy start
+
+<span class="c"># 2. 单 stage 真实推送</span>
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage audit --code dgyhst2026
+
+<span class="c"># 3. 打开 bid-board-v2-20260810.html 看东莞银行卡</span>
+open bid-board-v2-20260810.html
+<span class="c"># 期望:东莞卡 ai_ready 多一项 "招标审计通过(15 项)"</span>
+
+<span class="c"># 4. 测试 critical 阶段(触发 P0 告警)</span>
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage critical --code dgyhst2026 \
+  --reason "★ 条款 P3.2 未响应"
+<span class="c"># 期望:东莞卡 block 字段变红,P0 看门狗(若启用)推微信</span>
+</pre>
+
+    <h3 class="st">5.4 失败兜底测试</h3>
+<pre class="code"><span class="c"># 1. 停掉 workbench</span>
+workbuddy stop
+
+<span class="c"># 2. 跑 review_sync(workbench 不通)</span>
+python3 ~/.workbuddy/skills/bid-file-review/scripts/review_sync.py \
+  --stage report --code dgyhst2026 --output /tmp/test.md
+
+<span class="c"># 3. 期望:不崩,输出 "⏳ 已入队列" 3 行(因为 stage=report 调 3 个 API)</span>
+<span class="c"># 4. 检查队列</span>
+cat ~/.bidboard_queue.jsonl | wc -l
+
+<span class="c"># 5. 启动 workbench,跑 replay</span>
+workbuddy start
+python3 ~/.workbuddy/skills/bid-file-review/scripts/bidboard_client.py replay
+</pre>
+
+    <h3 class="st">5.5 真实场景:跑一份标书全流程</h3>
+<pre class="code"><span class="c"># AI 按 SKILL.md 执行评审,关键节点调 5 个 review_sync:</span>
+
+<span class="c"># 阶段零通过</span>
+python3 scripts/review_sync.py --stage audit --code dgyhst2026
+
+<span class="c"># OCR 跑完(假设提取 12 张)</span>
+python3 scripts/ocr_bid_images.py ./东莞银行投标文件.docx --docx
+python3 scripts/review_sync.py --stage ocr --code dgyhst2026 --count 12
+
+<span class="c"># P1~P7 评审完(无废标)</span>
+python3 scripts/review_sync.py --stage review --code dgyhst2026
+
+<span class="c"># 最终报告输出</span>
+python3 scripts/generate_review_xlsx.py --data review_data.json --output 评审记录表.xlsx
+python3 scripts/review_sync.py --stage report --code dgyhst2026 --output 评审报告.md
+
+<span class="c"># 期望:东莞卡 4 项 ai_ready,stage='修订',human_todo=['审阅评审报告','差异点比对']</span>
+</pre>
+  </div>
+
+  <!-- 风险 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">6</span>风险与回滚</div>
+    <div class="risk-grid">
+      <div class="risk crit">
+        <h5>🔴 AI 不调 review_sync</h5>
+        <p>SKILL.md 加了指引但 AI 不一定照做。<br><b>缓解</b>:每次跑完整标书后,人工抽查事件流(底部)是否出现 <code>bid-file-review</code> 来源;不出现就强制再调。</p>
+      </div>
+      <div class="risk warn">
+        <h5>🟡 --code 传错</h5>
+        <p>AI 拼错客户代号,写入错误的客户卡。<br><b>缓解</b>:review_sync 接受任何 code,看板有重复 code 时手动合并。</p>
+      </div>
+      <div class="risk crit">
+        <h5>🔴 critical 误触发</h5>
+        <p>AI 把"扣 5 分"当成"废标",刷出红色告警。<br><b>缓解</b>:review_sync 接受 Duke 手动 setBlock('') 解除,误报可秒消。</p>
+      </div>
+      <div class="risk mid">
+        <h5>🔵 OCR 集成点跳过</h5>
+        <p>某些场景 AI 觉得 OCR 没必要做(如投标文件纯文本),跳过 review_sync --stage ocr。<br><b>缓解</b>:是 OK 的,只少一项 ai_ready 不影响整体。</p>
+      </div>
+    </div>
+
+    <h3 class="st">6.1 回滚</h3>
+    <ol style="font-size: 13.5px; color: var(--ink-soft); padding-left: 20px; line-height: 1.8;">
+      <li>删除 <code>scripts/bidboard_client.py</code> 和 <code>scripts/review_sync.py</code></li>
+      <li>把 SKILL.md 末尾追加的 5 个 "## BidBoard 同步" 章节删除(用 git diff 撤回或手工)</li>
+      <li>不动 5 个现有 scripts(它们本来就没改)</li>
+      <li>清除队列 <code>rm ~/.bidboard_queue.jsonl</code></li>
+    </ol>
+  </div>
+
+  <!-- 对比 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">7</span>改造前后对比</div>
+    <table>
+      <thead><tr><th>维度</th><th>改造前</th><th>改造后</th></tr></thead>
+      <tbody>
+        <tr><td>评审跑完,Duke 感知</td><td>翻 {项目名}_评审报告.md 找结论</td><td>看板 ai_ready 自动 4 项,Duke 9:45 一眼看</td></tr>
+        <tr><td>废标风险</td><td>评审报告里 ❌ 一行,容易被忽略</td><td>看板红色 + P0 微信告警(Duke 立刻知道)</td></tr>
+        <tr><td>阶段推进</td><td>AI 标"已完成",靠记忆</td><td>stage 字段自动 '审查'→'修订'→'封标'→'述标'</td></tr>
+        <tr><td>人工待办</td><td>Duke 记"要看报告"</td><td>human_todo 自动写入看板,Duke 第一屏看到</td></tr>
+        <tr><td>OCR 漏跑</td><td>图片证据丢失,结论失真</td><td>ai_ready 标 0 张 → 看板红,Duke 立刻知道</td></tr>
+        <tr><td>代码改动</td><td>—</td><td><b>0 个现有脚本改 + 1 个新 wrapper + 1 个新 sync + SKILL.md 5 处小节</b></td></tr>
+      </tbody>
+    </table>
+
+    <div class="decision">
+      <h4>📋 改造清单速查</h4>
+      <p>总耗时 <b>3 天</b>(实操 1.5 天可完成,如果 wrapper 已从 S-02 复制):</p>
+      <ul style="margin: 6px 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft);">
+        <li>第 1 天上午:<code>cp bidboard_client.py</code> + 新建 review_sync.py</li>
+        <li>第 1 天下午:SKILL.md 改 5 处(每处 5-10 行,粘贴 5 段小节)</li>
+        <li>第 2 天:5 个 stage 各跑一次 dry-run + 真实推送测试</li>
+        <li>第 3 天:真实标书评审,验证 5 个节点都触发,看板入 4 项 ai_ready</li>
+      </ul>
+      <p style="margin-top: 6px;"><b>回滚成本极低</b>(删除 2 个文件 + SKILL.md 5 段),可以快速试错。</p>
+    </div>
+  </div>
+
+  <!-- 与 S-02 的联动 -->
+  <div class="sec">
+    <div class="sec-title"><span class="n">8</span>与 S-02 的联动(已部署后)</div>
+    <div class="sec-lede">S-02(bid-news-collection)采集的新商机 → 进入 S-01(bid-file-review)评审 → 看板数据从 0 涨到 1 涨到 100。</div>
+
+    <h3 class="st">8.1 完整端到端流</h3>
+    <table>
+      <thead><tr><th>阶段</th><th>Skill</th><th>推到看板的事件</th><th>Duke 在看板看到</th></tr></thead>
+      <tbody>
+        <tr><td>1. 标讯采集</td><td>bid-news-collection (S-02)</td><td><code>create</code> 新商机入 bids / 老项目 setStage</td><td>新客户卡出现,priority 自动算</td></tr>
+        <tr><td>2. 招标文件下载</td><td>人工</td><td>—</td><td>—</td></tr>
+        <tr><td>3. 标书评审</td><td>bid-file-review (S-01)</td><td>5 个 review_sync 调用,4 项 ai_ready + stage 推进 + 阻塞</td><td>客户卡逐步高亮,最终 stage='修订'</td></tr>
+        <tr><td>4. 报价</td><td>quote-generation-v3 (S-03)</td><td><code>addAiReady</code> + <code>setBlock</code></td><td>BOM v1 出现,签字阻塞</td></tr>
+        <tr><td>5. 封标前门禁</td><td>gate-checker (S-06)</td><td><code>addAiReady</code> / <code>setBlock</code></td><td>门禁全过 / 不全过</td></tr>
+        <tr><td>6. 封标完成</td><td>人工 / S-06</td><td><code>setStage('封标')</code></td><td>客户卡从 P0 转 P2,卡片变绿</td></tr>
+        <tr><td>7. 讲标</td><td>人工</td><td><code>setStage('述标')</code></td><td>—</td></tr>
+        <tr><td>8. 公示 + 复盘</td><td>人工</td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align: center; color: var(--ink-mute); font-size: 12px; margin-top: 32px;">
+    <code>s01-bid-file-review-patch-20260813.html</code> · 2 新文件 + SKILL.md 5 处 · 估时 3 天 · 2026-08-13
+  </div>
+</div>
+</body>
+</html>

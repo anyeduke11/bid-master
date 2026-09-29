@@ -1,0 +1,58 @@
+{
+ "name": "tech-proposal-pipeline",
+ "file": ".zcode/workflows/tech-proposal-pipeline.dwf.ts",
+ "title": "技术标生产流水线（S4→S5 段）",
+ "version": "3.1",
+ "created": "2026-09-11",
+ "dev_ref": "DEV-0029/DEV-0031",
+ "args": {
+  "bidId": "string·必填（如 2026-GOLD-jishu-wftest）",
+  "maxRewriteRounds": "number·默认 3（机检打回轮数上限）",
+  "minHitRate": "number·默认 0.95（定位抽查命中率门限）"
+ },
+ "actors": [
+  {
+   "actor_pattern": "bid-writer:<chapter>",
+   "agent_contract": "contracts/agents/bid-writer.json",
+   "agent_md": ".zcode/agents/bid-writer.md",
+   "skill": "skills/bid-write/SKILL.md",
+   "model_tier": "main",
+   "tools": "default（读写草稿）",
+   "produces": "draft",
+   "gate": "S4→S5 verify_draft_pass（rules/verify_draft.py，机检不过打回重写）；verify_audit 的 requirement_verbatim 错误也按评分点→章节路由回写手"
+  },
+  {
+   "actor_pattern": "bid-locator",
+   "agent_contract": "contracts/agents/bid-locator.json",
+   "agent_md": ".zcode/agents/bid-locator.md",
+   "skill": "skills/bid-locate/SKILL.md",
+   "model_tier": "lite",
+   "tools": "readonly",
+   "produces": "locator",
+   "gate": "S5→S6 locator_rate（门限走 args.minHitRate，未命中交回对应章写手，最多 2 轮，到轮按实报命中率放行并如实标注）"
+  },
+  {
+   "actor_pattern": "bid-auditor",
+   "agent_contract": "contracts/agents/bid-auditor.json",
+   "agent_md": ".zcode/agents/bid-auditor.md",
+   "skill": "skills/bid-audit/SKILL.md",
+   "model_tier": "lite",
+   "tools": "readonly",
+   "produces": "audit",
+   "gate": "S5→S6 audit_blocking_zero + verify_audit_pass：审计报告由脚本落盘 audit/audit-rN.json 并登记（auditor 只读）；verify_audit 的 cite_verbatim 错误才退回 auditor，最多 3 轮迭代；blocking 缺陷去重后交写手修复"
+  }
+ ],
+ "v3_notes": [
+  "verify_audit 两类检查分开路由：cite_verbatim→auditor，requirement_verbatim→对应章写手（v2 全退 auditor 导致死循环，实跑发现）",
+  "auditor 的 quote 只允许取自 draft/*.md（机检被审文件集合）；manifest 等非草稿文件问题 quote 留空",
+  "写手落盘/登记/审计落盘均由脚本确定性执行，写手产物登记在终检后统一做（reconcile 登记制要求 *.json 全登记）"
+ ],
+ "boundary": [
+  "不代办 S5→S6 人工签核（rules/set_stage.py --sign-off）",
+  "不推进状态机（set_stage 仍由 owner/看板操作）",
+  "同一 bid 同时只跑一个实例（AGENTS.md 纪律 5）",
+  "L3 红线不进 prompt、不落产物（写手 persona 内置该铁律）",
+  "model_tier 映射：main=会话主模型（≈契约 GLM-5.3），lite=宿主轻量模型（≈契约 Flash，未配置则回落 main）"
+ ],
+ "dev_note": "dev_note 追加 v3.1 bidId argv 注入白名单加固与 workflow 实现一致"
+}

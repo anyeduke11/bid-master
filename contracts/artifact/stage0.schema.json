@@ -1,0 +1,58 @@
+{
+ "required": [
+  "bid_id",
+  "stage_mark",
+  "positioning",
+  "signals",
+  "participation",
+  "lessons_applied",
+  "status"
+ ],
+ "properties": {
+  "bid_id": {
+   "type": "string",
+   "pattern": "[A-Za-z0-9_\\-]{1,64}"
+  },
+  "stage_mark": {
+   "type": "string",
+   "enum": [
+    "stage0"
+   ]
+  },
+  "positioning": {
+   "type": "string"
+  },
+  "signals": {
+   "type": "array",
+   "minItems": 1
+  },
+  "participation": {
+   "type": "object"
+  },
+  "lessons_applied": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "pattern": "^L-\\d+$"
+   }
+  },
+  "decision": {
+   "type": "object"
+  },
+  "status": {
+   "type": "string",
+   "enum": [
+    "draft",
+    "registered",
+    "final",
+    "confirmed"
+   ]
+  },
+  "recast_from": {
+   "type": "string"
+  }
+ },
+ "patterns": {
+  "go_no_go_present": "参与|go|no-go|投入"
+ }
+}

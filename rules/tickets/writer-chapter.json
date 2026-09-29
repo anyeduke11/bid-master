@@ -1,0 +1,16 @@
+{
+  "goal": "对 {bid_id} 按规格单 {spec} 扩写章节（stage {stage}）",
+  "agent": "bid-writer",
+  "skill": "/Users/duke/bid-master/skills/bid-write/SKILL.md",
+  "inputs": [
+    "{spec}",
+    "{workspace}/"
+  ],
+  "done_when": [
+    "{draft_dir}/<章>.md + manifest 齐全",
+    "cite 白名单违规=0（verify_draft.py）",
+    "评分点覆盖 100%",
+    "字数在规格单区间"
+  ],
+  "prompt": "【开工绑定】先 Read {skill}，严格按其工艺执行；读不到即回复「SKILL.md 缺失」。\n\n【任务】{goal}\n【规格单】{spec}\n【完成条件（=门禁清单原文）】\n{done_when}\n【回填】manifest.ticket_id={ticket_id}。"
+}

@@ -1,0 +1,12 @@
+{
+ "name": "bid-scout",
+ "model": "custom:builtin%3Abigmodel-individual-coding-plan:GLM-5.3-Flash",
+ "readonly": false,
+ "trigger": "手动/工单（cron 二期）",
+ "skill": "/Users/duke/bid-master/skills/bid-scout/SKILL.md",
+ "produces": [
+  "lead"
+ ],
+ "note": "只写线索暂存；可执行 bid-news-collection 40+ 渠道采集（产物落 ~/.bidmaster/leads/collection/，禁直写 leads/raw/）",
+ "skill_secondary": "/Users/duke/.agents/skills/bid-news-collection/SKILL.md"
+}

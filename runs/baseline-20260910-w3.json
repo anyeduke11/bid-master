@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "tag": "w3-drill-smoke",
+    "created_at": "2026-09-10",
+    "note": "首份基线：W3 对抗演练（真实金标准演练标 2 章）+ 智能体冒烟 + W2 门禁演示的实测数据；auditor=Flash 定版",
+    "sources": ["log/w3-drill.md", "log/agent-smoke.md", "log/w1-verify.md", "log/w2-demo.md"]
+  },
+  "writer_cite_violations": 0,
+  "writer_coverage_rate": 1.0,
+  "auditor_key_detected": 9,
+  "auditor_key_total": 10,
+  "auditor_stability_note": "注入集两跑 8/10、7/10（Flash 未稳定 ≥8）→ 定版组合判定（LLM+verify_audit 机检补位）；主档对照 w1 样本 9/10 与 Flash 一致（2026-09-10 晚）",
+  "auditor_main_tier_w1_sample": 9,
+  "locator_verdict_accuracy": 1.0,
+  "blocking_findings_r1": 0,
+  "blocking_findings_r2": 0,
+  "generals_r1": 5,
+  "generals_r2": 0,
+  "gate_ms_max": 3,
+  "kanban_perceive_latency_s": 2.1,
+  "tokens": {
+    "smoke_total": 516874,
+    "drill_writer_chA": 132571,
+    "drill_writer_chB": 173962,
+    "drill_auditor_r1": 52581,
+    "drill_auditor_r2": 71918,
+    "drill_subtotal": 431032,
+    "note": "ZCode usage 统计的子智能体 token 数；单价视 GLM 计费，成本=token×单价"
+  }
+}
