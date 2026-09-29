@@ -8,6 +8,8 @@
 
 设计原则一句话：**模型只被允许"声称"，系统只相信"退出码"。** 阶段能不能推进、引用算不算命中、素材够不够 80%，全部由 Python 门禁脚本以退出码裁决；智能体的每一句"我做完了"都必须被机检或独立复核背书。多智能体编排基于 ZCode 动态工作流（workflow-as-code，可重放、可断点续跑），状态权威落 SQLite（truth.db），看板只读不拥有状态。
 
+**当前版本 v0.0.4** · [更新日志](CHANGELOG.md) · [全部版本](https://github.com/anyeduke11/bid-master/releases)
+
 ---
 
 ## 它长什么样
@@ -131,7 +133,7 @@ make regress        # 金标准回归（公开库自动跳过本地保留件的�
 
 ## 文档
 
-[API 规格](docs/api-reference.md) · [契约矩阵](docs/api-contract-matrix.md) · [BAW 设计](docs/baw-design-v3.md) · [需求基线](docs/designs/bid-master-requirements-baseline-20260919.md) · [数据面协议](docs/data-plane-protocol.md) · [丢弃按钮六轮复盘](docs/RETRO-001%20·%20丢弃按钮功能失效六轮复盘.md) · [运维调度](docs/ops-cron.md)
+[更新日志](CHANGELOG.md) · [API 规格](docs/api-reference.md) · [契约矩阵](docs/api-contract-matrix.md) · [BAW 设计](docs/baw-design-v3.md) · [需求基线](docs/designs/bid-master-requirements-baseline-20260919.md) · [数据面协议](docs/data-plane-protocol.md) · [丢弃按钮六轮复盘](docs/RETRO-001%20·%20丢弃按钮功能失效六轮复盘.md) · [运维调度](docs/ops-cron.md)
 
 ## 脱敏声明
 
@@ -139,12 +141,16 @@ make regress        # 金标准回归（公开库自动跳过本地保留件的�
 
 ## 演进
 
+版本线 v0.0.1–v0.0.4，各版本内容纪要见 [CHANGELOG.md](CHANGELOG.md)：
+
 | 版本 | 时间 | 里程碑 |
 |---|---|---|
-| v0.3.2 | 2026-08 | 看板原型（11 命令注册表 / 幂等 / SSE，PRD v5.2 终稿） |
-| v0.5.0 | 2026-09 上旬 | BAW 真实层 truth.db：阶段机唯一写口 + 产物登记制 + 门禁尝试 |
-| v1.0 | 2026-09 中旬 | 多智能体工作流实跑：真标解构→十章生产→51 页正式文件；MCP + CLI 联动 |
-| 需求基线 + 镜子优先 | 2026-09 下旬 | 四层需求架构定稿；涉密壳 / 死线复盘提醒 / 云脱敏扩展 / 调度内置化（本文版本） |
+| v0.0.1 | 2026-08 | 看板原型（前身 bid-board）：11 命令注册表 / 幂等网关 / SSE，PRD v5.2 终稿 |
+| v0.0.2 | 2026-09 上旬 | BAW 真实层 truth.db：阶段机唯一写口 + 产物登记制 + 门禁尝试 |
+| v0.0.3 | 2026-09 中旬 | 多智能体工作流实跑：真标解构→十章生产→51 页正式文件；MCP + CLI 联动 |
+| v0.0.4 | 2026-09 下旬 | 需求基线 v1 + 镜子优先：涉密壳 / 死线复盘提醒 / 云脱敏扩展 / 调度内置化 + 整体脱敏公开（当前版本） |
+
+> 发布形态：单快照脱敏发布——v0.0.1–v0.0.3 为历史里程碑的说明性标记，其源码包内容均为 v0.0.4 脱敏终态，早期原始代码仅存私有环境。
 
 ---
 

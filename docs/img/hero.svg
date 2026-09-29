@@ -77,5 +77,5 @@
   <!-- 底栏 -->
   <line x1="48" y1="290" x2="1152" y2="290" stroke="#1E293B" stroke-width="1"/>
   <text x="48" y="314" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="13" fill="#64748B">ZCode 多智能体编排 · 确定性门禁机检 · SQLite 真实层 · SSE 实时看板 · L3 红线脱敏内置</text>
-  <text x="1152" y="314" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#475569">v1.0.0</text>
+  <text x="1152" y="314" text-anchor="end" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#475569">v0.0.4</text>
 </svg>
