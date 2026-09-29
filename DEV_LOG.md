@@ -1045,6 +1045,24 @@
   - 验证结果: 终扫 0 命中；独立 agent 复核共三轮——第二轮曾判 FAIL，原因是本条目初稿文本含旧大写代号 3 处（与首轮完全相同的"日志未脱敏"模式，且终扫跑在本条目写入之前——先扫后写的顺序缺陷），已将相关表述全部改为中性措辞、终扫改置于 commit 前最后一步后重推（06c8641）
 - **潜在风险**: ① release 旧资产在被 clobber 前有短暂暴露窗口（内容与整改后差异即上述文件）；② GitHub 缓存/他人 clone 的历史副本无法追回——泄漏物为客户别名级敏感而非 L3 红线（成本价/证件号类零涉及），定级可控；③ BSD grep -r 对目录存在静默漏扫（agent 实证），后续扫描一律走 python 字节级；④ 发布流程固化为：改文本 → 暂存 → 最终树终扫 → amend → push → tag → zip → clobber，任何一步后不得再改文本。
 
+## [DEV-0091] 版本线定版 v0.0.1–v0.0.4——CHANGELOG 新增 + README/hero 重编号 + GitHub 四 release 重打
+- **时间**: 2026-09-30 00:08
+- **类型**: 配置变更（版本管理 / 发布工程）
+- **关联文件**: `CHANGELOG.md`（新）、`README.md`、`docs/img/hero.svg`
+- **问题描述**: owner 指示：将整个开发版本控制定版——四个版本依次为 v0.0.1 / v0.0.2 / v0.0.3 / v0.0.4，更新所有文档与 GitHub（README + release）。原公开库仅单提交 + v1.0.0 标签单一 release，版本叙事与开发四阶段不对应。
+- **实现思路**: 版本线按开发四阶段定版：v0.0.1 看板原型（2026-08，前身 bid-board）→ v0.0.2 BAW 真实层（09 上旬）→ v0.0.3 多智能体工作流实跑（09 中旬）→ v0.0.4 需求基线+涉密壳+调度内置化+公开快照（当前）。公开形态保持「单快照脱敏发布」：v0.0.1–v0.0.3 为历史里程碑说明性标记（annotated tag @ 43075dc，tag message 与 release notes 承载当期纪要并显式披露源码包为 v0.0.4 终态），不重建历史 sanitized 树（避免脱敏验证面 ×3 放大）。v1.0.0 标签与 release 下线，其公告内容迁入 v0.0.4。
+- **核心变更**:
+  - `CHANGELOG.md`: 新增，四版本纪要（Keep-a-Changelog 风格）+ 发布形态说明置顶
+  - `README.md`: 题下加「当前版本 v0.0.4」行；演进表重编号 v0.0.1–v0.0.4 并加发布形态注；文档索引补 CHANGELOG 链接
+  - `docs/img/hero.svg`: 底栏版本徽标 v1.0.0 → v0.0.4
+  - git: eb8b59e（docs commit，publish-main→main fast-forward）；tags v0.0.1/v0.0.2/v0.0.3 @43075dc、v0.0.4 @eb8b59e（均 annotated）
+  - GitHub: 删除 v1.0.0 release+tag（本地+远端）；创建 4 个 release，v0.0.4 标 Latest 并附 bid-master-0.0.4.zip（git archive 1.9M，承接原 v1.0.0 资产位）
+- **测试验证**:
+  - 测试命令: pre-commit `make gate`（八合一）随 eb8b59e 自动执行；`gh release list`；`git ls-remote --tags origin`
+  - 验证结果: 门禁安全带 36/36、真实层 23/23、云脱敏 12/12、API 契约 43/43 全过；远端 4 个 release 在列且 v0.0.4 为 Latest；远端 tags 为 v0.0.1–v0.0.4，v1.0.0 已删
+- **Mimosa 留痕（纪律 9.2/9.3）**: commit/push 时钩子报「未得完整扫描结论（library_source_limit_exceeded / callgraph_fact_partial）」按兼容策略放行；本批为纯文档变更（md/svg/tag），无代码数据流，不构成误报台账三元组，仅留痕待完整审计。
+- **潜在风险**: ① v0.0.1–v0.0.3 release 的自动源码包与说明性标记并存，第三方若只下载源码包得到的是 v0.0.4 内容——notes 已逐条显式披露；② v1.0.0 对外链接（若有分享）将 404，版本语义由 CHANGELOG 承接；③ 版本递增规则未文件化（建议：功能小步 v0.0.x、破坏性变更升 v0.1.x，可入 backlog 决策）。
+
 
 
 
